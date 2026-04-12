@@ -225,7 +225,8 @@ module.exports = {
         const parts = line.split('|').map((s) => s.trim());
         if (parts.length < 2) {
           await message.reply(
-            'Format : `+ticket bouton add id|label|emoji|rangée|texte`\n(emoji, rangée, texte optionnels)'
+            'Format : `+ticket bouton add id|label|emoji|rangée|texte|indice|style`\n' +
+              '(à partir de emoji tout est optionnel ; style = Primary, Secondary, Success, Danger)'
           );
           return;
         }
@@ -234,6 +235,10 @@ module.exports = {
         const row = Math.min(4, Math.max(0, parseInt(rowRaw, 10) || 0));
         const prompt = rest[0] || label;
         const hint = rest[1] || '';
+        const styleRaw = (rest[2] || 'Secondary').trim();
+        const style = ['Primary', 'Secondary', 'Success', 'Danger'].includes(styleRaw)
+          ? styleRaw
+          : 'Secondary';
         const list = cfg.ticketCategories || [];
         if (list.find((c) => c.id === id)) {
           await message.reply('Cet id existe déjà.');
@@ -246,7 +251,7 @@ module.exports = {
           row,
           prompt,
           hint,
-          style: 'Secondary',
+          style,
         });
         cfg.ticketCategories = list;
         cfg.markModified('ticketCategories');

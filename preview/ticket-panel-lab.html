@@ -24,12 +24,14 @@
       color: var(--text);
       min-height: 100vh;
     }
+    /* 2 colonnes : formulaire | (aperçu + commandes en dessous = toujours visible après scroll court) */
     .layout {
       display: grid;
-      grid-template-columns: minmax(280px, 320px) minmax(360px, 1fr) minmax(280px, 340px);
+      grid-template-columns: minmax(280px, 320px) 1fr;
       min-height: 100vh;
+      align-items: start;
     }
-    @media (max-width: 1100px) {
+    @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
       }
@@ -38,18 +40,17 @@
       background: var(--side);
       border-right: 1px solid #1e1f22;
       padding: 1rem;
-    }
-    .center {
-      padding: 1rem 1.25rem;
-      border-right: 1px solid #1e1f22;
-      overflow-y: auto;
+      position: sticky;
+      top: 0;
       max-height: 100vh;
-    }
-    .cmd-col {
-      background: #1e1f22;
-      padding: 1rem;
       overflow-y: auto;
-      max-height: 100vh;
+    }
+    @media (max-width: 900px) {
+      .panel { position: relative; max-height: none; border-right: none; border-bottom: 1px solid #1e1f22; }
+    }
+    .main {
+      padding: 1rem 1.25rem 2rem;
+      min-width: 0;
     }
     h1 { font-size: 1rem; margin: 0 0 0.35rem; color: #fff; }
     p { color: var(--muted); font-size: 0.78rem; margin: 0 0 0.65rem; line-height: 1.45; }
@@ -94,12 +95,27 @@
       border: 1px solid rgba(250, 166, 26, 0.35);
       color: #f0b232;
       font-size: 0.75rem;
-      padding: 0.5rem 0.6rem;
+      padding: 0.55rem 0.65rem;
       border-radius: 6px;
-      margin-bottom: 0.75rem;
-      line-height: 1.4;
+      margin-bottom: 0.85rem;
+      line-height: 1.45;
     }
-    .discord-msg { max-width: 520px; margin: 0 auto; display: flex; gap: 0.75rem; }
+    .live-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      background: #24804622;
+      border: 1px solid #24804655;
+      padding: 0.45rem 0.65rem;
+      border-radius: 6px;
+      margin: 1rem 0 0.75rem;
+      font-size: 0.8rem;
+      color: #b8f5c8;
+    }
+    .live-bar strong { color: #3ee07a; }
+    .discord-msg { max-width: 520px; display: flex; gap: 0.75rem; margin-bottom: 1rem; }
     .avatar {
       width: 40px;
       height: 40px;
@@ -127,7 +143,6 @@
     }
     .embed .title { color: #fff; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.95rem; }
     .embed .desc { font-size: 0.88rem; line-height: 1.45; white-space: pre-wrap; }
-    /* Ligne type Lusive : texte à gauche, bouton à droite */
     .panel-rows {
       border-radius: 8px;
       overflow: hidden;
@@ -143,11 +158,7 @@
       border-bottom: 1px solid var(--row-border);
     }
     .panel-row:last-child { border-bottom: none; }
-    .panel-row .txt {
-      flex: 1;
-      min-width: 0;
-      text-align: left;
-    }
+    .panel-row .txt { flex: 1; min-width: 0; text-align: left; }
     .panel-row .txt .head {
       display: block;
       color: #fff;
@@ -156,11 +167,7 @@
       margin-bottom: 0.2rem;
       line-height: 1.25;
     }
-    .panel-row .txt .sub {
-      color: #b8bcc4;
-      font-size: 0.78rem;
-      line-height: 1.35;
-    }
+    .panel-row .txt .sub { color: #b8bcc4; font-size: 0.78rem; line-height: 1.35; }
     .d-btn {
       flex-shrink: 0;
       color: #fff;
@@ -179,6 +186,11 @@
     .d-btn.s { background: #248046; }
     .d-btn.d { background: #da373c; }
     .d-btn.n { background: var(--btn-sec); }
+    .cmd-section {
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #3f4147;
+    }
     h2.cmd-h {
       font-size: 0.85rem;
       color: #fff;
@@ -190,24 +202,24 @@
       background: #111214;
       border: 1px solid #3f4147;
       border-radius: 6px;
-      font-size: 10px;
-      line-height: 1.35;
+      font-size: 11px;
+      line-height: 1.4;
       white-space: pre-wrap;
       word-break: break-word;
-      max-height: 220px;
+      max-height: min(50vh, 380px);
       overflow: auto;
-      color: #c9ccd1;
+      color: #e8eaed;
     }
-    .copy-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem; }
+    .copy-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.85rem; }
     .ok-msg { color: #3ba55d; font-size: 0.72rem; margin-left: 0.35rem; }
     code { background: #111214; padding: 0.1rem 0.25rem; border-radius: 3px; font-size: 0.75em; }
   </style>
 </head>
 <body>
   <div class="layout">
-    <div class="panel">
+    <aside class="panel" id="formPanel">
       <h1>Constructeur panel</h1>
-      <p>Ajoute des lignes puis copie les commandes à droite. Style <strong>Primary</strong> = bleu type capture.</p>
+      <p>Modifie titre / description / lignes : les blocs <strong>Commandes pour Discord</strong> se mettent à jour tout de suite en dessous de l’aperçu.</p>
 
       <label>Titre embed (haut)</label>
       <input id="pTitle" type="text" value="🌊 Centre support" />
@@ -230,8 +242,8 @@
         <option value="Success">Success (vert)</option>
         <option value="Danger">Danger (rouge)</option>
       </select>
-      <label>Rangée Discord (0–4, boutons groupés)</label>
-      <input id="cRow" type="number" min="0" max="4" value="0" title="Sur Discord, max 5 rangées ; 1 bouton par ligne = rangées 0,1,2…" />
+      <label>Rangée Discord (0–4)</label>
+      <input id="cRow" type="number" min="0" max="4" value="0" />
       <label>Texte gras (ligne gauche)</label>
       <input id="cPrompt" type="text" placeholder="Une question sur nos produits ?" />
       <label>Indice (petit texte sous le gras)</label>
@@ -243,14 +255,13 @@
       </div>
 
       <div class="cat-list" id="catList"></div>
-    </div>
+    </aside>
 
-    <div class="center">
+    <main class="main">
       <div class="warn">
-        <strong>Discord (réel)</strong> : l’API ne permet pas de coller un bouton <em>à droite</em> d’une ligne de texte dans l’embed.
-        Le bot met le <strong>texte de chaque catégorie dans la description</strong>, puis les <strong>boutons en dessous</strong>, regroupés par <code>rangee</code> (0–4, max <strong>5 rangées</strong> et 5 boutons par rangée).
-        Pour 8 options sur <strong>un</strong> message, mets par ex. <strong>2 boutons par rangée</strong> (comme la démo) — impossible d’avoir 8 rangées dans un seul message Discord.
-        Cet aperçu HTML imite la ligne « texte à gauche / bouton à droite » ; sur Discord ce sera texte dans l’embed puis boutons en dessous.
+        <strong>Pourquoi chez eux le bouton est « sur la même ligne » ?</strong><br />
+        Sur le <strong>vrai client Discord</strong>, l’API impose : tout le bloc <em>embed</em> (titre, texte…) d’abord, puis <em>tous</em> les boutons en dessous. On ne peut pas intercaler un bouton au milieu du texte.<br />
+        Les pubs / captures type « Lusive » sont souvent : <strong>maquette</strong>, <strong>image unique</strong> (bannière + faux boutons dessinés), ou <strong>autre app</strong> — pas un message Discord standard. Notre aperçu HTML imite le design ; le bot envoie du texte + boutons comme Discord l’autorise.
       </div>
 
       <div class="discord-msg">
@@ -262,47 +273,51 @@
           <div id="preview"></div>
         </div>
       </div>
-    </div>
 
-    <div class="cmd-col">
-      <h2 class="cmd-h">1. Config salons (une fois)</h2>
-      <p style="margin-bottom:0.35rem">Remplace <code>ID</code> et mentionne les salons sur ton serveur.</p>
-      <pre class="cmd" id="preConfig"></pre>
-      <div class="copy-row">
-        <button type="button" class="btn-ui ok" data-copy="preConfig">Copier</button>
+      <div class="live-bar">
+        <span><strong>Commandes pour Discord</strong> — mises à jour en direct</span>
+        <span id="genTime">—</span>
       </div>
 
-      <h2 class="cmd-h">2. Titre + description du panel</h2>
-      <pre class="cmd" id="prePanel"></pre>
-      <div class="copy-row">
-        <button type="button" class="btn-ui ok" data-copy="prePanel">Copier</button>
-      </div>
+      <div class="cmd-section">
+        <h2 class="cmd-h">1. Config salons (une fois)</h2>
+        <p style="margin-bottom:0.35rem">Remplace <code>ID</code> et mentionne les salons.</p>
+        <pre class="cmd" id="preConfig"></pre>
+        <div class="copy-row">
+          <button type="button" class="btn-ui ok" data-copy="preConfig">Copier</button>
+        </div>
 
-      <h2 class="cmd-h">3. Ajouter chaque bouton (+)</h2>
-      <p style="margin-bottom:0.35rem">Une commande par ligne. Évite le caractère <code>|</code> dans les textes (ou utilise les <code>/</code>).</p>
-      <pre class="cmd" id="preAdd"></pre>
-      <div class="copy-row">
-        <button type="button" class="btn-ui ok" data-copy="preAdd">Copier tout</button>
-      </div>
+        <h2 class="cmd-h">2. Titre + description du panel</h2>
+        <pre class="cmd" id="prePanel"></pre>
+        <div class="copy-row">
+          <button type="button" class="btn-ui ok" data-copy="prePanel">Copier</button>
+        </div>
 
-      <h2 class="cmd-h">4. Variante slash (une par bouton)</h2>
-      <pre class="cmd" id="preSlash"></pre>
-      <div class="copy-row">
-        <button type="button" class="btn-ui ok" data-copy="preSlash">Copier tout</button>
-      </div>
+        <h2 class="cmd-h">3. Ajouter chaque bouton (+)</h2>
+        <p style="margin-bottom:0.35rem">Format : <code>id|label|emoji|rangée|texte|indice|style</code> — évite <code>|</code> dans les textes.</p>
+        <pre class="cmd" id="preAdd"></pre>
+        <div class="copy-row">
+          <button type="button" class="btn-ui ok" data-copy="preAdd">Copier tout</button>
+        </div>
 
-      <h2 class="cmd-h">5. Publier le panel</h2>
-      <pre class="cmd" id="preSend">+ticket envoyer
+        <h2 class="cmd-h">4. Slash (une ligne par bouton — à saisir dans Discord, pas toujours collable tel quel)</h2>
+        <pre class="cmd" id="preSlash"></pre>
+        <div class="copy-row">
+          <button type="button" class="btn-ui ok" data-copy="preSlash">Copier tout</button>
+        </div>
+
+        <h2 class="cmd-h">5. Publier le panel</h2>
+        <pre class="cmd" id="preSend">+ticket envoyer
 /ticket panel-envoyer</pre>
-      <div class="copy-row">
-        <button type="button" class="btn-ui ok" data-copy="preSend">Copier</button>
+        <div class="copy-row">
+          <button type="button" class="btn-ui ok" data-copy="preSend">Copier</button>
+        </div>
+        <span class="ok-msg" id="copied" style="display:none">Copié.</span>
       </div>
-      <span class="ok-msg" id="copied" style="display:none">Copié.</span>
-    </div>
+    </main>
   </div>
 
   <script>
-    /* 8 boutons = 4 rangées Discord (max 5) : 2 boutons côte à côte par rangée — obligatoire pour un seul message */
     const DEMO8 = [
       { id: "questions", label: "Questions", emoji: "💬", row: 0, style: "Primary", prompt: "Une question rapide sur nos produits ?", hint: "Appuie sur Questions pour ouvrir le flux ticket." },
       { id: "general", label: "Support général", emoji: "🛒", row: 0, style: "Primary", prompt: "Besoin d’aide sur la boutique ?", hint: "Appuie sur Support général." },
@@ -324,6 +339,7 @@
     const prePanel = document.getElementById("prePanel");
     const preAdd = document.getElementById("preAdd");
     const preSlash = document.getElementById("preSlash");
+    const genTime = document.getElementById("genTime");
 
     function styleClass(s) {
       if (s === "Primary") return "p";
@@ -346,7 +362,6 @@
         .replace(/\n/g, "<br/>");
     }
 
-    /** Échappe pour une ligne +ticket bouton add (évite | dans les champs) */
     function pipeSafe(s) {
       return String(s).replace(/\|/g, "·").replace(/\s+/g, " ").trim();
     }
@@ -425,9 +440,10 @@
         const row = String(Math.min(4, Math.max(0, c.row | 0)));
         const prompt = pipeSafe(c.prompt || c.label);
         const hint = pipeSafe(c.hint || "");
-        return `${pf}ticket bouton add ${id}|${label}|${emoji}|${row}|${prompt}|${hint}`;
+        const st = pipeSafe(c.style || "Secondary");
+        return `${pf}ticket bouton add ${id}|${label}|${emoji}|${row}|${prompt}|${hint}|${st}`;
       });
-      preAdd.textContent = addLines.join("\n");
+      preAdd.textContent = addLines.length ? addLines.join("\n") : "(Ajoute au moins une ligne à gauche)";
 
       const slashLines = categories.map((c) => {
         const id = pipeSafe(c.id);
@@ -441,7 +457,9 @@
         if (em) line += ` emoji:${em}`;
         return line;
       });
-      preSlash.textContent = slashLines.join("\n");
+      preSlash.textContent = slashLines.length ? slashLines.join("\n") : "(Ajoute des lignes)";
+
+      genTime.textContent = "MAJ " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     }
 
     function renderAll() {
@@ -475,19 +493,22 @@
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-copy");
         const el = document.getElementById(id);
-        const t = el?.textContent || "";
+        let t = el?.textContent || "";
+        if (t.startsWith("(")) return;
         try {
           await navigator.clipboard.writeText(t);
           const c = document.getElementById("copied");
           c.style.display = "inline";
           setTimeout(() => { c.style.display = "none"; }, 1600);
         } catch {
-          alert("Impossible de copier automatiquement.");
+          alert("Impossible de copier — sélectionne le texte dans le bloc gris.");
         }
       });
     });
 
-    [pTitle, pDesc].forEach((el) => el.addEventListener("input", renderAll));
+    const formPanel = document.getElementById("formPanel");
+    formPanel.addEventListener("input", renderAll);
+    formPanel.addEventListener("change", renderAll);
 
     renderList();
     renderAll();
