@@ -156,17 +156,48 @@ module.exports = {
         await message.reply('Permission refusée.');
         return;
       }
-      const key = (args.shift() || '').toLowerCase();
-      const json = args.join(' ').trim();
-      if (!key || !json) {
-        await message.reply('Usage : `+paiement set <clé> <json>`');
+
+      /** Discord coupe le message par espaces : le JSON avec espaces dans les textes devenait invalide. On relit le message brut après `+paiement set `. */
+      const prefix = cfg.prefix || '+';
+      const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const hdr = new RegExp(`^${esc(prefix)}paiement\\s+set\\s+`, 'i');
+      const full = message.content.trim();
+      const mHdr = full.match(hdr);
+      if (!mHdr) {
+        await message.reply(
+          'Usage : `+paiement set paypal {"title":"…","description":"…"}`\n' +
+            '**Important :** tape d’abord la **clé** (`paypal`, `litecoin`, …), **sans** chevrons `< >`, puis un espace, puis tout le JSON (une ou plusieurs lignes).'
+        );
         return;
       }
+      let rest = full.slice(mHdr[0].length).trim();
+      if (rest.startsWith('{') || rest.startsWith('<{')) {
+        await message.reply(
+          'Il manque la **clé** avant le JSON.\n' +
+            'Exemple : `+paiement set paypal {"title":"Paiement par PayPal","description":"Texte avec espaces OK"}`\n' +
+            'Les `< >` dans l’aide sont des repères, **ne les tape pas** autour du JSON.'
+        );
+        return;
+      }
+      const mParts = /^([A-Za-z0-9_-]+)\s+([\s\S]+)$/.exec(rest);
+      if (!mParts) {
+        await message.reply(
+          'Format attendu : `+paiement set <clé> <json>` — la clé puis le JSON collé derrière.'
+        );
+        return;
+      }
+      let key = mParts[1].toLowerCase();
+      let jsonStr = mParts[2].trim();
+      if (jsonStr.startsWith('<')) jsonStr = jsonStr.slice(1).trim();
+      if (jsonStr.endsWith('>')) jsonStr = jsonStr.slice(0, -1).trim();
+
       let parsed;
       try {
-        parsed = JSON.parse(json);
+        parsed = JSON.parse(jsonStr);
       } catch {
-        await message.reply('JSON invalide.');
+        await message.reply(
+          'JSON invalide (guillemets, virgules, ou accolade manquante). Tu peux aussi utiliser `/paiement definir` avec le champ json.'
+        );
         return;
       }
       if (typeof parsed.color === 'string' && parsed.color.startsWith('#')) {
