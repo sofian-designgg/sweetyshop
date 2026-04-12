@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SweetyShop — Prévisualisation panel tickets</title>
+  <style>
+    :root {
+      --bg: #313338;
+      --side: #2b2d31;
+      --embed: #2f3136;
+      --text: #dbdee1;
+      --muted: #949ba4;
+      --btn: #4e5058;
+      --accent: #5865f2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "gg sans", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--side);
+      border-right: 1px solid #1e1f22;
+      padding: 1rem;
+    }
+    h1 { font-size: 1rem; margin: 0 0 0.5rem; }
+    p { color: var(--muted); font-size: 0.8rem; margin: 0 0 0.75rem; }
+    label { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; }
+    input, textarea {
+      width: 100%;
+      background: #1e1f22;
+      border: 1px solid #3f4147;
+      border-radius: 6px;
+      color: #b5bac1;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.85rem;
+    }
+    textarea { min-height: 72px; resize: vertical; font-family: inherit; }
+    .row { display: flex; gap: 0.35rem; margin-top: 0.35rem; }
+    .row input { flex: 1; }
+    button {
+      margin-top: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    button.secondary { background: var(--btn); }
+    button.danger { background: #da373c; }
+    .cat-list { margin-top: 0.75rem; max-height: 220px; overflow: auto; font-size: 0.8rem; }
+    .cat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0.4rem;
+      border-radius: 4px;
+      background: #1e1f22;
+      margin-bottom: 0.25rem;
+    }
+    .stage {
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .discord-msg { max-width: 560px; width: 100%; display: flex; gap: 1rem; }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3c45a5, #9b59b6);
+      flex-shrink: 0;
+    }
+    .bubble { flex: 1; min-width: 0; }
+    .author { font-size: 0.95rem; margin-bottom: 0.35rem; }
+    .author strong { color: #fff; }
+    .bot-tag {
+      background: #5865f2;
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      margin-left: 0.35rem;
+    }
+    .embed {
+      background: var(--embed);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px 8px 8px 4px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .embed .title { color: #fff; font-weight: 600; margin-bottom: 0.35rem; }
+    .embed .desc { font-size: 0.9rem; line-height: 1.45; white-space: pre-wrap; }
+    .embed .block { margin-top: 0.65rem; padding-top: 0.5rem; border-top: 1px solid #3f4147; }
+    .embed .block strong { color: #fff; }
+    .embed .hint { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; }
+    .rows { display: flex; flex-direction: column; gap: 0.5rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .d-btn {
+      background: var(--btn);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.85rem;
+      cursor: default;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .d-btn.p { background: #5865f2; }
+    .d-btn.s { background: #248046; }
+    .d-btn.d { background: #da373c; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="panel">
+      <h1>Constructeur panel (aperçu)</h1>
+      <p>Ajoute des « catégories » comme avec <code>/ticket bouton-ajouter</code>. Les boutons se regroupent par rangée (0–4).</p>
+
+      <label>Titre embed panel</label>
+      <input id="pTitle" type="text" value="🌊 Centre support" />
+
+      <label>Description (intro)</label>
+      <textarea id="pDesc">Bienvenue sur **SweetyShop**. Choisis l’option qui correspond à ton besoin.</textarea>
+
+      <hr style="border:0;border-top:1px solid #3f4147;margin:0.75rem 0" />
+
+      <label>id (slug)</label>
+      <input id="cId" type="text" placeholder="nitro" />
+      <label>Label bouton</label>
+      <input id="cLabel" type="text" placeholder="Nitro" />
+      <label>Emoji</label>
+      <input id="cEmoji" type="text" placeholder="💎" />
+      <div class="row">
+        <div style="flex:1">
+          <label>Rangée (0–4)</label>
+          <input id="cRow" type="number" min="0" max="4" value="0" />
+        </div>
+      </div>
+      <label>Texte gras (ligne)</label>
+      <input id="cPrompt" type="text" placeholder="Question sur le Nitro ?" />
+      <label>Indice (italique)</label>
+      <input id="cHint" type="text" placeholder="Ouvre un ticket Nitro." />
+
+      <div class="row">
+        <button type="button" id="addCat">Ajouter</button>
+        <button type="button" class="secondary" id="resetCats">Réinitialiser démo</button>
+      </div>
+
+      <div class="cat-list" id="catList"></div>
+    </div>
+
+    <div class="stage">
+      <div class="discord-msg">
+        <div class="avatar"></div>
+        <div class="bubble">
+          <div class="author">
+            <strong>SweetyShop</strong><span class="bot-tag">BOT</span>
+          </div>
+          <div id="preview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let categories = [
+      { id: "question", label: "Questions", emoji: "💬", row: 0, prompt: "Une question rapide ?", hint: "Bouton Questions." },
+      { id: "nitro", label: "Nitro", emoji: "💎", row: 0, prompt: "Commande Nitro ?", hint: "Ticket Nitro." },
+      { id: "paypal", label: "PayPal", emoji: "💳", row: 1, prompt: "Paiement PayPal ?", hint: "Envoie ta preuve ici." },
+      { id: "crypto", label: "Crypto", emoji: "🪙", row: 1, prompt: "LTC / ETH / SOL ?", hint: "Indique la devise." },
+    ];
+
+    const pTitle = document.getElementById("pTitle");
+    const pDesc = document.getElementById("pDesc");
+    const catList = document.getElementById("catList");
+    const preview = document.getElementById("preview");
+
+    function styleClass(s) {
+      if (s === "Primary") return "p";
+      if (s === "Success") return "s";
+      if (s === "Danger") return "d";
+      return "";
+    }
+
+    function renderList() {
+      catList.innerHTML = "";
+      categories.forEach((c, i) => {
+        const el = document.createElement("div");
+        el.className = "cat-item";
+        el.innerHTML = `<span><code>${c.id}</code> · ${c.emoji || ""} ${c.label} · r${c.row}</span>`;
+        const rm = document.createElement("button");
+        rm.className = "danger";
+        rm.type = "button";
+        rm.textContent = "×";
+        rm.style.padding = "0.15rem 0.45rem";
+        rm.onclick = () => {
+          categories.splice(i, 1);
+          renderList();
+          renderPreview();
+        };
+        el.appendChild(rm);
+        catList.appendChild(el);
+      });
+    }
+
+    function renderPreview() {
+      const title = pTitle.value || "Panel";
+      const intro = pDesc.value || "";
+      let descHtml = intro
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\n/g, "<br/>");
+
+      const blocks = categories
+        .map((c) => {
+          const t = c.prompt ? `<strong>${escapeHtml(c.prompt)}</strong>` : `<strong>${escapeHtml(c.label)}</strong>`;
+          const h = c.hint ? `<div class="hint"><em>${escapeHtml(c.hint)}</em></div>` : "";
+          return `<div class="block">${t}${h}</div>`;
+        })
+        .join("");
+
+      const byRow = {};
+      categories.forEach((c) => {
+        const r = Math.min(4, Math.max(0, c.row | 0));
+        if (!byRow[r]) byRow[r] = [];
+        if (byRow[r].length < 5) byRow[r].push(c);
+      });
+      const rowKeys = Object.keys(byRow)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .slice(0, 5);
+
+      const btnRows = rowKeys
+        .map((rk) => {
+          const btns = byRow[rk]
+            .map((c) => {
+              const cls = styleClass(c.style || "Secondary");
+              const em = c.emoji ? `<span>${c.emoji}</span>` : "";
+              return `<span class="d-btn ${cls}">${em}<span>${escapeHtml(c.label)}</span></span>`;
+            })
+            .join("");
+          return `<div class="btn-row">${btns}</div>`;
+        })
+        .join("");
+
+      preview.innerHTML = `
+        <div class="embed">
+          <div class="title">${escapeHtml(title)}</div>
+          <div class="desc">${descHtml}</div>
+          ${blocks}
+        </div>
+        <div class="rows">${btnRows}</div>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    document.getElementById("addCat").onclick = () => {
+      const id = document.getElementById("cId").value.trim().toLowerCase().replace(/\s+/g, "-");
+      const label = document.getElementById("cLabel").value.trim();
+      if (!id || !label) return alert("id + label requis");
+      const emoji = document.getElementById("cEmoji").value.trim();
+      const row = Math.min(4, Math.max(0, parseInt(document.getElementById("cRow").value, 10) || 0));
+      const prompt = document.getElementById("cPrompt").value.trim() || label;
+      const hint = document.getElementById("cHint").value.trim();
+      categories.push({ id, label, emoji, row, prompt, hint, style: "Secondary" });
+      renderList();
+      renderPreview();
+    };
+
+    document.getElementById("resetCats").onclick = () => {
+      categories = [
+        { id: "question", label: "Questions", emoji: "💬", row: 0, prompt: "Une question rapide ?", hint: "Bouton Questions." },
+        { id: "nitro", label: "Nitro", emoji: "💎", row: 0, prompt: "Commande Nitro ?", hint: "Ticket Nitro." },
+        { id: "paypal", label: "PayPal", emoji: "💳", row: 1, prompt: "Paiement PayPal ?", hint: "Envoie ta preuve ici." },
+        { id: "crypto", label: "Crypto", emoji: "🪙", row: 1, prompt: "LTC / ETH / SOL ?", hint: "Indique la devise." },
+      ];
+      renderList();
+      renderPreview();
+    };
+
+    [pTitle, pDesc].forEach((el) => el.addEventListener("input", renderPreview));
+
+    renderList();
+    renderPreview();
+  </script>
+</body>
+</html>
