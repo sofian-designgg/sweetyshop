@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SweetyShop — Prévisualisation panel tickets</title>
+  <title>SweetyShop — Panel tickets (aperçu + commandes)</title>
   <style>
     :root {
       --bg: #313338;
@@ -11,8 +11,10 @@
       --embed: #2f3136;
       --text: #dbdee1;
       --muted: #949ba4;
-      --btn: #4e5058;
-      --accent: #5865f2;
+      --btn-sec: #4e5058;
+      --blurple: #5865f2;
+      --panel-bg: #232136;
+      --row-border: rgba(0, 0, 0, 0.45);
     }
     * { box-sizing: border-box; }
     body {
@@ -24,153 +26,235 @@
     }
     .layout {
       display: grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: minmax(280px, 320px) minmax(360px, 1fr) minmax(280px, 340px);
       min-height: 100vh;
     }
-    @media (max-width: 900px) {
-      .layout { grid-template-columns: 1fr; }
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
     }
     .panel {
       background: var(--side);
       border-right: 1px solid #1e1f22;
       padding: 1rem;
     }
-    h1 { font-size: 1rem; margin: 0 0 0.5rem; }
-    p { color: var(--muted); font-size: 0.8rem; margin: 0 0 0.75rem; }
-    label { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; }
-    input, textarea {
+    .center {
+      padding: 1rem 1.25rem;
+      border-right: 1px solid #1e1f22;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    .cmd-col {
+      background: #1e1f22;
+      padding: 1rem;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    h1 { font-size: 1rem; margin: 0 0 0.35rem; color: #fff; }
+    p { color: var(--muted); font-size: 0.78rem; margin: 0 0 0.65rem; line-height: 1.45; }
+    label { display: block; font-size: 0.7rem; color: var(--muted); margin-top: 0.45rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    input, textarea, select {
       width: 100%;
       background: #1e1f22;
       border: 1px solid #3f4147;
       border-radius: 6px;
       color: #b5bac1;
       padding: 0.4rem 0.5rem;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
     }
-    textarea { min-height: 72px; resize: vertical; font-family: inherit; }
-    .row { display: flex; gap: 0.35rem; margin-top: 0.35rem; }
-    .row input { flex: 1; }
-    button {
-      margin-top: 0.5rem;
-      background: var(--accent);
+    textarea { min-height: 64px; resize: vertical; font-family: inherit; }
+    .row { display: flex; gap: 0.35rem; margin-top: 0.35rem; flex-wrap: wrap; }
+    .btn-ui {
+      margin-top: 0.45rem;
+      background: var(--blurple);
       color: #fff;
       border: none;
-      padding: 0.45rem 0.75rem;
+      padding: 0.45rem 0.7rem;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
-    button.secondary { background: var(--btn); }
-    button.danger { background: #da373c; }
-    .cat-list { margin-top: 0.75rem; max-height: 220px; overflow: auto; font-size: 0.8rem; }
+    .btn-ui.secondary { background: var(--btn-sec); }
+    .btn-ui.danger { background: #da373c; }
+    .btn-ui.ok { background: #248046; }
+    .cat-list { margin-top: 0.6rem; max-height: 200px; overflow: auto; font-size: 0.75rem; }
     .cat-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.35rem 0.4rem;
+      padding: 0.3rem 0.4rem;
       border-radius: 4px;
-      background: #1e1f22;
-      margin-bottom: 0.25rem;
+      background: #111214;
+      margin-bottom: 0.2rem;
     }
-    .stage {
-      padding: 1.5rem;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+    .warn {
+      background: rgba(250, 166, 26, 0.12);
+      border: 1px solid rgba(250, 166, 26, 0.35);
+      color: #f0b232;
+      font-size: 0.75rem;
+      padding: 0.5rem 0.6rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
     }
-    .discord-msg { max-width: 560px; width: 100%; display: flex; gap: 1rem; }
+    .discord-msg { max-width: 520px; margin: 0 auto; display: flex; gap: 0.75rem; }
     .avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #3c45a5, #9b59b6);
+      background: linear-gradient(135deg, #5865f2, #eb459e);
       flex-shrink: 0;
     }
     .bubble { flex: 1; min-width: 0; }
-    .author { font-size: 0.95rem; margin-bottom: 0.35rem; }
+    .author { font-size: 0.9rem; margin-bottom: 0.35rem; }
     .author strong { color: #fff; }
     .bot-tag {
-      background: #5865f2;
+      background: var(--blurple);
       color: #fff;
-      font-size: 0.65rem;
-      padding: 0.1rem 0.35rem;
+      font-size: 0.62rem;
+      padding: 0.08rem 0.32rem;
       border-radius: 4px;
-      margin-left: 0.35rem;
+      margin-left: 0.3rem;
     }
     .embed {
       background: var(--embed);
-      border-left: 4px solid var(--accent);
+      border-left: 4px solid var(--blurple);
       border-radius: 4px 8px 8px 4px;
-      padding: 0.75rem 1rem;
-      margin-bottom: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.5rem;
     }
-    .embed .title { color: #fff; font-weight: 600; margin-bottom: 0.35rem; }
-    .embed .desc { font-size: 0.9rem; line-height: 1.45; white-space: pre-wrap; }
-    .embed .block { margin-top: 0.65rem; padding-top: 0.5rem; border-top: 1px solid #3f4147; }
-    .embed .block strong { color: #fff; }
-    .embed .hint { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; }
-    .rows { display: flex; flex-direction: column; gap: 0.5rem; }
-    .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .embed .title { color: #fff; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.95rem; }
+    .embed .desc { font-size: 0.88rem; line-height: 1.45; white-space: pre-wrap; }
+    /* Ligne type Lusive : texte à gauche, bouton à droite */
+    .panel-rows {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #1e1f22;
+      background: var(--panel-bg);
+    }
+    .panel-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--row-border);
+    }
+    .panel-row:last-child { border-bottom: none; }
+    .panel-row .txt {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+    .panel-row .txt .head {
+      display: block;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
+      line-height: 1.25;
+    }
+    .panel-row .txt .sub {
+      color: #b8bcc4;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
     .d-btn {
-      background: var(--btn);
+      flex-shrink: 0;
       color: #fff;
       border: none;
       border-radius: 4px;
-      padding: 0.4rem 0.75rem;
-      font-size: 0.85rem;
+      padding: 0.38rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 500;
       cursor: default;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
+      white-space: nowrap;
     }
-    .d-btn.p { background: #5865f2; }
+    .d-btn.p { background: var(--blurple); }
     .d-btn.s { background: #248046; }
     .d-btn.d { background: #da373c; }
+    .d-btn.n { background: var(--btn-sec); }
+    h2.cmd-h {
+      font-size: 0.85rem;
+      color: #fff;
+      margin: 0 0 0.4rem;
+    }
+    pre.cmd {
+      margin: 0 0 0.65rem;
+      padding: 0.55rem 0.6rem;
+      background: #111214;
+      border: 1px solid #3f4147;
+      border-radius: 6px;
+      font-size: 10px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 220px;
+      overflow: auto;
+      color: #c9ccd1;
+    }
+    .copy-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem; }
+    .ok-msg { color: #3ba55d; font-size: 0.72rem; margin-left: 0.35rem; }
+    code { background: #111214; padding: 0.1rem 0.25rem; border-radius: 3px; font-size: 0.75em; }
   </style>
 </head>
 <body>
   <div class="layout">
     <div class="panel">
-      <h1>Constructeur panel (aperçu)</h1>
-      <p>Ajoute des « catégories » comme avec <code>/ticket bouton-ajouter</code>. Les boutons se regroupent par rangée (0–4).</p>
+      <h1>Constructeur panel</h1>
+      <p>Ajoute des lignes puis copie les commandes à droite. Style <strong>Primary</strong> = bleu type capture.</p>
 
-      <label>Titre embed panel</label>
+      <label>Titre embed (haut)</label>
       <input id="pTitle" type="text" value="🌊 Centre support" />
 
-      <label>Description (intro)</label>
+      <label>Description intro (sous le titre)</label>
       <textarea id="pDesc">Bienvenue sur **SweetyShop**. Choisis l’option qui correspond à ton besoin.</textarea>
 
-      <hr style="border:0;border-top:1px solid #3f4147;margin:0.75rem 0" />
+      <hr style="border:0;border-top:1px solid #3f4147;margin:0.65rem 0" />
 
       <label>id (slug)</label>
-      <input id="cId" type="text" placeholder="nitro" />
+      <input id="cId" type="text" placeholder="questions" />
       <label>Label bouton</label>
-      <input id="cLabel" type="text" placeholder="Nitro" />
+      <input id="cLabel" type="text" placeholder="Questions" />
       <label>Emoji</label>
-      <input id="cEmoji" type="text" placeholder="💎" />
-      <div class="row">
-        <div style="flex:1">
-          <label>Rangée (0–4)</label>
-          <input id="cRow" type="number" min="0" max="4" value="0" />
-        </div>
-      </div>
-      <label>Texte gras (ligne)</label>
-      <input id="cPrompt" type="text" placeholder="Question sur le Nitro ?" />
-      <label>Indice (italique)</label>
-      <input id="cHint" type="text" placeholder="Ouvre un ticket Nitro." />
+      <input id="cEmoji" type="text" placeholder="💬" />
+      <label>Style bouton</label>
+      <select id="cStyle">
+        <option value="Primary">Primary (bleu Discord)</option>
+        <option value="Secondary">Secondary (gris)</option>
+        <option value="Success">Success (vert)</option>
+        <option value="Danger">Danger (rouge)</option>
+      </select>
+      <label>Rangée Discord (0–4, boutons groupés)</label>
+      <input id="cRow" type="number" min="0" max="4" value="0" title="Sur Discord, max 5 rangées ; 1 bouton par ligne = rangées 0,1,2…" />
+      <label>Texte gras (ligne gauche)</label>
+      <input id="cPrompt" type="text" placeholder="Une question sur nos produits ?" />
+      <label>Indice (petit texte sous le gras)</label>
+      <input id="cHint" type="text" placeholder="Appuie sur Questions pour ouvrir le ticket." />
 
       <div class="row">
-        <button type="button" id="addCat">Ajouter</button>
-        <button type="button" class="secondary" id="resetCats">Réinitialiser démo</button>
+        <button type="button" class="btn-ui" id="addCat">Ajouter la ligne</button>
+        <button type="button" class="btn-ui secondary" id="resetDemo">Démo 8 lignes</button>
       </div>
 
       <div class="cat-list" id="catList"></div>
     </div>
 
-    <div class="stage">
+    <div class="center">
+      <div class="warn">
+        <strong>Discord (réel)</strong> : l’API ne permet pas de coller un bouton <em>à droite</em> d’une ligne de texte dans l’embed.
+        Le bot met le <strong>texte de chaque catégorie dans la description</strong>, puis les <strong>boutons en dessous</strong>, regroupés par <code>rangee</code> (0–4, max <strong>5 rangées</strong> et 5 boutons par rangée).
+        Pour 8 options sur <strong>un</strong> message, mets par ex. <strong>2 boutons par rangée</strong> (comme la démo) — impossible d’avoir 8 rangées dans un seul message Discord.
+        Cet aperçu HTML imite la ligne « texte à gauche / bouton à droite » ; sur Discord ce sera texte dans l’embed puis boutons en dessous.
+      </div>
+
       <div class="discord-msg">
-        <div class="avatar"></div>
+        <div class="avatar" aria-hidden="true"></div>
         <div class="bubble">
           <div class="author">
             <strong>SweetyShop</strong><span class="bot-tag">BOT</span>
@@ -179,96 +263,73 @@
         </div>
       </div>
     </div>
+
+    <div class="cmd-col">
+      <h2 class="cmd-h">1. Config salons (une fois)</h2>
+      <p style="margin-bottom:0.35rem">Remplace <code>ID</code> et mentionne les salons sur ton serveur.</p>
+      <pre class="cmd" id="preConfig"></pre>
+      <div class="copy-row">
+        <button type="button" class="btn-ui ok" data-copy="preConfig">Copier</button>
+      </div>
+
+      <h2 class="cmd-h">2. Titre + description du panel</h2>
+      <pre class="cmd" id="prePanel"></pre>
+      <div class="copy-row">
+        <button type="button" class="btn-ui ok" data-copy="prePanel">Copier</button>
+      </div>
+
+      <h2 class="cmd-h">3. Ajouter chaque bouton (+)</h2>
+      <p style="margin-bottom:0.35rem">Une commande par ligne. Évite le caractère <code>|</code> dans les textes (ou utilise les <code>/</code>).</p>
+      <pre class="cmd" id="preAdd"></pre>
+      <div class="copy-row">
+        <button type="button" class="btn-ui ok" data-copy="preAdd">Copier tout</button>
+      </div>
+
+      <h2 class="cmd-h">4. Variante slash (une par bouton)</h2>
+      <pre class="cmd" id="preSlash"></pre>
+      <div class="copy-row">
+        <button type="button" class="btn-ui ok" data-copy="preSlash">Copier tout</button>
+      </div>
+
+      <h2 class="cmd-h">5. Publier le panel</h2>
+      <pre class="cmd" id="preSend">+ticket envoyer
+/ticket panel-envoyer</pre>
+      <div class="copy-row">
+        <button type="button" class="btn-ui ok" data-copy="preSend">Copier</button>
+      </div>
+      <span class="ok-msg" id="copied" style="display:none">Copié.</span>
+    </div>
   </div>
 
   <script>
-    let categories = [
-      { id: "question", label: "Questions", emoji: "💬", row: 0, prompt: "Une question rapide ?", hint: "Bouton Questions." },
-      { id: "nitro", label: "Nitro", emoji: "💎", row: 0, prompt: "Commande Nitro ?", hint: "Ticket Nitro." },
-      { id: "paypal", label: "PayPal", emoji: "💳", row: 1, prompt: "Paiement PayPal ?", hint: "Envoie ta preuve ici." },
-      { id: "crypto", label: "Crypto", emoji: "🪙", row: 1, prompt: "LTC / ETH / SOL ?", hint: "Indique la devise." },
+    /* 8 boutons = 4 rangées Discord (max 5) : 2 boutons côte à côte par rangée — obligatoire pour un seul message */
+    const DEMO8 = [
+      { id: "questions", label: "Questions", emoji: "💬", row: 0, style: "Primary", prompt: "Une question rapide sur nos produits ?", hint: "Appuie sur Questions pour ouvrir le flux ticket." },
+      { id: "general", label: "Support général", emoji: "🛒", row: 0, style: "Primary", prompt: "Besoin d’aide sur la boutique ?", hint: "Appuie sur Support général." },
+      { id: "non-recu", label: "Produit non reçu", emoji: "⬇️", row: 1, style: "Primary", prompt: "Tu n’as pas reçu ton produit après paiement ?", hint: "Ouvre un ticket Produit non reçu." },
+      { id: "manuel", label: "Livraison manuelle", emoji: "⬇️", row: 1, style: "Primary", prompt: "Produit livré manuellement par nous.", hint: "Ticket livraison manuelle." },
+      { id: "remplacement", label: "Remplacement", emoji: "🛡️", row: 2, style: "Primary", prompt: "Quelque chose ne fonctionne pas ? Demande un remplacement.", hint: "Ticket remplacement." },
+      { id: "nitro", label: "Nitro", emoji: "💎", row: 2, style: "Primary", prompt: "Commande ou souci lié au Nitro ?", hint: "Ticket Nitro." },
+      { id: "crypto", label: "Crypto", emoji: "🪙", row: 3, style: "Primary", prompt: "Paiement crypto ou TXID ?", hint: "Indique la devise dans le ticket." },
+      { id: "paypal", label: "PayPal", emoji: "💳", row: 3, style: "Primary", prompt: "Paiement ou preuve PayPal ?", hint: "Ticket PayPal." },
     ];
+
+    let categories = DEMO8.map((c) => ({ ...c }));
 
     const pTitle = document.getElementById("pTitle");
     const pDesc = document.getElementById("pDesc");
     const catList = document.getElementById("catList");
     const preview = document.getElementById("preview");
+    const preConfig = document.getElementById("preConfig");
+    const prePanel = document.getElementById("prePanel");
+    const preAdd = document.getElementById("preAdd");
+    const preSlash = document.getElementById("preSlash");
 
     function styleClass(s) {
       if (s === "Primary") return "p";
       if (s === "Success") return "s";
       if (s === "Danger") return "d";
-      return "";
-    }
-
-    function renderList() {
-      catList.innerHTML = "";
-      categories.forEach((c, i) => {
-        const el = document.createElement("div");
-        el.className = "cat-item";
-        el.innerHTML = `<span><code>${c.id}</code> · ${c.emoji || ""} ${c.label} · r${c.row}</span>`;
-        const rm = document.createElement("button");
-        rm.className = "danger";
-        rm.type = "button";
-        rm.textContent = "×";
-        rm.style.padding = "0.15rem 0.45rem";
-        rm.onclick = () => {
-          categories.splice(i, 1);
-          renderList();
-          renderPreview();
-        };
-        el.appendChild(rm);
-        catList.appendChild(el);
-      });
-    }
-
-    function renderPreview() {
-      const title = pTitle.value || "Panel";
-      const intro = pDesc.value || "";
-      let descHtml = intro
-        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\n/g, "<br/>");
-
-      const blocks = categories
-        .map((c) => {
-          const t = c.prompt ? `<strong>${escapeHtml(c.prompt)}</strong>` : `<strong>${escapeHtml(c.label)}</strong>`;
-          const h = c.hint ? `<div class="hint"><em>${escapeHtml(c.hint)}</em></div>` : "";
-          return `<div class="block">${t}${h}</div>`;
-        })
-        .join("");
-
-      const byRow = {};
-      categories.forEach((c) => {
-        const r = Math.min(4, Math.max(0, c.row | 0));
-        if (!byRow[r]) byRow[r] = [];
-        if (byRow[r].length < 5) byRow[r].push(c);
-      });
-      const rowKeys = Object.keys(byRow)
-        .map(Number)
-        .sort((a, b) => a - b)
-        .slice(0, 5);
-
-      const btnRows = rowKeys
-        .map((rk) => {
-          const btns = byRow[rk]
-            .map((c) => {
-              const cls = styleClass(c.style || "Secondary");
-              const em = c.emoji ? `<span>${c.emoji}</span>` : "";
-              return `<span class="d-btn ${cls}">${em}<span>${escapeHtml(c.label)}</span></span>`;
-            })
-            .join("");
-          return `<div class="btn-row">${btns}</div>`;
-        })
-        .join("");
-
-      preview.innerHTML = `
-        <div class="embed">
-          <div class="title">${escapeHtml(title)}</div>
-          <div class="desc">${descHtml}</div>
-          ${blocks}
-        </div>
-        <div class="rows">${btnRows}</div>
-      `;
+      return "n";
     }
 
     function escapeHtml(s) {
@@ -279,34 +340,157 @@
         .replace(/"/g, "&quot;");
     }
 
+    function formatDescHtml(text) {
+      return String(text)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\n/g, "<br/>");
+    }
+
+    /** Échappe pour une ligne +ticket bouton add (évite | dans les champs) */
+    function pipeSafe(s) {
+      return String(s).replace(/\|/g, "·").replace(/\s+/g, " ").trim();
+    }
+
+    function renderList() {
+      catList.innerHTML = "";
+      categories.forEach((c, i) => {
+        const el = document.createElement("div");
+        el.className = "cat-item";
+        el.innerHTML = `<span><code>${escapeHtml(c.id)}</code> · ${c.emoji || ""} ${escapeHtml(c.label)} · r${c.row} · ${escapeHtml(c.style || "Secondary")}</span>`;
+        const rm = document.createElement("button");
+        rm.className = "btn-ui danger";
+        rm.type = "button";
+        rm.textContent = "×";
+        rm.style.padding = "0.12rem 0.4rem";
+        rm.style.marginTop = "0";
+        rm.onclick = () => {
+          categories.splice(i, 1);
+          renderList();
+          renderAll();
+        };
+        el.appendChild(rm);
+        catList.appendChild(el);
+      });
+    }
+
+    function renderPreview() {
+      const title = pTitle.value || "Panel";
+      const intro = pDesc.value || "";
+      const descHtml = formatDescHtml(intro);
+
+      const rowsHtml = categories
+        .map((c) => {
+          const head = c.prompt ? escapeHtml(c.prompt) : escapeHtml(c.label);
+          const sub = c.hint ? `<span class="sub">${formatDescHtml(c.hint)}</span>` : "";
+          const cls = styleClass(c.style || "Primary");
+          const em = c.emoji ? `<span>${c.emoji}</span>` : "";
+          return `
+            <div class="panel-row">
+              <div class="txt">
+                <span class="head">${head}</span>
+                ${sub}
+              </div>
+              <span class="d-btn ${cls}">${em}<span>${escapeHtml(c.label)}</span></span>
+            </div>`;
+        })
+        .join("");
+
+      preview.innerHTML = `
+        <div class="embed">
+          <div class="title">${escapeHtml(title)}</div>
+          <div class="desc">${descHtml}</div>
+        </div>
+        <div class="panel-rows">${rowsHtml}</div>
+      `;
+    }
+
+    function buildCommands() {
+      const pf = "+";
+      preConfig.textContent = [
+        `${pf}config salon-panel #salon-du-panel`,
+        `${pf}config ticket-categorie ID_DE_LA_CATEGORIE_PARENT`,
+        `${pf}config staff-role add @RôleStaff`,
+        "",
+        "# IDs : mode développeur Discord → clic droit sur la catégorie → Copier l’identifiant",
+      ].join("\n");
+
+      const t = pipeSafe(pTitle.value || "");
+      const d = pipeSafe(pDesc.value || "").replace(/\*\*/g, "");
+      prePanel.textContent = [`${pf}ticket panel-titre ${t}`, `${pf}ticket panel-desc ${d}`].join("\n");
+
+      const addLines = categories.map((c) => {
+        const id = pipeSafe(c.id);
+        const label = pipeSafe(c.label);
+        const emoji = pipeSafe(c.emoji || "");
+        const row = String(Math.min(4, Math.max(0, c.row | 0)));
+        const prompt = pipeSafe(c.prompt || c.label);
+        const hint = pipeSafe(c.hint || "");
+        return `${pf}ticket bouton add ${id}|${label}|${emoji}|${row}|${prompt}|${hint}`;
+      });
+      preAdd.textContent = addLines.join("\n");
+
+      const slashLines = categories.map((c) => {
+        const id = pipeSafe(c.id);
+        const label = pipeSafe(c.label);
+        const em = pipeSafe(c.emoji || "");
+        const row = Math.min(4, Math.max(0, c.row | 0));
+        const texte = pipeSafe(c.prompt || c.label);
+        const indice = pipeSafe(c.hint || "");
+        const st = c.style || "Primary";
+        let line = `/ticket bouton-ajouter id:${id} label:${label} rangee:${row} texte:${texte} indice:${indice} style:${st}`;
+        if (em) line += ` emoji:${em}`;
+        return line;
+      });
+      preSlash.textContent = slashLines.join("\n");
+    }
+
+    function renderAll() {
+      renderPreview();
+      buildCommands();
+    }
+
     document.getElementById("addCat").onclick = () => {
       const id = document.getElementById("cId").value.trim().toLowerCase().replace(/\s+/g, "-");
       const label = document.getElementById("cLabel").value.trim();
       if (!id || !label) return alert("id + label requis");
       const emoji = document.getElementById("cEmoji").value.trim();
+      const style = document.getElementById("cStyle").value;
       const row = Math.min(4, Math.max(0, parseInt(document.getElementById("cRow").value, 10) || 0));
       const prompt = document.getElementById("cPrompt").value.trim() || label;
       const hint = document.getElementById("cHint").value.trim();
-      categories.push({ id, label, emoji, row, prompt, hint, style: "Secondary" });
+      categories.push({ id, label, emoji, row, prompt, hint, style });
       renderList();
-      renderPreview();
+      renderAll();
     };
 
-    document.getElementById("resetCats").onclick = () => {
-      categories = [
-        { id: "question", label: "Questions", emoji: "💬", row: 0, prompt: "Une question rapide ?", hint: "Bouton Questions." },
-        { id: "nitro", label: "Nitro", emoji: "💎", row: 0, prompt: "Commande Nitro ?", hint: "Ticket Nitro." },
-        { id: "paypal", label: "PayPal", emoji: "💳", row: 1, prompt: "Paiement PayPal ?", hint: "Envoie ta preuve ici." },
-        { id: "crypto", label: "Crypto", emoji: "🪙", row: 1, prompt: "LTC / ETH / SOL ?", hint: "Indique la devise." },
-      ];
+    document.getElementById("resetDemo").onclick = () => {
+      categories = DEMO8.map((c) => ({ ...c }));
+      pTitle.value = "🌊 Centre support";
+      pDesc.value = "Bienvenue sur **SweetyShop**. Choisis l’option qui correspond à ton besoin.";
       renderList();
-      renderPreview();
+      renderAll();
     };
 
-    [pTitle, pDesc].forEach((el) => el.addEventListener("input", renderPreview));
+    document.querySelectorAll("[data-copy]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-copy");
+        const el = document.getElementById(id);
+        const t = el?.textContent || "";
+        try {
+          await navigator.clipboard.writeText(t);
+          const c = document.getElementById("copied");
+          c.style.display = "inline";
+          setTimeout(() => { c.style.display = "none"; }, 1600);
+        } catch {
+          alert("Impossible de copier automatiquement.");
+        }
+      });
+    });
+
+    [pTitle, pDesc].forEach((el) => el.addEventListener("input", renderAll));
 
     renderList();
-    renderPreview();
+    renderAll();
   </script>
 </body>
 </html>
