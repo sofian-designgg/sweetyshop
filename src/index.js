@@ -5,11 +5,32 @@ const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { connectMongo } = require('./util/db');
 const { loadCommands } = require('./loader');
 
-const token = process.env.DISCORD_TOKEN;
-const mongo = process.env.MONGO_URL;
+function firstEnv(...keys) {
+  for (const k of keys) {
+    const v = process.env[k];
+    if (v != null && String(v).trim() !== '') return String(v).trim();
+  }
+  return '';
+}
+
+/** Token bot (même nom sur Railway que en local si tu l’ajoutes à la main) */
+const token = firstEnv('DISCORD_TOKEN', 'BOT_TOKEN', 'DISCORD_BOT_TOKEN');
+/** Mongo : Railway plugin Mongo met souvent DATABASE_URL ; toi tu peux forcer MONGO_URL */
+const mongo = firstEnv('MONGO_URL', 'DATABASE_URL', 'MONGODB_URI', 'MONGO_URI');
 
 if (!token || !mongo) {
-  console.error('Variables manquantes : DISCORD_TOKEN, MONGO_URL');
+  console.error('[SweetyShop] Variables d’environnement manquantes sur ce service Railway :');
+  if (!token) {
+    console.error('  • Token Discord : définis DISCORD_TOKEN (le secret du bot, portail développeur).');
+  }
+  if (!mongo) {
+    console.error(
+      '  • MongoDB : définis MONGO_URL ou branche le plugin Mongo et utilise sa variable (souvent DATABASE_URL).'
+    );
+    console.error(
+      '    Vérifie que les variables sont sur le MÊME service que celui qui exécute "npm start", pas seulement sur la base.'
+    );
+  }
   process.exit(1);
 }
 
