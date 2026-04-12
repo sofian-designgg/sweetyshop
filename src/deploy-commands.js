@@ -3,12 +3,22 @@ const { REST, Routes } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-const token = process.env.DISCORD_TOKEN;
-const clientId = process.env.CLIENT_ID;
+function firstEnv(...keys) {
+  for (const k of keys) {
+    const v = process.env[k];
+    if (v != null && String(v).trim() !== '') return String(v).trim();
+  }
+  return '';
+}
+
+const token = firstEnv('DISCORD_TOKEN', 'BOT_TOKEN', 'DISCORD_BOT_TOKEN');
+const clientId = firstEnv('CLIENT_ID', 'DISCORD_CLIENT_ID', 'APPLICATION_ID');
 const guildId = process.env.GUILD_ID;
 
 if (!token || !clientId) {
-  console.error('DISCORD_TOKEN et CLIENT_ID requis dans .env');
+  console.error(
+    'Pour publier les / : définis le token (DISCORD_TOKEN ou BOT_TOKEN) et CLIENT_ID (ID de l’application Discord).'
+  );
   process.exit(1);
 }
 
