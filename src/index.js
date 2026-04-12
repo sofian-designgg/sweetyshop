@@ -59,6 +59,12 @@ for (const file of fs.readdirSync(eventsPath).filter((f) => f.endsWith('.js'))) 
 
 (async () => {
   await connectMongo(mongo);
+  try {
+    const { registerSlashCommands } = require('./registerSlashCommands');
+    await registerSlashCommands();
+  } catch (e) {
+    console.error('[SweetyShop] Enregistrement des commandes / :', e.message || e);
+  }
   await client.login(token);
 })().catch((e) => {
   console.error(e);
