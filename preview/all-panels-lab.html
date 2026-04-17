@@ -176,6 +176,7 @@
       <button class="tab" onclick="switchTab('exchanger')">🔄 Exchanger</button>
       <button class="tab" onclick="switchTab('payments')">💳 Paiements</button>
       <button class="tab" onclick="switchTab('products')">📦 Produits</button>
+      <button class="tab" onclick="switchTab('custom')">🛠️ Custom JSON</button>
     </div>
   </header>
 
@@ -282,6 +283,26 @@
         </div>
       </div>
 
+      <!-- Section Custom JSON -->
+      <div id="side-custom" class="hidden">
+        <h2>Embed Personnalisé (100%)</h2>
+        <p>Créez n'importe quel embed et envoyez-le avec la commande /json.</p>
+        <label>Titre</label>
+        <input type="text" id="c-title" value="Mon Message" oninput="updateCustom()">
+        <label>Description</label>
+        <textarea id="c-desc" oninput="updateCustom()">Contenu de mon message personnalisé.</textarea>
+        <label>Couleur (#Hex)</label>
+        <input type="text" id="c-color-hex" value="#5865f2" oninput="updateCustom()">
+        <label>Image URL</label>
+        <input type="text" id="c-image" placeholder="https://..." oninput="updateCustom()">
+        <label>Thumbnail URL</label>
+        <input type="text" id="c-thumb" placeholder="https://..." oninput="updateCustom()">
+        <label>Texte Footer</label>
+        <input type="text" id="c-footer" placeholder="Mon Footer" oninput="updateCustom()">
+        <label>Icon Footer URL</label>
+        <input type="text" id="c-footer-icon" placeholder="https://..." oninput="updateCustom()">
+      </div>
+
       <div class="cmd-section">
         <h2>Commande Bot</h2>
         <div class="cmd-box">
@@ -366,6 +387,24 @@
             </div>
           </div>
 
+          <!-- Aperçu Custom JSON -->
+          <div id="view-custom" class="hidden">
+            <div class="embed" id="c-embed">
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <div class="embed-title" id="vc-title">Mon Message</div>
+                  <div class="embed-desc" id="vc-desc">Contenu de mon message personnalisé.</div>
+                </div>
+                <img id="vc-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
+              </div>
+              <img id="vc-image" src="" class="embed-image" style="display: none;">
+              <div id="vc-footer-area" class="embed-footer" style="display: none;">
+                <img id="vc-footer-icon" src="" style="display: none;">
+                <span id="vc-footer-text"></span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -415,7 +454,14 @@
         p_image: document.getElementById('p-image').value,
         p_thumb: document.getElementById('p-thumb').value,
         p_footer: document.getElementById('p-footer').value,
-        p_footer_icon: document.getElementById('p-footer-icon').value
+        p_footer_icon: document.getElementById('p-footer-icon').value,
+        c_title: document.getElementById('c-title').value,
+        c_desc: document.getElementById('c-desc').value,
+        c_color: document.getElementById('c-color-hex').value,
+        c_image: document.getElementById('c-image').value,
+        c_thumb: document.getElementById('c-thumb').value,
+        c_footer: document.getElementById('c-footer').value,
+        c_footer_icon: document.getElementById('c-footer-icon').value
       };
       localStorage.setItem('panelConfigs', JSON.stringify(configs));
     }
@@ -447,6 +493,14 @@
         if(configs.p_thumb) document.getElementById('p-thumb').value = configs.p_thumb;
         if(configs.p_footer) document.getElementById('p-footer').value = configs.p_footer;
         if(configs.p_footer_icon) document.getElementById('p-footer-icon').value = configs.p_footer_icon;
+
+        if(configs.c_title) document.getElementById('c-title').value = configs.c_title;
+        if(configs.c_desc) document.getElementById('c-desc').value = configs.c_desc;
+        if(configs.c_color) document.getElementById('c-color-hex').value = configs.c_color;
+        if(configs.c_image) document.getElementById('c-image').value = configs.c_image;
+        if(configs.c_thumb) document.getElementById('c-thumb').value = configs.c_thumb;
+        if(configs.c_footer) document.getElementById('c-footer').value = configs.c_footer;
+        if(configs.c_footer_icon) document.getElementById('c-footer-icon').value = configs.c_footer_icon;
       }
     }
 
@@ -471,6 +525,7 @@
       if(tab === 'exchanger') updateExchanger();
       if(tab === 'payments') updatePayments();
       if(tab === 'products') updateProducts();
+      if(tab === 'custom') updateCustom();
     }
 
     function updateTickets() {
@@ -711,6 +766,53 @@
       // On n'a pas de commande directe pour supprimer un produit dans le bot actuel,
       // mais on peut le signaler.
       document.getElementById('cmd-output').innerText = `Produit ${name} retiré du lab.`;
+    }
+
+    function updateCustom() {
+      const title = document.getElementById('c-title').value;
+      const desc = document.getElementById('c-desc').value;
+      const colorHex = document.getElementById('c-color-hex').value;
+      const image = document.getElementById('c-image').value;
+      const thumb = document.getElementById('c-thumb').value;
+      const footer = document.getElementById('c-footer').value;
+      const footerIcon = document.getElementById('c-footer-icon').value;
+
+      saveData();
+      document.getElementById('vc-title').innerText = title;
+      document.getElementById('vc-desc').innerText = desc;
+      document.getElementById('c-embed').style.borderLeftColor = colorHex;
+
+      // Thumb
+      const vThumb = document.getElementById('vc-thumb');
+      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
+      else vThumb.style.display = 'none';
+
+      // Image
+      const vImg = document.getElementById('vc-image');
+      if(image) { vImg.src = image; vImg.style.display = 'block'; }
+      else vImg.style.display = 'none';
+
+      // Footer
+      const vFoot = document.getElementById('vc-footer-area');
+      const vFootText = document.getElementById('vc-footer-text');
+      const vFootIcon = document.getElementById('vc-footer-icon');
+      if(footer || footerIcon) {
+        vFoot.style.display = 'flex';
+        vFootText.innerText = footer || '';
+        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
+        else vFootIcon.style.display = 'none';
+      } else vFoot.style.display = 'none';
+
+      const json = {
+        title: title,
+        description: desc,
+        color: parseInt(colorHex.replace('#', ''), 16),
+        image: image || undefined,
+        thumbnail: thumb || undefined,
+        footer: footer || undefined,
+        footerIcon: footerIcon || undefined
+      };
+      document.getElementById('cmd-output').innerText = `/json data:${JSON.stringify(json)}`;
     }
 
     function copyCmd() {
