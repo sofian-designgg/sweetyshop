@@ -312,17 +312,52 @@
 
   <script>
     let currentTab = 'tickets';
-    let ticketButtons = [
+    
+    // Chargement des données depuis le localStorage ou valeurs par défaut
+    let ticketButtons = JSON.parse(localStorage.getItem('ticketButtons')) || [
       { id: 'nitro', label: 'Nitro', emoji: '💎', style: 'p' },
       { id: 'support', label: 'Support', emoji: '🛠️', style: 's' }
     ];
-    let exchangePairs = [
+    let exchangePairs = JSON.parse(localStorage.getItem('exchangePairs')) || [
       { pair: 'paypal-ltc', rate: 0.95 }
     ];
-    let products = [
+    let products = JSON.parse(localStorage.getItem('products')) || [
       { name: 'nitro-boost', price: 4.99 },
       { name: 'nitro-classic', price: 2.99 }
     ];
+
+    // Sauvegarde automatique
+    function saveData() {
+      localStorage.setItem('ticketButtons', JSON.stringify(ticketButtons));
+      localStorage.setItem('exchangePairs', JSON.stringify(exchangePairs));
+      localStorage.setItem('products', JSON.stringify(products));
+      
+      // Sauvegarde des champs texte
+      const configs = {
+        t_title: document.getElementById('t-title').value,
+        t_desc: document.getElementById('t-desc').value,
+        t_color: document.getElementById('t-color').value,
+        e_title: document.getElementById('e-title').value,
+        e_desc: document.getElementById('e-desc').value,
+        p_title: document.getElementById('p-title').value,
+        p_desc: document.getElementById('p-desc').value
+      };
+      localStorage.setItem('panelConfigs', JSON.stringify(configs));
+    }
+
+    // Chargement des textes au démarrage
+    function loadConfigs() {
+      const configs = JSON.parse(localStorage.getItem('panelConfigs'));
+      if (configs) {
+        if(configs.t_title) document.getElementById('t-title').value = configs.t_title;
+        if(configs.t_desc) document.getElementById('t-desc').value = configs.t_desc;
+        if(configs.t_color) document.getElementById('t-color').value = configs.t_color;
+        if(configs.e_title) document.getElementById('e-title').value = configs.e_title;
+        if(configs.e_desc) document.getElementById('e-desc').value = configs.e_desc;
+        if(configs.p_title) document.getElementById('p-title').value = configs.p_title;
+        if(configs.p_desc) document.getElementById('p-desc').value = configs.p_desc;
+      }
+    }
 
     function switchTab(tab) {
       currentTab = tab;
@@ -352,6 +387,7 @@
       const desc = document.getElementById('t-desc').value;
       const color = document.getElementById('t-color').value;
       
+      saveData();
       document.getElementById('vt-title').innerText = title;
       document.getElementById('vt-desc').innerText = desc;
       document.getElementById('t-embed').style.borderLeftColor = color;
@@ -377,6 +413,7 @@
 
     function deleteButton(id) {
       ticketButtons = ticketButtons.filter(b => b.id !== id);
+      saveData();
       updateTickets();
       document.getElementById('cmd-output').innerText = `/ticket bouton-supprimer id:${id}`;
     }
@@ -388,6 +425,7 @@
       const style = document.getElementById('b-style').value;
       if(!id || !label) return alert('ID et Label requis');
       ticketButtons.push({ id, label, emoji, style });
+      saveData();
       updateTickets();
       
       // Update command output to show how to add via bot
@@ -398,6 +436,8 @@
     function updateExchanger() {
       const title = document.getElementById('e-title').value;
       const desc = document.getElementById('e-desc').value;
+      
+      saveData();
       document.getElementById('ve-title').innerText = title;
       document.getElementById('ve-desc').innerText = desc;
 
@@ -416,6 +456,7 @@
 
     function deletePair(pair) {
       exchangePairs = exchangePairs.filter(p => p.pair !== pair);
+      saveData();
       updateExchanger();
       document.getElementById('cmd-output').innerText = `/exchanger supprimer-taux paire:${pair}`;
     }
@@ -425,6 +466,7 @@
       const rate = document.getElementById('e-rate').value;
       if(!pair || !rate) return alert('Paire et Taux requis');
       exchangePairs.push({ pair, rate });
+      saveData();
       updateExchanger();
       document.getElementById('cmd-output').innerText = `/exchanger taux paire:${pair} taux:${rate}`;
     }
@@ -436,6 +478,7 @@
       const prod = document.getElementById('p-prod').value;
       const price = document.getElementById('p-price').value;
 
+      saveData();
       document.getElementById('vp-title').innerText = title + (prod ? ` - ${prod.toUpperCase()}` : '');
       document.getElementById('vp-desc').innerText = desc;
 
@@ -451,9 +494,9 @@
       const json = {
         title: title,
         description: desc,
-        color: type === 'paypal' ? 0x0070ba : 0xff9900
+        color: type === 'paypal' ? 28858 : 16750848
       };
-      document.getElementById('cmd-output').innerText = `/paiement definir type:${type} json:'${JSON.stringify(json)}'`;
+      document.getElementById('cmd-output').innerText = `/paiement definir type:${type} json:${JSON.stringify(json)}`;
     }
 
     function updateProducts() {
@@ -482,12 +525,14 @@
       if(index > -1) products[index].price = price;
       else products.push({ name, price });
       
+      saveData();
       updateProducts();
       document.getElementById('cmd-output').innerText = `/setproduit nom:${name} prix:${price}`;
     }
 
     function deleteProduct(name) {
       products = products.filter(p => p.name !== name);
+      saveData();
       updateProducts();
       // On n'a pas de commande directe pour supprimer un produit dans le bot actuel,
       // mais on peut le signaler.
@@ -501,6 +546,7 @@
     }
 
     // Init
+    loadConfigs();
     updateTickets();
   </script>
 </body>
