@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SweetyShop — Laboratoire de Panels</title>
+  <style>
+    :root {
+      --bg: #313338;
+      --side: #2b2d31;
+      --embed: #2f3136;
+      --text: #dbdee1;
+      --muted: #949ba4;
+      --btn-sec: #4e5058;
+      --blurple: #5865f2;
+      --panel-bg: #232136;
+      --row-border: rgba(0, 0, 0, 0.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "gg sans", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background: var(--side);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #1e1f22;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tabs {
+      display: flex;
+      gap: 1rem;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: var(--blurple);
+      color: #fff;
+    }
+    .container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      overflow: hidden;
+    }
+    .sidebar {
+      background: var(--side);
+      padding: 1.5rem;
+      border-right: 1px solid #1e1f22;
+      overflow-y: auto;
+    }
+    .preview-area {
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { font-size: 1.2rem; color: #fff; margin: 0; }
+    h2 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; margin: 1.5rem 0 0.5rem; letter-spacing: 0.05em; }
+    
+    input, textarea, select {
+      width: 100%;
+      background: #1e1f22;
+      border: 1px solid #3f4147;
+      border-radius: 4px;
+      color: #b5bac1;
+      padding: 0.6rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.8rem;
+    }
+    
+    .discord-msg { max-width: 520px; width: 100%; display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: #5865f2; flex-shrink: 0; }
+    .bubble { flex: 1; }
+    .author { font-size: 0.95rem; margin-bottom: 0.3rem; color: #fff; font-weight: 500; }
+    .bot-tag { background: var(--blurple); font-size: 0.65rem; padding: 0.1rem 0.3rem; border-radius: 4px; margin-left: 0.4rem; vertical-align: middle; }
+    
+    .embed {
+      background: var(--embed);
+      border-left: 4px solid var(--blurple);
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .embed-title { font-weight: 600; color: #fff; margin-bottom: 0.5rem; }
+    .embed-desc { font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; }
+    
+    .panel-box {
+      background: var(--panel-bg);
+      border-radius: 8px;
+      border: 1px solid var(--row-border);
+      overflow: hidden;
+      width: 100%;
+    }
+    .panel-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--row-border);
+    }
+    .panel-item:last-child { border-bottom: none; }
+    .panel-txt .head { color: #fff; font-weight: 600; display: block; margin-bottom: 0.2rem; }
+    .panel-txt .sub { color: var(--muted); font-size: 0.8rem; }
+    
+    .d-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 3px;
+      border: none;
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .d-btn.p { background: var(--blurple); }
+    .d-btn.s { background: #4e5058; }
+    .d-btn.g { background: #248046; }
+    .d-btn.r { background: #da373c; }
+
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+    .cmd-box {
+      background: #111214;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+      position: relative;
+    }
+    .cmd-box pre { margin: 0; font-size: 0.8rem; color: #2ecc71; white-space: pre-wrap; word-break: break-all; }
+    .copy-btn { position: absolute; top: 5px; right: 5px; font-size: 0.7rem; background: #333; border: none; color: #ccc; cursor: pointer; border-radius: 3px; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SweetyShop Lab</h1>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('tickets')">🎫 Tickets</button>
+      <button class="tab" onclick="switchTab('exchanger')">🔄 Exchanger</button>
+      <button class="tab" onclick="switchTab('payments')">💳 Paiements</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="sidebar">
+      <!-- Section Tickets -->
+      <div id="side-tickets">
+        <h2>Configuration Panel</h2>
+        <label>Titre</label>
+        <input type="text" id="t-title" value="Support & Commandes" oninput="updateTickets()">
+        <label>Description</label>
+        <textarea id="t-desc" oninput="updateTickets()">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</textarea>
+        <label>Couleur (#Hex)</label>
+        <input type="text" id="t-color" value="#5865f2" oninput="updateTickets()">
+        
+        <h2>Ajouter un bouton</h2>
+        <input type="text" id="b-id" placeholder="ID (ex: nitro)">
+        <input type="text" id="b-label" placeholder="Label (ex: Commander Nitro)">
+        <input type="text" id="b-emoji" placeholder="Emoji (ex: 💎)">
+        <select id="b-style">
+          <option value="p">Primary (Blurple)</option>
+          <option value="s">Secondary (Gris)</option>
+          <option value="g">Success (Vert)</option>
+          <option value="r">Danger (Rouge)</option>
+        </select>
+        <button class="d-btn p" style="width: 100%" onclick="addButton()">Ajouter le bouton</button>
+      </div>
+
+      <!-- Section Exchanger -->
+      <div id="side-exchanger" class="hidden">
+        <h2>Config Exchanger</h2>
+        <label>Titre</label>
+        <input type="text" id="e-title" value="Exchanger Service" oninput="updateExchanger()">
+        <label>Description</label>
+        <textarea id="e-desc" oninput="updateExchanger()">Sélectionnez la paire d'échange souhaitée.</textarea>
+        
+        <h2>Ajouter une paire</h2>
+        <input type="text" id="e-pair" placeholder="Paire (ex: paypal-ltc)">
+        <input type="number" id="e-rate" placeholder="Taux (ex: 0.95)" step="0.01">
+        <button class="d-btn p" style="width: 100%" onclick="addPair()">Ajouter la paire</button>
+      </div>
+
+      <!-- Section Paiements -->
+      <div id="side-payments" class="hidden">
+        <h2>Config Paiement</h2>
+        <label>Type</label>
+        <select id="p-type" onchange="updatePayments()">
+          <option value="paypal">PayPal</option>
+          <option value="litecoin">Litecoin</option>
+          <option value="ethereum">Ethereum</option>
+          <option value="solana">Solana</option>
+        </select>
+        <label>Titre</label>
+        <input type="text" id="p-title" value="Paiement PayPal" oninput="updatePayments()">
+        <label>Description</label>
+        <textarea id="p-desc" oninput="updatePayments()">Envoyez le paiement à l'adresse ci-dessous.</textarea>
+        <label>Produit (Simulation)</label>
+        <input type="text" id="p-prod" placeholder="Ex: Nitro" oninput="updatePayments()">
+        <label>Prix (Simulation)</label>
+        <input type="number" id="p-price" placeholder="Ex: 5.50" oninput="updatePayments()">
+      </div>
+
+      <div class="cmd-section">
+        <h2>Commande Bot</h2>
+        <div class="cmd-box">
+          <button class="copy-btn" onclick="copyCmd()">Copier</button>
+          <pre id="cmd-output">/ticket panel-envoyer</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <div class="discord-msg">
+        <div class="avatar"></div>
+        <div class="bubble">
+          <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
+          
+          <!-- Aperçu Tickets -->
+          <div id="view-tickets">
+            <div class="embed" id="t-embed">
+              <div class="embed-title" id="vt-title">Support & Commandes</div>
+              <div class="embed-desc" id="vt-desc">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</div>
+            </div>
+            <div class="panel-box" id="t-rows">
+              <!-- Boutons générés ici -->
+            </div>
+          </div>
+
+          <!-- Aperçu Exchanger -->
+          <div id="view-exchanger" class="hidden">
+            <div class="embed" id="e-embed" style="border-left-color: #2ecc71;">
+              <div class="embed-title" id="ve-title">Exchanger Service</div>
+              <div class="embed-desc" id="ve-desc">Sélectionnez la paire d'échange souhaitée.</div>
+            </div>
+            <div class="btn-group" id="e-btns">
+              <!-- Boutons d'échange ici -->
+            </div>
+          </div>
+
+          <!-- Aperçu Paiements -->
+          <div id="view-payments" class="hidden">
+            <div class="embed" id="p-embed">
+              <div class="embed-title" id="vp-title">Paiement PayPal</div>
+              <div class="embed-desc" id="vp-desc">Envoyez le paiement à l'adresse ci-dessous.</div>
+              <div id="vp-fields"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'tickets';
+    let ticketButtons = [
+      { id: 'nitro', label: 'Nitro', emoji: '💎', style: 'p' },
+      { id: 'support', label: 'Support', emoji: '🛠️', style: 's' }
+    ];
+    let exchangePairs = [
+      { pair: 'paypal-ltc', rate: 0.95 }
+    ];
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.getElementById('side-tickets').classList.add('hidden');
+      document.getElementById('side-exchanger').classList.add('hidden');
+      document.getElementById('side-payments').classList.add('hidden');
+      document.getElementById('view-tickets').classList.add('hidden');
+      document.getElementById('view-exchanger').classList.add('hidden');
+      document.getElementById('view-payments').classList.add('hidden');
+
+      document.getElementById('side-' + tab).classList.remove('hidden');
+      document.getElementById('view-' + tab).classList.remove('hidden');
+      
+      if(tab === 'tickets') updateTickets();
+      if(tab === 'exchanger') updateExchanger();
+      if(tab === 'payments') updatePayments();
+    }
+
+    function updateTickets() {
+      const title = document.getElementById('t-title').value;
+      const desc = document.getElementById('t-desc').value;
+      const color = document.getElementById('t-color').value;
+      
+      document.getElementById('vt-title').innerText = title;
+      document.getElementById('vt-desc').innerText = desc;
+      document.getElementById('t-embed').style.borderLeftColor = color;
+
+      const rows = document.getElementById('t-rows');
+      rows.innerHTML = '';
+      ticketButtons.forEach(b => {
+        rows.innerHTML += `
+          <div class="panel-item">
+            <div class="panel-txt">
+              <span class="head">${b.label}</span>
+              <span class="sub">Ouvrir un ticket ${b.id}</span>
+            </div>
+            <button class="d-btn ${b.style}">${b.emoji} ${b.label}</button>
+          </div>
+        `;
+      });
+      document.getElementById('cmd-output').innerText = `/ticket panel-envoyer`;
+    }
+
+    function addButton() {
+      const id = document.getElementById('b-id').value;
+      const label = document.getElementById('b-label').value;
+      const emoji = document.getElementById('b-emoji').value;
+      const style = document.getElementById('b-style').value;
+      if(!id || !label) return alert('ID et Label requis');
+      ticketButtons.push({ id, label, emoji, style });
+      updateTickets();
+      
+      // Update command output to show how to add via bot
+      const styleMap = { p: 'Primary', s: 'Secondary', g: 'Success', r: 'Danger' };
+      document.getElementById('cmd-output').innerText = `/ticket bouton-ajouter id:${id} label:"${label}" emoji:${emoji} style:${styleMap[style]}`;
+    }
+
+    function updateExchanger() {
+      const title = document.getElementById('e-title').value;
+      const desc = document.getElementById('e-desc').value;
+      document.getElementById('ve-title').innerText = title;
+      document.getElementById('ve-desc').innerText = desc;
+
+      const btns = document.getElementById('e-btns');
+      btns.innerHTML = '';
+      exchangePairs.forEach(p => {
+        btns.innerHTML += `<button class="d-btn p">${p.pair.toUpperCase()}</button>`;
+      });
+      document.getElementById('cmd-output').innerText = `/exchanger panel-envoyer`;
+    }
+
+    function addPair() {
+      const pair = document.getElementById('e-pair').value;
+      const rate = document.getElementById('e-rate').value;
+      if(!pair || !rate) return alert('Paire et Taux requis');
+      exchangePairs.push({ pair, rate });
+      updateExchanger();
+      document.getElementById('cmd-output').innerText = `/exchanger taux paire:${pair} taux:${rate}`;
+    }
+
+    function updatePayments() {
+      const type = document.getElementById('p-type').value;
+      const title = document.getElementById('p-title').value;
+      const desc = document.getElementById('p-desc').value;
+      const prod = document.getElementById('p-prod').value;
+      const price = document.getElementById('p-price').value;
+
+      document.getElementById('vp-title').innerText = title + (prod ? ` - ${prod.toUpperCase()}` : '');
+      document.getElementById('vp-desc').innerText = desc;
+
+      const fields = document.getElementById('vp-fields');
+      fields.innerHTML = '';
+      if(prod) {
+        fields.innerHTML += `<div style="margin-top:0.5rem"><strong>Produit:</strong> ${prod.toUpperCase()}</div>`;
+      }
+      if(price) {
+        fields.innerHTML += `<div><strong>Prix:</strong> ${price}€</div>`;
+      }
+
+      const json = {
+        title: title,
+        description: desc,
+        color: type === 'paypal' ? 0x0070ba : 0xff9900
+      };
+      document.getElementById('cmd-output').innerText = `/paiement definir type:${type} json:'${JSON.stringify(json)}'`;
+    }
+
+    function copyCmd() {
+      const text = document.getElementById('cmd-output').innerText;
+      navigator.clipboard.writeText(text);
+      alert('Commande copiée !');
+    }
+
+    // Init
+    updateTickets();
+  </script>
+</body>
+</html>
