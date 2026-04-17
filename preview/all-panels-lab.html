@@ -100,6 +100,9 @@
     }
     .embed-title { font-weight: 600; color: #fff; margin-bottom: 0.5rem; }
     .embed-desc { font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; }
+    .embed-image { width: 100%; border-radius: 4px; margin-top: 0.5rem; max-height: 300px; object-fit: cover; }
+    .embed-footer { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .embed-footer img { width: 20px; height: 20px; border-radius: 50%; }
     
     .panel-box {
       background: var(--panel-bg);
@@ -187,6 +190,14 @@
         <textarea id="t-desc" oninput="updateTickets()">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</textarea>
         <label>Couleur (#Hex)</label>
         <input type="text" id="t-color" value="#5865f2" oninput="updateTickets()">
+        <label>Image URL</label>
+        <input type="text" id="t-image" placeholder="https://..." oninput="updateTickets()">
+        <label>Thumbnail URL</label>
+        <input type="text" id="t-thumb" placeholder="https://..." oninput="updateTickets()">
+        <label>Texte Footer</label>
+        <input type="text" id="t-footer" placeholder="Mon Footer" oninput="updateTickets()">
+        <label>Icon Footer URL</label>
+        <input type="text" id="t-footer-icon" placeholder="https://..." oninput="updateTickets()">
         
         <h2>Ajouter un bouton</h2>
         <input type="text" id="b-id" placeholder="ID (ex: nitro)">
@@ -208,6 +219,16 @@
         <input type="text" id="e-title" value="Exchanger Service" oninput="updateExchanger()">
         <label>Description</label>
         <textarea id="e-desc" oninput="updateExchanger()">Sélectionnez la paire d'échange souhaitée.</textarea>
+        <label>Couleur (#Hex)</label>
+        <input type="text" id="e-color" value="#2ecc71" oninput="updateExchanger()">
+        <label>Image URL</label>
+        <input type="text" id="e-image" placeholder="https://..." oninput="updateExchanger()">
+        <label>Thumbnail URL</label>
+        <input type="text" id="e-thumb" placeholder="https://..." oninput="updateExchanger()">
+        <label>Texte Footer</label>
+        <input type="text" id="e-footer" placeholder="Mon Footer" oninput="updateExchanger()">
+        <label>Icon Footer URL</label>
+        <input type="text" id="e-footer-icon" placeholder="https://..." oninput="updateExchanger()">
         
         <h2>Ajouter une paire</h2>
         <input type="text" id="e-pair" placeholder="Paire (ex: paypal-ltc)">
@@ -229,6 +250,16 @@
         <input type="text" id="p-title" value="Paiement PayPal" oninput="updatePayments()">
         <label>Description</label>
         <textarea id="p-desc" oninput="updatePayments()">Envoyez le paiement à l'adresse ci-dessous.</textarea>
+        <label>Couleur (#Hex)</label>
+        <input type="text" id="p-color-hex" value="#0070ba" oninput="updatePayments()">
+        <label>Image URL</label>
+        <input type="text" id="p-image" placeholder="https://..." oninput="updatePayments()">
+        <label>Thumbnail URL</label>
+        <input type="text" id="p-thumb" placeholder="https://..." oninput="updatePayments()">
+        <label>Texte Footer</label>
+        <input type="text" id="p-footer" placeholder="Mon Footer" oninput="updatePayments()">
+        <label>Icon Footer URL</label>
+        <input type="text" id="p-footer-icon" placeholder="https://..." oninput="updatePayments()">
         <label>Produit (Simulation)</label>
         <input type="text" id="p-prod" placeholder="Ex: Nitro" oninput="updatePayments()">
         <label>Prix (Simulation)</label>
@@ -269,8 +300,18 @@
           <!-- Aperçu Tickets -->
           <div id="view-tickets">
             <div class="embed" id="t-embed">
-              <div class="embed-title" id="vt-title">Support & Commandes</div>
-              <div class="embed-desc" id="vt-desc">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</div>
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <div class="embed-title" id="vt-title">Support & Commandes</div>
+                  <div class="embed-desc" id="vt-desc">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</div>
+                </div>
+                <img id="vt-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
+              </div>
+              <img id="vt-image" src="" class="embed-image" style="display: none;">
+              <div id="vt-footer-area" class="embed-footer" style="display: none;">
+                <img id="vt-footer-icon" src="" style="display: none;">
+                <span id="vt-footer-text"></span>
+              </div>
             </div>
             <div class="panel-box" id="t-rows">
               <!-- Boutons générés ici -->
@@ -280,8 +321,18 @@
           <!-- Aperçu Exchanger -->
           <div id="view-exchanger" class="hidden">
             <div class="embed" id="e-embed" style="border-left-color: #2ecc71;">
-              <div class="embed-title" id="ve-title">Exchanger Service</div>
-              <div class="embed-desc" id="ve-desc">Sélectionnez la paire d'échange souhaitée.</div>
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <div class="embed-title" id="ve-title">Exchanger Service</div>
+                  <div class="embed-desc" id="ve-desc">Sélectionnez la paire d'échange souhaitée.</div>
+                </div>
+                <img id="ve-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
+              </div>
+              <img id="ve-image" src="" class="embed-image" style="display: none;">
+              <div id="ve-footer-area" class="embed-footer" style="display: none;">
+                <img id="ve-footer-icon" src="" style="display: none;">
+                <span id="ve-footer-text"></span>
+              </div>
             </div>
             <div class="btn-group" id="e-btns">
               <!-- Boutons d'échange ici -->
@@ -291,9 +342,19 @@
           <!-- Aperçu Paiements -->
           <div id="view-payments" class="hidden">
             <div class="embed" id="p-embed">
-              <div class="embed-title" id="vp-title">Paiement PayPal</div>
-              <div class="embed-desc" id="vp-desc">Envoyez le paiement à l'adresse ci-dessous.</div>
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <div class="embed-title" id="vp-title">Paiement PayPal</div>
+                  <div class="embed-desc" id="vp-desc">Envoyez le paiement à l'adresse ci-dessous.</div>
+                </div>
+                <img id="vp-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
+              </div>
               <div id="vp-fields"></div>
+              <img id="vp-image" src="" class="embed-image" style="display: none;">
+              <div id="vp-footer-area" class="embed-footer" style="display: none;">
+                <img id="vp-footer-icon" src="" style="display: none;">
+                <span id="vp-footer-text"></span>
+              </div>
             </div>
           </div>
 
@@ -337,10 +398,24 @@
         t_title: document.getElementById('t-title').value,
         t_desc: document.getElementById('t-desc').value,
         t_color: document.getElementById('t-color').value,
+        t_image: document.getElementById('t-image').value,
+        t_thumb: document.getElementById('t-thumb').value,
+        t_footer: document.getElementById('t-footer').value,
+        t_footer_icon: document.getElementById('t-footer-icon').value,
         e_title: document.getElementById('e-title').value,
         e_desc: document.getElementById('e-desc').value,
+        e_color: document.getElementById('e-color').value,
+        e_image: document.getElementById('e-image').value,
+        e_thumb: document.getElementById('e-thumb').value,
+        e_footer: document.getElementById('e-footer').value,
+        e_footer_icon: document.getElementById('e-footer-icon').value,
         p_title: document.getElementById('p-title').value,
-        p_desc: document.getElementById('p-desc').value
+        p_desc: document.getElementById('p-desc').value,
+        p_color: document.getElementById('p-color-hex').value,
+        p_image: document.getElementById('p-image').value,
+        p_thumb: document.getElementById('p-thumb').value,
+        p_footer: document.getElementById('p-footer').value,
+        p_footer_icon: document.getElementById('p-footer-icon').value
       };
       localStorage.setItem('panelConfigs', JSON.stringify(configs));
     }
@@ -352,10 +427,26 @@
         if(configs.t_title) document.getElementById('t-title').value = configs.t_title;
         if(configs.t_desc) document.getElementById('t-desc').value = configs.t_desc;
         if(configs.t_color) document.getElementById('t-color').value = configs.t_color;
+        if(configs.t_image) document.getElementById('t-image').value = configs.t_image;
+        if(configs.t_thumb) document.getElementById('t-thumb').value = configs.t_thumb;
+        if(configs.t_footer) document.getElementById('t-footer').value = configs.t_footer;
+        if(configs.t_footer_icon) document.getElementById('t-footer-icon').value = configs.t_footer_icon;
+        
         if(configs.e_title) document.getElementById('e-title').value = configs.e_title;
         if(configs.e_desc) document.getElementById('e-desc').value = configs.e_desc;
+        if(configs.e_color) document.getElementById('e-color').value = configs.e_color;
+        if(configs.e_image) document.getElementById('e-image').value = configs.e_image;
+        if(configs.e_thumb) document.getElementById('e-thumb').value = configs.e_thumb;
+        if(configs.e_footer) document.getElementById('e-footer').value = configs.e_footer;
+        if(configs.e_footer_icon) document.getElementById('e-footer-icon').value = configs.e_footer_icon;
+        
         if(configs.p_title) document.getElementById('p-title').value = configs.p_title;
         if(configs.p_desc) document.getElementById('p-desc').value = configs.p_desc;
+        if(configs.p_color) document.getElementById('p-color-hex').value = configs.p_color;
+        if(configs.p_image) document.getElementById('p-image').value = configs.p_image;
+        if(configs.p_thumb) document.getElementById('p-thumb').value = configs.p_thumb;
+        if(configs.p_footer) document.getElementById('p-footer').value = configs.p_footer;
+        if(configs.p_footer_icon) document.getElementById('p-footer-icon').value = configs.p_footer_icon;
       }
     }
 
@@ -386,11 +477,36 @@
       const title = document.getElementById('t-title').value;
       const desc = document.getElementById('t-desc').value;
       const color = document.getElementById('t-color').value;
+      const image = document.getElementById('t-image').value;
+      const thumb = document.getElementById('t-thumb').value;
+      const footer = document.getElementById('t-footer').value;
+      const footerIcon = document.getElementById('t-footer-icon').value;
       
       saveData();
       document.getElementById('vt-title').innerText = title;
       document.getElementById('vt-desc').innerText = desc;
       document.getElementById('t-embed').style.borderLeftColor = color;
+
+      // Thumb
+      const vThumb = document.getElementById('vt-thumb');
+      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
+      else vThumb.style.display = 'none';
+
+      // Image
+      const vImg = document.getElementById('vt-image');
+      if(image) { vImg.src = image; vImg.style.display = 'block'; }
+      else vImg.style.display = 'none';
+
+      // Footer
+      const vFoot = document.getElementById('vt-footer-area');
+      const vFootText = document.getElementById('vt-footer-text');
+      const vFootIcon = document.getElementById('vt-footer-icon');
+      if(footer || footerIcon) {
+        vFoot.style.display = 'flex';
+        vFootText.innerText = footer || '';
+        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
+        else vFootIcon.style.display = 'none';
+      } else vFoot.style.display = 'none';
 
       const rows = document.getElementById('t-rows');
       rows.innerHTML = '';
@@ -436,10 +552,37 @@
     function updateExchanger() {
       const title = document.getElementById('e-title').value;
       const desc = document.getElementById('e-desc').value;
+      const color = document.getElementById('e-color').value;
+      const image = document.getElementById('e-image').value;
+      const thumb = document.getElementById('e-thumb').value;
+      const footer = document.getElementById('e-footer').value;
+      const footerIcon = document.getElementById('e-footer-icon').value;
       
       saveData();
       document.getElementById('ve-title').innerText = title;
       document.getElementById('ve-desc').innerText = desc;
+      document.getElementById('e-embed').style.borderLeftColor = color;
+
+      // Thumb
+      const vThumb = document.getElementById('ve-thumb');
+      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
+      else vThumb.style.display = 'none';
+
+      // Image
+      const vImg = document.getElementById('ve-image');
+      if(image) { vImg.src = image; vImg.style.display = 'block'; }
+      else vImg.style.display = 'none';
+
+      // Footer
+      const vFoot = document.getElementById('ve-footer-area');
+      const vFootText = document.getElementById('ve-footer-text');
+      const vFootIcon = document.getElementById('ve-footer-icon');
+      if(footer || footerIcon) {
+        vFoot.style.display = 'flex';
+        vFootText.innerText = footer || '';
+        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
+        else vFootIcon.style.display = 'none';
+      } else vFoot.style.display = 'none';
 
       const btns = document.getElementById('e-btns');
       btns.innerHTML = '';
@@ -475,12 +618,39 @@
       const type = document.getElementById('p-type').value;
       const title = document.getElementById('p-title').value;
       const desc = document.getElementById('p-desc').value;
+      const colorHex = document.getElementById('p-color-hex').value;
+      const image = document.getElementById('p-image').value;
+      const thumb = document.getElementById('p-thumb').value;
+      const footer = document.getElementById('p-footer').value;
+      const footerIcon = document.getElementById('p-footer-icon').value;
       const prod = document.getElementById('p-prod').value;
       const price = document.getElementById('p-price').value;
 
       saveData();
       document.getElementById('vp-title').innerText = title + (prod ? ` - ${prod.toUpperCase()}` : '');
       document.getElementById('vp-desc').innerText = desc;
+      document.getElementById('p-embed').style.borderLeftColor = colorHex;
+
+      // Thumb
+      const vThumb = document.getElementById('vp-thumb');
+      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
+      else vThumb.style.display = 'none';
+
+      // Image
+      const vImg = document.getElementById('vp-image');
+      if(image) { vImg.src = image; vImg.style.display = 'block'; }
+      else vImg.style.display = 'none';
+
+      // Footer
+      const vFoot = document.getElementById('vp-footer-area');
+      const vFootText = document.getElementById('vp-footer-text');
+      const vFootIcon = document.getElementById('vp-footer-icon');
+      if(footer || footerIcon) {
+        vFoot.style.display = 'flex';
+        vFootText.innerText = footer || '';
+        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
+        else vFootIcon.style.display = 'none';
+      } else vFoot.style.display = 'none';
 
       const fields = document.getElementById('vp-fields');
       fields.innerHTML = '';
@@ -494,7 +664,11 @@
       const json = {
         title: title,
         description: desc,
-        color: type === 'paypal' ? 28858 : 16750848
+        color: parseInt(colorHex.replace('#', ''), 16),
+        image: image || undefined,
+        thumbnail: thumb || undefined,
+        footer: footer || undefined,
+        footerIcon: footerIcon || undefined
       };
       document.getElementById('cmd-output').innerText = `/paiement definir type:${type} json:${JSON.stringify(json)}`;
     }
