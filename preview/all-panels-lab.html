@@ -172,6 +172,7 @@
       <button class="tab active" onclick="switchTab('tickets')">🎫 Tickets</button>
       <button class="tab" onclick="switchTab('exchanger')">🔄 Exchanger</button>
       <button class="tab" onclick="switchTab('payments')">💳 Paiements</button>
+      <button class="tab" onclick="switchTab('products')">📦 Produits</button>
     </div>
   </header>
 
@@ -234,6 +235,22 @@
         <input type="number" id="p-price" placeholder="Ex: 5.50" oninput="updatePayments()">
       </div>
 
+      <!-- Section Produits -->
+      <div id="side-products" class="hidden">
+        <h2>Gestion des Produits</h2>
+        <p>Enregistrez vos produits et leurs prix pour les commandes de paiement.</p>
+        <label>Nom du produit</label>
+        <input type="text" id="pr-name" placeholder="Ex: nitro-boost">
+        <label>Prix (€)</label>
+        <input type="number" id="pr-price" placeholder="Ex: 4.99" step="0.01">
+        <button class="d-btn p" style="width: 100%" onclick="addProduct()">Enregistrer le produit</button>
+
+        <h2 style="margin-top: 2rem;">Liste des Produits</h2>
+        <div id="pr-list" class="cat-list">
+          <!-- Liste des produits ici -->
+        </div>
+      </div>
+
       <div class="cmd-section">
         <h2>Commande Bot</h2>
         <div class="cmd-box">
@@ -280,6 +297,14 @@
             </div>
           </div>
 
+          <!-- Aperçu Produits (Vide car c'est une section de gestion) -->
+          <div id="view-products" class="hidden">
+            <div class="embed" style="border-left-color: #57f287;">
+              <div class="embed-title">📦 Gestion des Produits</div>
+              <div class="embed-desc">Configurez vos produits à gauche. Ces produits seront ensuite utilisables avec les commandes de paiement.</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -294,6 +319,10 @@
     let exchangePairs = [
       { pair: 'paypal-ltc', rate: 0.95 }
     ];
+    let products = [
+      { name: 'nitro-boost', price: 4.99 },
+      { name: 'nitro-classic', price: 2.99 }
+    ];
 
     function switchTab(tab) {
       currentTab = tab;
@@ -303,9 +332,11 @@
       document.getElementById('side-tickets').classList.add('hidden');
       document.getElementById('side-exchanger').classList.add('hidden');
       document.getElementById('side-payments').classList.add('hidden');
+      document.getElementById('side-products').classList.add('hidden');
       document.getElementById('view-tickets').classList.add('hidden');
       document.getElementById('view-exchanger').classList.add('hidden');
       document.getElementById('view-payments').classList.add('hidden');
+      document.getElementById('view-products').classList.add('hidden');
 
       document.getElementById('side-' + tab).classList.remove('hidden');
       document.getElementById('view-' + tab).classList.remove('hidden');
@@ -313,6 +344,7 @@
       if(tab === 'tickets') updateTickets();
       if(tab === 'exchanger') updateExchanger();
       if(tab === 'payments') updatePayments();
+      if(tab === 'products') updateProducts();
     }
 
     function updateTickets() {
@@ -422,6 +454,44 @@
         color: type === 'paypal' ? 0x0070ba : 0xff9900
       };
       document.getElementById('cmd-output').innerText = `/paiement definir type:${type} json:'${JSON.stringify(json)}'`;
+    }
+
+    function updateProducts() {
+      const list = document.getElementById('pr-list');
+      list.innerHTML = '';
+      products.forEach(p => {
+        list.innerHTML += `
+          <div class="panel-item">
+            <div class="panel-txt">
+              <span class="head">${p.name}</span>
+              <span class="sub">${p.price}€</span>
+            </div>
+            <button class="delete-btn" onclick="deleteProduct('${p.name}')">×</button>
+          </div>
+        `;
+      });
+      document.getElementById('cmd-output').innerText = `/setproduit nom:nom_du_produit prix:prix`;
+    }
+
+    function addProduct() {
+      const name = document.getElementById('pr-name').value.toLowerCase().trim();
+      const price = parseFloat(document.getElementById('pr-price').value);
+      if(!name || isNaN(price)) return alert('Nom et Prix requis');
+      
+      const index = products.findIndex(p => p.name === name);
+      if(index > -1) products[index].price = price;
+      else products.push({ name, price });
+      
+      updateProducts();
+      document.getElementById('cmd-output').innerText = `/setproduit nom:${name} prix:${price}`;
+    }
+
+    function deleteProduct(name) {
+      products = products.filter(p => p.name !== name);
+      updateProducts();
+      // On n'a pas de commande directe pour supprimer un produit dans le bot actuel,
+      // mais on peut le signaler.
+      document.getElementById('cmd-output').innerText = `Produit ${name} retiré du lab.`;
     }
 
     function copyCmd() {
