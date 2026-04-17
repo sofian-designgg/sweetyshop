@@ -6,7 +6,12 @@ const {
   EmbedBuilder,
 } = require('discord.js');
 const { getConfig, isConfigAdmin } = require('../util/permissions');
-const { createTicketChannel, countOpenTickets, closeTicket } = require('../services/ticketService');
+const {
+  createTicketChannel,
+  countOpenTickets,
+  closeTicket,
+  createExchangeTicket,
+} = require('../services/ticketService');
 const Review = require('../models/Review');
 const { embedFromConfig } = require('../util/embeds');
 
@@ -30,6 +35,7 @@ module.exports = {
       if (interaction.isButton()) {
         const id = interaction.customId;
         if (id.startsWith('ticket:open:')) {
+          // ... (existing ticket logic)
           const key = id.slice('ticket:open:'.length);
           const cfg = await getConfig(interaction.guildId);
           const max = cfg.ticketMaxPerUser ?? 3;
@@ -65,6 +71,24 @@ module.exports = {
         if (id === 'ticket:close') {
           const cfg = await getConfig(interaction.guildId);
           await closeTicket(interaction, cfg);
+          return;
+        }
+
+        if (id.startsWith('exchange:open:')) {
+          const pair = id.slice('exchange:open:'.length);
+          const modal = new ModalBuilder()
+            .setCustomId(`exchange:submit:${pair}`)
+            .setTitle(`Échange ${pair.toUpperCase()}`);
+
+          const amount = new TextInputBuilder()
+            .setCustomId('amount')
+            .setLabel('Montant que vous envoyez')
+            .setPlaceholder('Ex: 10')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
+
+          modal.addComponents(new ActionRowBuilder().addComponents(amount));
+          await interaction.showModal(modal);
           return;
         }
 
@@ -176,6 +200,47 @@ module.exports = {
           content: 'Merci ! Ton avis a été publié.',
           ephemeral: true,
         });
+        return;
+      }
+
+      if (interaction.isModalSubmit() && interaction.customId.startsWith('exchange:submit:')) {
+        const pair = interaction.customId.slice('exchange:submit:'.length);
+        const amountStr = interaction.fields.getTextInputValue('amount').replace(',', '.');
+        const amount = parseFloat(amountStr);
+
+        if (isNaN(amount) || amount <= 0) {
+          await interaction.reply({ content: 'Montant invalide.', ephemeral: true });
+          return;
+        }
+
+        const cfg = await getConfig(interaction.guildId);
+        const rate = cfg.exchangerConfig?.rates?.[pair];
+
+        if (!rate) {
+          await interaction.reply({
+            content: 'Ce taux de change n’est plus disponible.',
+            ephemeral: true,
+          });
+          return;
+        }
+
+        const result = (amount * rate).toFixed(2);
+        await interaction.deferReply({ ephemeral: true });
+
+        try {
+          const ch = await createExchangeTicket(
+            interaction.guild,
+            interaction.member,
+            pair,
+            amount,
+            result,
+            cfg
+          );
+          await interaction.editReply({ content: `Ticket d’échange créé : ${ch}` });
+        } catch (e) {
+          console.error(e);
+          await interaction.editReply({ content: 'Erreur lors de la création du ticket.' });
+        }
         return;
       }
     } catch (err) {

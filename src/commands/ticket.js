@@ -109,6 +109,9 @@ module.exports = {
     )
     .addSubcommand((s) =>
       s.setName('liste').setDescription('Lister les catégories ticket')
+    )
+    .addSubcommand((s) =>
+      s.setName('reset').setDescription('Réinitialiser (vider) tous les boutons du panel (admin)')
     ),
   async executeSlash(interaction) {
     const cfg = await getConfig(interaction.guildId);
@@ -179,6 +182,17 @@ module.exports = {
       await cfg.save();
       await interaction.reply({
         content: `Supprimé. Pense à \`/ticket panel-envoyer\`.`,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    if (sub === 'reset') {
+      cfg.ticketCategories = [];
+      cfg.markModified('ticketCategories');
+      await cfg.save();
+      await interaction.reply({
+        content: 'Tous les boutons ont été supprimés. Pense à `/ticket panel-envoyer` pour mettre à jour le message.',
         ephemeral: true,
       });
     }

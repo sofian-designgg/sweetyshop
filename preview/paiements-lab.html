@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SweetyShop — Paiements (aperçu + JSON)</title>
+  <style>
+    :root {
+      --bg: #313338;
+      --side: #2b2d31;
+      --embed: #2f3136;
+      --text: #dbdee1;
+      --muted: #949ba4;
+      --accent: #5865f2;
+      --ok: #23a559;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "gg sans", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--side);
+      border-right: 1px solid #1e1f22;
+      padding: 1rem 1.1rem;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    h1 { font-size: 1.05rem; margin: 0 0 0.35rem; }
+    .sub { color: var(--muted); font-size: 0.8rem; margin: 0 0 1rem; line-height: 1.45; }
+    details.how {
+      background: #1e1f22;
+      border-radius: 8px;
+      padding: 0.65rem 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #3f4147;
+    }
+    details.how summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    details.how ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    details.how code { background: #111214; padding: 0.1rem 0.25rem; border-radius: 4px; color: #b5bac1; }
+    label { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.55rem; }
+    input, textarea, select {
+      width: 100%;
+      background: #1e1f22;
+      border: 1px solid #3f4147;
+      border-radius: 6px;
+      color: #f2f3f5;
+      padding: 0.45rem 0.55rem;
+      font-size: 0.88rem;
+    }
+    textarea { min-height: 72px; resize: vertical; font-family: inherit; line-height: 1.4; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr min-content min-content;
+      gap: 0.35rem;
+      align-items: end;
+      margin-top: 0.35rem;
+    }
+    .field-row input[type="checkbox"] { width: auto; margin: 0 0 0.45rem 0.25rem; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-top: 0.65rem;
+      margin-right: 0.35rem;
+    }
+    button.secondary { background: #4e5058; }
+    button.ok { background: var(--ok); }
+    .btns { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+    .stage {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .json-out {
+      width: 100%;
+      max-width: 560px;
+      background: #1e1f22;
+      border: 1px solid #3f4147;
+      border-radius: 8px;
+      padding: 0.65rem;
+    }
+    .json-out h2 { font-size: 0.8rem; margin: 0 0 0.35rem; color: var(--muted); }
+    pre {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #b5bac1;
+      max-height: 180px;
+      overflow: auto;
+    }
+    .discord-msg { max-width: 520px; width: 100%; display: flex; gap: 1rem; }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #5865f2, #eb459e);
+      flex-shrink: 0;
+    }
+    .bubble { flex: 1; min-width: 0; }
+    .author { font-size: 0.95rem; margin-bottom: 0.35rem; }
+    .author strong { color: #fff; }
+    .bot-tag {
+      background: #5865f2;
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      margin-left: 0.35rem;
+    }
+    .embed {
+      background: var(--embed);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px 8px 8px 4px;
+      padding: 0.75rem 1rem 0.75rem 0.75rem;
+    }
+    .embed .title { color: #fff; font-weight: 600; margin-bottom: 0.45rem; }
+    .embed .desc { font-size: 0.9rem; line-height: 1.45; white-space: pre-wrap; }
+    .embed .fields { margin-top: 0.5rem; display: grid; gap: 0.35rem; }
+    .embed .field-name { color: #fff; font-size: 0.8rem; font-weight: 600; }
+    .embed .field-val { color: var(--muted); font-size: 0.85rem; white-space: pre-wrap; }
+    .embed .footer { margin-top: 0.5rem; color: var(--muted); font-size: 0.75rem; }
+    .embed img.banner { width: 100%; border-radius: 8px; margin-top: 0.5rem; display: block; }
+    .copied { color: var(--ok); font-size: 0.8rem; margin-left: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="panel">
+      <h1>Fiches paiement — labo</h1>
+      <p class="sub">
+        Construis l’embed comme sur Discord, puis copie le <strong>JSON</strong> pour
+        <code>/paiement definir</code> ou <code>+paiement set</code>.
+      </p>
+
+      <details class="how" open>
+        <summary>Comment ça marche dans le bot ?</summary>
+        <ul>
+          <li>Les fiches sont stockées en <strong>MongoDB</strong> par <strong>clé</strong> : <code>paypal</code>, <code>litecoin</code>, <code>ethereum</code>, <code>solana</code>, ou n’importe quel nom (ex. <code>usdt</code>).</li>
+          <li>Sur Discord : <code>+paypal</code>, <code>+litecoin</code>, <code>+eth</code>, <code>+sol</code> affichent l’embed enregistré pour cette clé.</li>
+          <li><code>/paiement afficher</code> (autocomplete) — prévisualiser · <code>/paiement definir</code> avec un JSON — enregistrer.</li>
+          <li>Préfixe : <code>+paiement set &lt;clé&gt; &lt;json&gt;</code> (message sur une ligne ou JSON compact).</li>
+          <li>Couleur dans le JSON : nombre décimal <em>ou</em> chaîne <code>"#5865F2"</code> (le bot convertit).</li>
+        </ul>
+      </details>
+
+      <label for="preset">Modèle</label>
+      <select id="preset">
+        <option value="paypal">PayPal</option>
+        <option value="litecoin">Litecoin (LTC)</option>
+        <option value="ethereum">Ethereum (ETH)</option>
+        <option value="solana">Solana (SOL)</option>
+        <option value="custom">Clé personnalisée…</option>
+      </select>
+
+      <label for="cle">Clé (pour Discord / Mongo)</label>
+      <input id="cle" type="text" value="paypal" spellcheck="false" />
+
+      <div class="row2">
+        <div>
+          <label for="color">Couleur (#hex)</label>
+          <input id="color" type="text" value="#5865F2" />
+        </div>
+        <div>
+          <label for="footer">Footer</label>
+          <input id="footer" type="text" value="SweetyShop" />
+        </div>
+      </div>
+
+      <label for="title">Titre</label>
+      <input id="title" type="text" />
+
+      <label for="desc">Description (Markdown **gras**, `code`)</label>
+      <textarea id="desc"></textarea>
+
+      <label for="image">Image (URL, optionnel)</label>
+      <input id="image" type="text" placeholder="https://…" />
+
+      <label>Champs (comme dans Discord)</label>
+      <div id="fields"></div>
+      <button type="button" class="secondary" id="addField">+ Champ</button>
+
+      <div class="btns">
+        <button type="button" id="refresh">Mettre à jour l’aperçu</button>
+        <button type="button" class="ok" id="copyJson">Copier le JSON</button>
+      </div>
+      <span class="copied" id="copied" style="display:none">Copié !</span>
+    </div>
+
+    <div class="stage">
+      <div class="discord-msg">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="bubble">
+          <div class="author">
+            <strong>SweetyShop</strong><span class="bot-tag">BOT</span>
+            <span style="color:var(--muted);font-size:0.8rem;margin-left:0.35rem">commande +paypal ou /paiement</span>
+          </div>
+          <div id="embed-host"></div>
+        </div>
+      </div>
+
+      <div class="json-out">
+        <h2>JSON à coller dans <code>/paiement definir</code> → option « json » (une seule embed)</h2>
+        <p style="font-size:0.75rem;color:var(--muted);margin:0 0 0.35rem">
+          Sur Discord tu dois aussi indiquer le <strong>type</strong> = la clé (<span id="cleHint">paypal</span>).
+        </p>
+        <pre id="jsonPre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PRESETS = {
+      paypal: {
+        cle: "paypal",
+        color: "#5865F2",
+        title: "Paiement PayPal",
+        desc: "Envoie le paiement **en amis et proches** si possible.\nAprès paiement, envoie une **capture** dans ton ticket.",
+        footer: "SweetyShop",
+        image: "",
+        fields: [
+          { n: "Email / lien PayPal", v: "ton@email ou lien.me/...", inline: false },
+          { n: "Montant", v: "Ex : 9,99 € (selon ta offre)", inline: true },
+          { n: "Note", v: "Mentionne ton **pseudo Discord** en note de paiement.", inline: false },
+        ],
+      },
+      litecoin: {
+        cle: "litecoin",
+        color: "#345C9C",
+        title: "Litecoin (LTC)",
+        desc: "Envoie le **montant exact** à l’adresse ci-dessous, puis poste le **TXID** dans ton ticket.",
+        footer: "Réseau Litecoin uniquement",
+        image: "",
+        fields: [
+          { n: "Adresse LTC", v: "Lxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", inline: false },
+          { n: "Montant", v: "À configurer", inline: true },
+        ],
+      },
+      ethereum: {
+        cle: "ethereum",
+        color: "#627EEA",
+        title: "Ethereum (ETH)",
+        desc: "ERC-20 ou ETH natif — précise dans le ticket. Envoie le **hash** de transaction après paiement.",
+        footer: "Frais de gas à ta charge",
+        image: "",
+        fields: [
+          { n: "Adresse ETH", v: "0x………………………………………………", inline: false },
+          { n: "Montant", v: "À configurer", inline: true },
+        ],
+      },
+      solana: {
+        cle: "solana",
+        color: "#9945FF",
+        title: "Solana (SOL)",
+        desc: "Envoie au wallet ci-dessous. Colle la **signature** ou explorer link dans le ticket.",
+        footer: "Réseau Solana uniquement",
+        image: "",
+        fields: [
+          { n: "Adresse SOL", v: "xxxxxxxxxxxxxxxxxxxxxxxxxxxx", inline: false },
+          { n: "Montant", v: "À configurer", inline: true },
+        ],
+      },
+    };
+
+    const presetEl = document.getElementById("preset");
+    const cleEl = document.getElementById("cle");
+    const colorEl = document.getElementById("color");
+    const footerEl = document.getElementById("footer");
+    const titleEl = document.getElementById("title");
+    const descEl = document.getElementById("desc");
+    const imageEl = document.getElementById("image");
+    const fieldsEl = document.getElementById("fields");
+    const host = document.getElementById("embed-host");
+    const jsonPre = document.getElementById("jsonPre");
+    const cleHint = document.getElementById("cleHint");
+
+    function addFieldRow(data = { n: "Nom", v: "Valeur", inline: false }) {
+      const wrap = document.createElement("div");
+      wrap.className = "field-row";
+      wrap.innerHTML = `
+        <div><label>Nom</label><input type="text" class="fn" value="${escapeAttr(data.n)}" /></div>
+        <div><label>Valeur</label><input type="text" class="fv" value="${escapeAttr(data.v)}" /></div>
+        <div><label>Inline</label><input type="checkbox" class="fi" ${data.inline ? "checked" : ""} /></div>
+      `;
+      const rm = document.createElement("button");
+      rm.type = "button";
+      rm.className = "secondary";
+      rm.textContent = "×";
+      rm.style.padding = "0.35rem 0.55rem";
+      rm.style.marginTop = "1.35rem";
+      rm.onclick = () => wrap.remove();
+      wrap.appendChild(rm);
+      fieldsEl.appendChild(wrap);
+    }
+
+    function escapeAttr(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;");
+    }
+
+    function parseHex(hex) {
+      const s = String(hex).replace(/^#/, "");
+      const n = parseInt(s, 16);
+      return Number.isNaN(n) ? 0x5865f2 : n;
+    }
+
+    function collectEmbed() {
+      const fields = [];
+      fieldsEl.querySelectorAll(".field-row").forEach((row) => {
+        const n = row.querySelector(".fn").value.trim() || "\u200b";
+        const v = row.querySelector(".fv").value.trim() || "\u200b";
+        const inline = row.querySelector(".fi").checked;
+        fields.push({ name: n, value: v, inline });
+      });
+      return {
+        title: titleEl.value.trim(),
+        description: descEl.value.trim(),
+        color: parseHex(colorEl.value),
+        footer: footerEl.value.trim(),
+        image: imageEl.value.trim() || undefined,
+        fields,
+      };
+    }
+
+    function buildJsonObject() {
+      const o = collectEmbed();
+      if (!o.image) delete o.image;
+      return o;
+    }
+
+    function formatDescHtml(text) {
+      return String(text)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g, "<em>$1</em>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\n/g, "<br/>");
+    }
+
+    function render() {
+      const o = collectEmbed();
+      const hex = "#" + (typeof o.color === "number" ? o.color : parseHex(colorEl.value)).toString(16).padStart(6, "0");
+      const borderColor = hex;
+
+      let html = `<div class="embed" style="border-left-color:${borderColor}">`;
+      if (o.title) html += `<div class="title">${escapeHtml(o.title)}</div>`;
+      if (o.description) html += `<div class="desc">${formatDescHtml(o.description)}</div>`;
+      if (o.fields && o.fields.length) {
+        html += `<div class="fields">`;
+        o.fields.forEach((f) => {
+          html += `<div class="field-name">${escapeHtml(f.name)}</div><div class="field-val">${formatDescHtml(f.value)}</div>`;
+        });
+        html += `</div>`;
+      }
+      if (o.image && /^https?:\/\//i.test(o.image)) {
+        const safe = o.image.replace(/"/g, "");
+        html += `<img class="banner" src="${safe}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'" />`;
+      }
+      if (o.footer) html += `<div class="footer">${escapeHtml(o.footer)}</div>`;
+      html += `</div>`;
+      host.innerHTML = html;
+
+      const json = JSON.stringify(o);
+      jsonPre.textContent = json;
+      cleHint.textContent = cleEl.value.trim() || "ta_cle";
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function loadPreset(key) {
+      fieldsEl.innerHTML = "";
+      if (key === "custom") {
+        addFieldRow({ n: "Exemple", v: "Valeur", inline: false });
+        return;
+      }
+      const p = PRESETS[key];
+      if (!p) return;
+      cleEl.value = p.cle;
+      colorEl.value = p.color;
+      footerEl.value = p.footer;
+      titleEl.value = p.title;
+      descEl.value = p.desc;
+      imageEl.value = p.image || "";
+      p.fields.forEach((f) => addFieldRow(f));
+    }
+
+    presetEl.addEventListener("change", () => {
+      loadPreset(presetEl.value);
+      render();
+    });
+
+    document.getElementById("addField").onclick = () => {
+      addFieldRow({ n: "Nouveau champ", v: "", inline: false });
+      render();
+    };
+
+    document.getElementById("refresh").onclick = render;
+    document.getElementById("copyJson").onclick = async () => {
+      const t = jsonPre.textContent;
+      try {
+        await navigator.clipboard.writeText(t);
+        const c = document.getElementById("copied");
+        c.style.display = "inline";
+        setTimeout(() => { c.style.display = "none"; }, 2000);
+      } catch {
+        alert("Impossible de copier — sélectionne le JSON manuellement.");
+      }
+    };
+
+    [cleEl, colorEl, footerEl, titleEl, descEl, imageEl].forEach((el) =>
+      el.addEventListener("input", render)
+    );
+    fieldsEl.addEventListener("input", render);
+    fieldsEl.addEventListener("change", render);
+
+    loadPreset("paypal");
+    render();
+  </script>
+</body>
+</html>

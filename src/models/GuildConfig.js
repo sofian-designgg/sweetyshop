@@ -57,6 +57,16 @@ const GuildConfigSchema = new mongoose.Schema(
     modAdminRoleIds: [String],
     ticketMaxPerUser: { type: Number, default: 3 },
     ticketTranscriptChannelId: String,
+    products: { type: Map, of: Number, default: {} },
+    exchangerConfig: {
+      type: {
+        channelId: String,
+        messageId: String,
+        rates: { type: Map, of: Number, default: {} }, // ex: "paypal-ltc": 0.95
+        embed: CustomEmbedSchema,
+      },
+      default: {},
+    },
   },
   { timestamps: true }
 );

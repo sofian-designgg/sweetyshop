@@ -95,6 +95,83 @@ async function createTicketChannel(guild, member, categoryKey, cfg) {
   return channel;
 }
 
+async function createExchangeTicket(guild, member, pair, amount, result, cfg) {
+  const parentId = cfg.ticketCategoryId;
+  const safe = member.user.username.replace(/[^a-z0-9-_]/gi, '').slice(0, 12) || 'user';
+  const name = `exchange-${pair}-${safe}`.toLowerCase().slice(0, 100);
+
+  const staffRoles = cfg.ticketStaffRoleIds || [];
+  const overwrites = [
+    {
+      id: guild.roles.everyone.id,
+      deny: [PermissionFlagsBits.ViewChannel],
+    },
+    {
+      id: member.id,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory,
+      ],
+    },
+    {
+      id: guild.members.me.id,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ManageChannels,
+      ],
+    },
+  ];
+
+  for (const rid of staffRoles) {
+    const role = guild.roles.cache.get(rid);
+    if (role) {
+      overwrites.push({
+        id: role.id,
+        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
+      });
+    }
+  }
+
+  const channel = await guild.channels.create({
+    name,
+    type: ChannelType.GuildText,
+    parent: parentId || undefined,
+    permissionOverwrites: overwrites,
+    topic: `Exchange · ${member.user.tag} · ${pair}`,
+  });
+
+  await Ticket.create({
+    guildId: guild.id,
+    channelId: channel.id,
+    userId: member.id,
+    categoryId: 'exchange',
+    status: 'open',
+  });
+
+  const embed = new EmbedBuilder()
+    .setTitle('🔄 Demande d’échange')
+    .setColor(0x00ff00)
+    .setDescription(`Nouvelle demande d’échange de ${member}.`)
+    .addFields(
+      { name: 'Paire', value: pair.toUpperCase(), inline: true },
+      { name: 'Montant envoyé', value: `${amount}`, inline: true },
+      { name: 'Montant reçu (estimé)', value: `${result}`, inline: true }
+    )
+    .setFooter({ text: 'Attendez qu’un staff valide l’échange.' });
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ticket:close')
+      .setLabel('Fermer le ticket')
+      .setStyle(ButtonStyle.Danger)
+  );
+
+  await channel.send({ content: `${member}`, embeds: [embed], components: [row] });
+  return channel;
+}
+
 async function closeTicket(interaction, cfg) {
   const channel = interaction.channel;
   const doc = await Ticket.findOne({ channelId: channel.id, status: 'open' });
@@ -146,5 +223,6 @@ async function closeTicket(interaction, cfg) {
 module.exports = {
   countOpenTickets,
   createTicketChannel,
+  createExchangeTicket,
   closeTicket,
 };
