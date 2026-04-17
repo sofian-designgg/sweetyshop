@@ -27,6 +27,14 @@ module.exports = {
         )
     )
     .addSubcommand((s) =>
+      s
+        .setName('supprimer-taux')
+        .setDescription('Supprimer un taux de change')
+        .addStringOption((o) =>
+          o.setName('paire').setDescription('Ex: paypal-ltc').setRequired(true)
+        )
+    )
+    .addSubcommand((s) =>
       s.setName('panel-envoyer').setDescription('Envoyer le panel d’exchanger')
     )
     .addSubcommand((s) =>
@@ -59,6 +67,22 @@ module.exports = {
       await cfg.save();
       await interaction.reply({
         content: `Taux pour **${paire}** défini à **${taux}**.`,
+        ephemeral: true,
+      });
+      return;
+    }
+
+    if (sub === 'supprimer-taux') {
+      const paire = interaction.options.getString('paire', true).toLowerCase();
+      if (!cfg.exchangerConfig?.rates?.[paire]) {
+        await interaction.reply({ content: 'Paire introuvable.', ephemeral: true });
+        return;
+      }
+      delete cfg.exchangerConfig.rates[paire];
+      cfg.markModified('exchangerConfig');
+      await cfg.save();
+      await interaction.reply({
+        content: `Paire **${paire}** supprimée.`,
         ephemeral: true,
       });
       return;
