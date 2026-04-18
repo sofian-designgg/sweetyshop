@@ -64,6 +64,9 @@ module.exports = {
           o.setName('label').setDescription('Texte du bouton').setRequired(true)
         )
         .addStringOption((o) =>
+          o.setName('texte').setDescription('Titre au-dessus du bouton (Gras)').setRequired(true)
+        )
+        .addStringOption((o) =>
           o.setName('emoji').setDescription('Emoji unicode ou :nom:').setRequired(false)
         )
         .addIntegerOption((o) =>
@@ -72,12 +75,6 @@ module.exports = {
             .setDescription('Rangée 0-4 (max 5 boutons par rangée)')
             .setMinValue(0)
             .setMaxValue(4)
-            .setRequired(false)
-        )
-        .addStringOption((o) =>
-          o
-            .setName('texte')
-            .setDescription('Texte affiché au-dessus (gras dans l’embed)')
             .setRequired(false)
         )
         .addStringOption((o) =>
@@ -149,9 +146,9 @@ module.exports = {
     if (sub === 'bouton-ajouter') {
       const id = interaction.options.getString('id', true).toLowerCase().replace(/\s+/g, '-');
       const label = interaction.options.getString('label', true);
-      const emoji = interaction.options.getString('emoji') || '';
+      const prompt = interaction.options.getString('texte', true);
+      const emoji = interaction.options.getString('emoji') || null;
       const row = interaction.options.getInteger('rangee') ?? 0;
-      const prompt = interaction.options.getString('texte') || label;
       const hint = interaction.options.getString('indice') || '';
       const style = interaction.options.getString('style') || 'Secondary';
       const list = cfg.ticketCategories || [];

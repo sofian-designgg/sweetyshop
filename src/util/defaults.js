@@ -1,61 +1,6 @@
-/** Catégories ticket par défaut (shop Nitro / paiements) */
+/** Catégories ticket par défaut (Vierge par défaut maintenant) */
 function defaultTicketCategories() {
-  return [
-    {
-      id: 'question',
-      label: 'Questions',
-      emoji: '💬',
-      row: 0,
-      style: 'Secondary',
-      prompt: 'Une question rapide sur nos produits ?',
-      hint: 'Appuie sur Questions pour ouvrir le ticket.',
-    },
-    {
-      id: 'general',
-      label: 'Support général',
-      emoji: '🛒',
-      row: 0,
-      style: 'Secondary',
-      prompt: 'Besoin d’aide sur la boutique ?',
-      hint: 'Appuie sur Support général.',
-    },
-    {
-      id: 'nitro',
-      label: 'Nitro',
-      emoji: '💎',
-      row: 1,
-      style: 'Primary',
-      prompt: 'Commande ou problème lié au Nitro ?',
-      hint: 'Ouvre un ticket Nitro.',
-    },
-    {
-      id: 'paypal',
-      label: 'Paiement PayPal',
-      emoji: '💳',
-      row: 1,
-      style: 'Secondary',
-      prompt: 'Paiement ou preuve PayPal ?',
-      hint: 'Ticket dédié PayPal.',
-    },
-    {
-      id: 'crypto',
-      label: 'Crypto (LTC/ETH/SOL)',
-      emoji: '🪙',
-      row: 2,
-      style: 'Secondary',
-      prompt: 'Paiement crypto ou TXID ?',
-      hint: 'Indique la devise dans le ticket.',
-    },
-    {
-      id: 'remplacement',
-      label: 'Remplacement',
-      emoji: '🛡️',
-      row: 2,
-      style: 'Danger',
-      prompt: 'Produit défectueux ou non reçu ?',
-      hint: 'Demande de remplacement.',
-    },
-  ];
+  return [];
 }
 
 function defaultPaymentEmbeds() {
