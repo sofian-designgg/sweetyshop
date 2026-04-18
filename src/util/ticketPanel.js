@@ -21,11 +21,8 @@ function buildTicketPanel(cfg, guildName) {
   const base = cfg.ticketPanelEmbed || {};
   const embed = embedFromConfig({
     ...base,
-    description:
-      base.description ||
-      `Bienvenue sur **${guildName}**. Choisis l’option qui correspond à ton besoin.`,
+    description: base.description || `Bienvenue sur **${guildName}**. Choisis l’option qui correspond à ton besoin.`,
   });
-  enrichPanelDescription(embed, cfg.ticketCategories);
 
   const cats = [...(cfg.ticketCategories || [])].sort((a, b) => {
     if (a.row !== b.row) return a.row - b.row;

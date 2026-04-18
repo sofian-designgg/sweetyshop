@@ -654,7 +654,16 @@
           </div>
         `;
       });
-      document.getElementById('cmd-output').innerText = `/ticket panel-envoyer`;
+      const json = {
+        title: title,
+        description: desc,
+        color: parseInt(color.replace('#', ''), 16),
+        image: image || undefined,
+        thumbnail: thumb || undefined,
+        footer: footer || undefined,
+        footerIcon: footerIcon || undefined
+      };
+      document.getElementById('cmd-output').innerText = `/ticket panel-config json:${JSON.stringify(json)}`;
     }
 
     function deleteButton(id) {

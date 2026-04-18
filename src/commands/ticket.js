@@ -55,6 +55,14 @@ module.exports = {
     )
     .addSubcommand((s) =>
       s
+        .setName('panel-config')
+        .setDescription('Configurer l’embed du panel de tickets via JSON')
+        .addStringOption((o) =>
+          o.setName('json').setDescription('JSON de l’embed (title, description, color, image...)').setRequired(true)
+        )
+    )
+    .addSubcommand((s) =>
+      s
         .setName('bouton-ajouter')
         .setDescription('Ajouter une catégorie / bouton')
         .addStringOption((o) =>
@@ -140,6 +148,23 @@ module.exports = {
         content: r.updated ? 'Panel mis à jour.' : 'Panel envoyé.',
         ephemeral: true,
       });
+      return;
+    }
+
+    if (sub === 'panel-config') {
+      const rawJson = interaction.options.getString('json', true);
+      try {
+        const parsed = JSON.parse(rawJson);
+        cfg.ticketPanelEmbed = parsed;
+        cfg.markModified('ticketPanelEmbed');
+        await cfg.save();
+        await interaction.reply({
+          content: 'Configuration de l’embed du panel mise à jour. Utilise `/ticket panel-envoyer`.',
+          ephemeral: true,
+        });
+      } catch (e) {
+        await interaction.reply({ content: 'JSON invalide.', ephemeral: true });
+      }
       return;
     }
 
