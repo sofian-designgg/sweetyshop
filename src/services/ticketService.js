@@ -62,13 +62,18 @@ async function createTicketChannel(guild, member, categoryKey, cfg) {
     }
   }
 
-  const channel = await guild.channels.create({
+  const channelOptions = {
     name,
     type: ChannelType.GuildText,
-    parent: parentId || undefined,
     permissionOverwrites: overwrites,
     topic: `Ticket · ${member.user.tag} · ${categoryKey}`,
-  });
+  };
+
+  if (parentId && guild.channels.cache.has(parentId)) {
+    channelOptions.parent = parentId;
+  }
+
+  const channel = await guild.channels.create(channelOptions);
 
   await Ticket.create({
     guildId: guild.id,
@@ -134,13 +139,18 @@ async function createExchangeTicket(guild, member, pair, amount, result, cfg) {
     }
   }
 
-  const channel = await guild.channels.create({
+  const channelOptions = {
     name,
     type: ChannelType.GuildText,
-    parent: parentId || undefined,
     permissionOverwrites: overwrites,
     topic: `Exchange · ${member.user.tag} · ${pair}`,
-  });
+  };
+
+  if (parentId && guild.channels.cache.has(parentId)) {
+    channelOptions.parent = parentId;
+  }
+
+  const channel = await guild.channels.create(channelOptions);
 
   await Ticket.create({
     guildId: guild.id,
