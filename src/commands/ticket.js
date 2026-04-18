@@ -220,10 +220,16 @@ module.exports = {
 
     if (sub === 'reset') {
       cfg.ticketCategories = [];
+      cfg.ticketPanelEmbed = {
+        title: 'Support',
+        description: 'Panel réinitialisé.',
+        color: 0x5865f2
+      };
       cfg.markModified('ticketCategories');
+      cfg.markModified('ticketPanelEmbed');
       await cfg.save();
       await interaction.reply({
-        content: 'Tous les boutons ont été supprimés. Pense à `/ticket panel-envoyer` pour mettre à jour le message.',
+        content: '✅ Tous les boutons et la configuration ont été supprimés. Pense à `/ticket panel-envoyer`.',
         ephemeral: true,
       });
     }

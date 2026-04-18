@@ -2,30 +2,27 @@ const { defaultTicketCategories, defaultPaymentEmbeds } = require('./defaults');
 
 async function seedGuildIfNeeded(doc) {
   let changed = false;
-  if (!doc.ticketCategories?.length) {
-    doc.ticketCategories = defaultTicketCategories();
+  // On ne force plus de catégories par défaut si c'est vide, 
+  // car l'utilisateur veut un panel vierge.
+  if (doc.ticketCategories === undefined) {
+    doc.ticketCategories = [];
     changed = true;
   }
+  
   if (!doc.paymentEmbeds || typeof doc.paymentEmbeds !== 'object') {
     doc.paymentEmbeds = defaultPaymentEmbeds();
     changed = true;
-  } else {
-    const defs = defaultPaymentEmbeds();
-    for (const [k, v] of Object.entries(defs)) {
-      if (!doc.paymentEmbeds[k]) {
-        doc.paymentEmbeds[k] = v;
-        changed = true;
-      }
-    }
   }
+  
   if (!doc.ticketPanelEmbed || !Object.keys(doc.ticketPanelEmbed).length) {
     doc.ticketPanelEmbed = {
-      title: '🌊 Centre support',
-      description: 'Sélectionne une option ci-dessous.',
+      title: 'Support',
+      description: 'Cliquez sur un bouton pour ouvrir un ticket.',
       color: 0x5865f2,
     };
     changed = true;
   }
+  
   if (changed) {
     doc.markModified('paymentEmbeds');
     doc.markModified('ticketCategories');

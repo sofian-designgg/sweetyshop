@@ -51,11 +51,19 @@ function buildTicketPanel(cfg, guildName) {
         .setCustomId(`ticket:open:${c.id}`)
         .setLabel(label)
         .setStyle(style);
+      
       if (c.emoji) {
         try {
-          btn.setEmoji(c.emoji);
-        } catch {
-          /* emoji invalide ignoré */
+          // Si c'est un emoji Discord custom <:nom:id> ou <a:nom:id>
+          const customEmojiMatch = c.emoji.match(/<?(?:a:)?\w+:(\d+)>?/);
+          if (customEmojiMatch) {
+            btn.setEmoji(customEmojiMatch[1]);
+          } else {
+            // Sinon on tente tel quel (unicode)
+            btn.setEmoji(c.emoji);
+          }
+        } catch (e) {
+          console.error(`Erreur emoji pour le bouton ${c.id}:`, e.message);
         }
       }
       row.addComponents(btn);

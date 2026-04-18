@@ -21,13 +21,17 @@ module.exports = {
     }
 
     cfg.ticketCategories = [];
-    cfg.ticketPanelEmbed = null; // Supprime aussi le texte custom du panel
+    cfg.ticketPanelEmbed = {
+      title: 'Support',
+      description: 'Panel réinitialisé. Ajoutez des boutons via /ticket bouton-ajouter.',
+      color: 0x5865f2
+    };
     cfg.markModified('ticketCategories');
     cfg.markModified('ticketPanelEmbed');
     await cfg.save();
 
     await interaction.reply({
-      content: '✅ Tout le système de tickets a été réinitialisé (Boutons + Embed). Utilisez `/ticket panel-envoyer` pour afficher un panel vierge.',
+      content: '✅ Tout le système de tickets a été vidé de A à Z. Utilisez `/ticket panel-envoyer` pour afficher le nouveau panel vierge.',
       ephemeral: true,
     });
   },
@@ -40,11 +44,15 @@ module.exports = {
     if (!admin) return;
 
     cfg.ticketCategories = [];
-    cfg.ticketPanelEmbed = null;
+    cfg.ticketPanelEmbed = {
+      title: 'Support',
+      description: 'Panel réinitialisé.',
+      color: 0x5865f2
+    };
     cfg.markModified('ticketCategories');
     cfg.markModified('ticketPanelEmbed');
     await cfg.save();
 
-    await message.reply('✅ Système réinitialisé. Relance le panel avec `/ticket panel-envoyer`.');
+    await message.reply('✅ Système vidé. Relance le panel avec `/ticket panel-envoyer`.');
   },
 };
