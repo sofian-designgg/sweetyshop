@@ -67,7 +67,7 @@ const GuildConfigSchema = new mongoose.Schema(
       type: {
         channelId: String,
         messageId: String,
-        rates: { type: Map, of: Number, default: {} }, // ex: "paypal-ltc": 0.95
+        rates: { type: mongoose.Schema.Types.Mixed, default: {} }, // Peut être Number ou {rate, emoji, description}
         embed: CustomEmbedSchema,
       },
       default: {},

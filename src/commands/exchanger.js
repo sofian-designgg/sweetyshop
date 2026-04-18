@@ -129,8 +129,18 @@ module.exports = {
     }
 
     if (sub === 'panel-envoyer') {
-      const channel = interaction.channel;
       const exchangerCfg = cfg.exchangerConfig || {};
+      const channelId = exchangerCfg.channelId || interaction.channelId;
+      const channel = interaction.guild.channels.cache.get(channelId) || interaction.channel;
+
+      if (!channel?.isTextBased()) {
+        await interaction.reply({
+          content: 'Impossible d’envoyer le panel dans ce salon (non-texte).',
+          ephemeral: true,
+        });
+        return;
+      }
+
       const embedData = exchangerCfg.embed || {
         title: 'Exchanger',
         description: 'Choisissez votre paire d’échange ci-dessous.',
@@ -155,25 +165,43 @@ module.exports = {
         .addOptions(
           pairs.map((pair) => {
             const data = rates[pair];
-            return {
+            const option = {
               label: pair.toUpperCase(),
               description: typeof data === 'object' ? data.description : `Taux: ${data}`,
               value: pair,
-              emoji: typeof data === 'object' ? data.emoji : null,
             };
+
+            const rawEmoji = typeof data === 'object' ? data.emoji : null;
+            if (rawEmoji) {
+              const customEmojiMatch = rawEmoji.match(/<?(?:a:)?\w+:(\d+)>?/);
+              if (customEmojiMatch) option.emoji = customEmojiMatch[1];
+              else option.emoji = rawEmoji;
+            }
+            return option;
           })
         );
 
       const row = new ActionRowBuilder().addComponents(menu);
 
-      const msg = await channel.send({ embeds: [embed], components: [row] });
-      if (!cfg.exchangerConfig) cfg.exchangerConfig = {};
-      cfg.exchangerConfig.channelId = channel.id;
-      cfg.exchangerConfig.messageId = msg.id;
-      cfg.markModified('exchangerConfig');
-      await cfg.save();
+      try {
+        const msg = await channel.send({ embeds: [embed], components: [row] });
+        if (!cfg.exchangerConfig) cfg.exchangerConfig = {};
+        cfg.exchangerConfig.channelId = channel.id;
+        cfg.exchangerConfig.messageId = msg.id;
+        cfg.markModified('exchangerConfig');
+        await cfg.save();
 
-      await interaction.reply({ content: 'Panel exchanger envoyé.', ephemeral: true });
+        await interaction.reply({
+          content: `✅ Panel exchanger envoyé dans ${channel}.`,
+          ephemeral: true,
+        });
+      } catch (e) {
+        console.error('Error sending exchanger panel:', e);
+        await interaction.reply({
+          content: `❌ Impossible d’envoyer le panel.\nErreur : \`${e.message}\``,
+          ephemeral: true,
+        });
+      }
     }
   },
 };

@@ -19,46 +19,79 @@ module.exports = {
   description: 'Configuration du bot (salons, rôles, préfixe)',
   slashData: new SlashCommandBuilder()
     .setName('config')
-    .setDescription('Voir la configuration du serveur')
-    .addSubcommand((s) => s.setName('afficher').setDescription('Résumé des réglages')),
+    .setDescription('Voir ou modifier la configuration du serveur')
+    .addSubcommand((s) => s.setName('afficher').setDescription('Résumé des réglages'))
+    .addSubcommand((s) =>
+      s
+        .setName('salon-exchanger')
+        .setDescription('Définir le salon de l’exchanger')
+        .addChannelOption((o) =>
+          o.setName('salon').setDescription('Le salon texte').setRequired(true)
+        )
+    ),
   async executeSlash(interaction) {
     const cfg = await getConfig(interaction.guildId);
     if (!(await canConfig(interaction.member, cfg))) {
       await interaction.reply({ content: 'Permission refusée.', ephemeral: true });
       return;
     }
-    const embed = new EmbedBuilder()
-      .setTitle('Configuration SweetyShop')
-      .setColor(0x57f287)
-      .addFields(
-        { name: 'Préfixe', value: cfg.prefix || '+', inline: true },
-        {
-          name: 'Catégorie tickets',
-          value: cfg.ticketCategoryId || '—',
-          inline: true,
-        },
-        {
-          name: 'Salon panel',
-          value: cfg.ticketPanelChannelId || '—',
-          inline: true,
-        },
-        {
-          name: 'Salon avis',
-          value: cfg.reviewChannelId || '—',
-          inline: true,
-        },
-        {
-          name: 'Log tickets',
-          value: cfg.ticketTranscriptChannelId || '—',
-          inline: true,
-        },
-        {
-          name: 'Rôles staff ticket',
-          value: (cfg.ticketStaffRoleIds || []).map((id) => `<@&${id}>`).join(' ') || '—',
-          inline: false
-        }
-      );
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+
+    const sub = interaction.options.getSubcommand();
+
+    if (sub === 'afficher') {
+      const embed = new EmbedBuilder()
+        .setTitle('Configuration SweetyShop')
+        .setColor(0x57f287)
+        .addFields(
+          { name: 'Préfixe', value: cfg.prefix || '+', inline: true },
+          {
+            name: 'Catégorie tickets',
+            value: cfg.ticketCategoryId || '—',
+            inline: true,
+          },
+          {
+            name: 'Salon panel',
+            value: cfg.ticketPanelChannelId || '—',
+            inline: true,
+          },
+          {
+            name: 'Salon avis',
+            value: cfg.reviewChannelId || '—',
+            inline: true,
+          },
+          {
+            name: 'Log tickets',
+            value: cfg.ticketTranscriptChannelId || '—',
+            inline: true,
+          },
+          {
+            name: 'Salon exchanger',
+            value: cfg.exchangerConfig?.channelId || '—',
+            inline: true,
+          },
+          {
+            name: 'Rôles staff ticket',
+            value: (cfg.ticketStaffRoleIds || []).map((id) => `<@&${id}>`).join(' ') || '—',
+            inline: false,
+          }
+        );
+      await interaction.reply({ embeds: [embed], ephemeral: true });
+      return;
+    }
+
+    if (sub === 'salon-exchanger') {
+      const ch = interaction.options.getChannel('salon', true);
+      if (!ch.isTextBased()) {
+        await interaction.reply({ content: 'Veuillez choisir un salon texte.', ephemeral: true });
+        return;
+      }
+      if (!cfg.exchangerConfig) cfg.exchangerConfig = {};
+      cfg.exchangerConfig.channelId = ch.id;
+      cfg.markModified('exchangerConfig');
+      await cfg.save();
+      await interaction.reply({ content: `✅ Salon exchanger défini sur ${ch}`, ephemeral: true });
+      return;
+    }
   },
 
   async executePrefix(message, args, { cfg }) {
@@ -76,6 +109,7 @@ module.exports = {
           '`+config ticket-categorie <id_catégorie_discord>`',
           '`+config salon-panel <#salon>`',
           '`+config salon-avis <#salon>`',
+          '`+config salon-exchanger <#salon>`',
           '`+config salon-log-ticket <#salon>`',
           '`+config staff-role add|remove <@role>`',
           '`+config admin-role add|remove <@role>`',
@@ -144,6 +178,20 @@ module.exports = {
       cfg.ticketTranscriptChannelId = ch.id;
       await cfg.save();
       await message.reply(`Log fermeture tickets → ${ch}`);
+      return;
+    }
+
+    if (sub === 'salon-exchanger') {
+      const ch = message.mentions.channels.first();
+      if (!ch?.isTextBased()) {
+        await message.reply('Mentionne un salon texte.');
+        return;
+      }
+      if (!cfg.exchangerConfig) cfg.exchangerConfig = {};
+      cfg.exchangerConfig.channelId = ch.id;
+      cfg.markModified('exchangerConfig');
+      await cfg.save();
+      await message.reply(`Salon exchanger → ${ch}`);
       return;
     }
 
