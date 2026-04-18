@@ -5,9 +5,12 @@ const LINES = [
   '`+ping` / `/ping` — latence',
   '`+help` / `/help` — aide',
   '**Modération** — `+ban` `+kick` `+timeout` `+purge` `+warn` `+warnings` (+ équivalents `/`)',
-  '**Tickets** — `/ticket` (panel, boutons) · `+ticket envoyer`',
+  '**Tickets** — `/ticket` (panel, boutons, reset) · `/reset` (tout vider)',
   '**Config** — `+config` (salons, rôles, préfixe) · `/config afficher`',
-  '**Paiement** — `/paiement afficher` · `+paypal` `+litecoin` `+ethereum` / `+eth` `+solana` / `+sol`',
+  '**Produits** — `/setproduit` (nom + prix) pour les paiements',
+  '**Paiement** — `/paiement` (config) · `/paypal` `/litecoin` `/ethereum` `/solana` (avec produit en option)',
+  '**Exchanger** — `/exchanger` (taux, panel, supprimer)',
+  '**Utilitaire** — `/say` (parler) · `/json` (embed custom)',
   '**Avis** — `/avis demander` après livraison',
 ];
 
@@ -17,12 +20,12 @@ module.exports = {
   description: 'Liste des commandes',
   slashData: new SlashCommandBuilder()
     .setName('help')
-    .setDescription('Aide du bot SweetyShop'),
+    .setDescription('Aide du bot Ohio Machine'),
   async executeSlash(interaction) {
     const cfg = await getConfig(interaction.guildId);
     const p = cfg.prefix || '+';
     const embed = new EmbedBuilder()
-      .setTitle('SweetyShop — aide')
+      .setTitle('Ohio Machine — aide')
       .setColor(0x5865f2)
       .setDescription(
         `Préfixe : **${p}**\n\n` + LINES.join('\n')
@@ -33,7 +36,7 @@ module.exports = {
     const cfg = await getConfig(message.guild.id);
     const p = cfg.prefix || '+';
     const embed = new EmbedBuilder()
-      .setTitle('SweetyShop — aide')
+      .setTitle('Ohio Machine — aide')
       .setColor(0x5865f2)
       .setDescription(`Préfixe : **${p}**\n\n` + LINES.join('\n'));
     await message.reply({ embeds: [embed] });

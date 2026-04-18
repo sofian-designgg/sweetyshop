@@ -19,7 +19,7 @@ const token = firstEnv('DISCORD_TOKEN', 'BOT_TOKEN', 'DISCORD_BOT_TOKEN');
 const mongo = firstEnv('MONGO_URL', 'DATABASE_URL', 'MONGODB_URI', 'MONGO_URI');
 
 if (!token || !mongo) {
-  console.error('[SweetyShop] Variables d’environnement manquantes sur ce service Railway :');
+  console.error('[Ohio Machine] Variables d’environnement manquantes sur ce service Railway :');
   if (!token) {
     console.error('  • Token Discord : définis DISCORD_TOKEN (le secret du bot, portail développeur).');
   }
@@ -63,7 +63,7 @@ for (const file of fs.readdirSync(eventsPath).filter((f) => f.endsWith('.js'))) 
     const { registerSlashCommands } = require('./registerSlashCommands');
     await registerSlashCommands();
   } catch (e) {
-    console.error('[SweetyShop] Enregistrement des commandes / :', e.message || e);
+    console.error('[Ohio Machine] Enregistrement des commandes / :', e.message || e);
   }
   await client.login(token);
 })().catch((e) => {

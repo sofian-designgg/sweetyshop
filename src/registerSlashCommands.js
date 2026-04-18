@@ -52,11 +52,11 @@ async function registerSlashCommands(opts = {}) {
     await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
       body: commands,
     });
-    console.log(`[SweetyShop] Slash enregistrées (serveur ${guildId}) : ${commands.length} commandes.`);
+    console.log(`[Ohio Machine] Slash enregistrées (serveur ${guildId}) : ${commands.length} commandes.`);
   } else {
     await rest.put(Routes.applicationCommands(clientId), { body: commands });
     console.log(
-      `[SweetyShop] Slash enregistrées (global) : ${commands.length} commandes — propagation jusqu’à ~1 h.`
+      `[Ohio Machine] Slash enregistrées (global) : ${commands.length} commandes — propagation jusqu’à ~1 h.`
     );
   }
 }
