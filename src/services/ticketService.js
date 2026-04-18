@@ -14,7 +14,7 @@ async function countOpenTickets(guildId, userId) {
   return Ticket.countDocuments({ guildId, userId, status: 'open' });
 }
 
-async function createTicketChannel(guild, member, categoryKey, cfg) {
+async function createTicketChannel(guild, member, categoryKey, cfg, product = null) {
   const parentId = cfg.ticketCategoryId;
   const cat = (cfg.ticketCategories || []).find((c) => c.id === categoryKey);
   const label = cat?.label || 'ticket';
@@ -66,7 +66,7 @@ async function createTicketChannel(guild, member, categoryKey, cfg) {
     name,
     type: ChannelType.GuildText,
     permissionOverwrites: overwrites,
-    topic: `Ticket · ${member.user.tag} · ${categoryKey}`,
+    topic: `Ticket · ${member.user.tag} · ${categoryKey}${product ? ` · Produit: ${product}` : ''}`,
   };
 
   if (parentId && guild.channels.cache.has(parentId)) {
@@ -85,10 +85,19 @@ async function createTicketChannel(guild, member, categoryKey, cfg) {
 
   const welcomeRaw = cfg.ticketWelcomeEmbed || {
     title: '🎫 Ticket ouvert',
-    description: `Salut ${member}, décris ta demande avec un maximum de détails.\nUn membre du staff te répondra bientôt.`,
+    description: `Salut {user}, décris ta demande avec un maximum de détails.\nUn membre du staff te répondra bientôt.`,
     color: 0x5865f2,
   };
-  const embed = embedFromConfig(welcomeRaw);
+
+  let desc = (welcomeRaw.description || '')
+    .replace(/{user}/g, `${member}`)
+    .replace(/{product}/g, product || 'Non spécifié');
+
+  if (product) {
+    desc += `\n\n**Produit demandé :** \`${product}\``;
+  }
+
+  const embed = embedFromConfig({ ...welcomeRaw, description: desc });
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('ticket:close')

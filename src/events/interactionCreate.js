@@ -35,9 +35,29 @@ module.exports = {
       if (interaction.isButton()) {
         const id = interaction.customId;
         if (id.startsWith('ticket:open:')) {
-          // ... (existing ticket logic)
           const key = id.slice('ticket:open:'.length);
+          
+          // On demande le produit via un Modal si c'est un ticket d'achat/buy
+          if (key.toLowerCase().includes('buy') || key.toLowerCase().includes('achat')) {
+            const modal = new ModalBuilder()
+              .setCustomId(`ticket:modal:${key}`)
+              .setTitle('Informations de commande');
+
+            const productInput = new TextInputBuilder()
+              .setCustomId('product')
+              .setLabel('Quel produit souhaitez-vous acheter ?')
+              .setPlaceholder('Ex: Nitro Boost, Spotify Premium...')
+              .setStyle(TextInputStyle.Short)
+              .setRequired(true);
+
+            modal.addComponents(new ActionRowBuilder().addComponents(productInput));
+            await interaction.showModal(modal);
+            return;
+          }
+
+          // Sinon ouverture normale
           const cfg = await getConfig(interaction.guildId);
+// ... (reste du code)
           const max = cfg.ticketMaxPerUser ?? 3;
           const n = await countOpenTickets(interaction.guildId, interaction.user.id);
           if (n >= max) {
@@ -155,6 +175,43 @@ module.exports = {
           await interaction.showModal(modal);
           return;
         }
+      }
+
+      if (interaction.isModalSubmit() && interaction.customId.startsWith('ticket:modal:')) {
+        const key = interaction.customId.slice('ticket:modal:'.length);
+        const product = interaction.fields.getTextInputValue('product');
+        
+        const cfg = await getConfig(interaction.guildId);
+        const max = cfg.ticketMaxPerUser ?? 3;
+        const n = await countOpenTickets(interaction.guildId, interaction.user.id);
+        
+        if (n >= max) {
+          await interaction.reply({
+            content: `Tu as déjà **${max}** ticket(s) ouvert(s). Ferme-en un avant d’en rouvrir.`,
+            ephemeral: true,
+          });
+          return;
+        }
+
+        await interaction.deferReply({ ephemeral: true });
+        try {
+          const ch = await createTicketChannel(
+            interaction.guild,
+            interaction.member,
+            key,
+            cfg,
+            product // On passe le produit ici
+          );
+          await interaction.editReply({
+            content: `Ticket créé : ${ch}`,
+          });
+        } catch (e) {
+          console.error(e);
+          await interaction.editReply({
+            content: 'Impossible de créer le ticket.',
+          });
+        }
+        return;
       }
 
       if (interaction.isModalSubmit() && interaction.customId.startsWith('review:submit:')) {
