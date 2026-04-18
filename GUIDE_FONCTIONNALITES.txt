@@ -1,0 +1,84 @@
+==================================================
+        OHIO MACHINE - GUIDE COMPLET
+==================================================
+
+Bienvenue dans le guide d'utilisation de ton bot Ohio Machine. 
+Ce fichier récapitule toutes les fonctionnalités et comment les utiliser.
+
+--------------------------------------------------
+1. LE DASHBOARD (LAB) - TON OUTIL PRINCIPAL
+--------------------------------------------------
+Fichier : preview/all-panels-lab.html
+C'est ton centre de commande visuel. Ouvre-le dans ton navigateur.
+
+- SAUVEGARDE : Tout ce que tu fais est enregistré dans ton navigateur (localStorage).
+- APERÇU : Tu vois le rendu Discord en temps réel.
+- COPIER : Clique sur "Copier" pour avoir la commande prête à coller sur Discord.
+
+--------------------------------------------------
+2. SYSTÈME DE PRODUITS
+--------------------------------------------------
+Sert à enregistrer tes prix pour les afficher automatiquement sur les paiements.
+
+- CONFIGURATION : Dans l'onglet "Produits" du Lab.
+- COMMANDE : /setproduit nom:<nom> prix:<prix>
+- EXEMPLE : /setproduit nom:nitro prix:5.00
+
+--------------------------------------------------
+3. SYSTÈME DE PAIEMENT DYNAMIQUE
+--------------------------------------------------
+Affiche tes fiches PayPal ou Crypto avec personnalisation complète.
+
+- CONFIGURATION : Onglet "Paiements" du Lab (Image, Footer, Couleur Hex).
+- DÉFINIR : Utilise la commande générée /paiement definir.
+- UTILISATION : 
+    /paypal [produit:nom]
+    /litecoin [produit:nom]
+    ... (marche aussi pour ethereum et solana)
+- NOTE : Si tu mets un produit, le prix enregistré s'affiche tout seul !
+
+--------------------------------------------------
+4. L'EXCHANGER (SYSTÈME DE CHANGE)
+--------------------------------------------------
+Permet aux clients de demander un échange de monnaie.
+
+- CONFIGURATION : Onglet "Exchanger" du Lab.
+- AJOUTER TAUX : /exchanger taux paire:<ex: paypal-ltc> taux:<ex: 0.90>
+- ENVOYER PANEL : /exchanger panel-envoyer
+- FONCTIONNEMENT : Le client clique sur une paire -> Modal (fenêtre) -> Le bot calcule et ouvre un ticket spécial "Exchange".
+
+--------------------------------------------------
+5. SYSTÈME DE TICKETS (SUPPORT)
+--------------------------------------------------
+Gestion du support client par boutons.
+
+- CONFIGURATION : Onglet "Tickets" du Lab.
+- RESET : /reset (ou /ticket reset) pour vider tous les boutons de test.
+- AJOUTER BOUTON : /ticket bouton-ajouter id:<id> label:<texte> emoji:<emoji>
+- ENVOYER PANEL : /ticket panel-envoyer
+
+--------------------------------------------------
+6. COMMANDES DE COMMUNICATION (CUSTOM)
+--------------------------------------------------
+- /say message:<ton texte> : Fait parler le bot (sans embed).
+- /json data:<ton json> : Envoie l'embed exact que tu as créé dans l'onglet "Custom JSON" du Lab.
+- /help : Affiche la liste à jour de toutes les commandes.
+
+--------------------------------------------------
+7. MODÉRATION & CONFIGURATION
+--------------------------------------------------
+- MODÉRATION : /ban, /kick, /timeout, /purge, /warn, /warnings.
+- CONFIGURATION GÉNÉRALE (+config) :
+    +config salon-panel #salon : Définit le salon des tickets.
+    +config salon-avis #salon : Définit le salon des avis clients.
+    +config staff-role add @role : Ajoute un rôle qui peut voir les tickets.
+
+--------------------------------------------------
+8. INSTALLATION & MISE À JOUR
+--------------------------------------------------
+1. Remplit ton fichier .env :
+   CLIENT_ID=ID_DU_BOT
+   GUILD_ID=ID_DU_SERVEUR
+   MONGO_URL=TON_LIEN_MONGODB
+2. Lance le bot : npm start
+3. Les commandes Slash (/) s'enregistrent automatiquement au démarrage.
