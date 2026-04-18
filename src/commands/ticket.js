@@ -152,18 +152,27 @@ module.exports = {
     }
 
     if (sub === 'panel-config') {
-      const rawJson = interaction.options.getString('json', true);
+      let rawJson = interaction.options.getString('json', true).trim();
+      
+      // Nettoyage du JSON pour éviter les erreurs de copier-coller
+      if (rawJson.startsWith("'") && rawJson.endsWith("'")) rawJson = rawJson.slice(1, -1);
+      if (rawJson.startsWith("`") && rawJson.endsWith("`")) rawJson = rawJson.slice(1, -1);
+      
       try {
         const parsed = JSON.parse(rawJson);
         cfg.ticketPanelEmbed = parsed;
         cfg.markModified('ticketPanelEmbed');
         await cfg.save();
         await interaction.reply({
-          content: 'Configuration de l’embed du panel mise à jour. Utilise `/ticket panel-envoyer`.',
+          content: '✅ Configuration de l’embed du panel mise à jour. Utilise `/ticket panel-envoyer` pour voir le résultat.',
           ephemeral: true,
         });
       } catch (e) {
-        await interaction.reply({ content: 'JSON invalide.', ephemeral: true });
+        console.error('Erreur JSON:', e.message);
+        await interaction.reply({ 
+          content: `❌ **JSON invalide.**\nErreur : \`${e.message}\`\n\nAssure-toi de copier l'intégralité du texte généré par le Lab sans ajouter de guillemets autour.`, 
+          ephemeral: true 
+        });
       }
       return;
     }

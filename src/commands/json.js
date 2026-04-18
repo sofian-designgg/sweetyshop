@@ -24,14 +24,20 @@ module.exports = {
       return;
     }
 
-    const rawJson = interaction.options.getString('data', true);
+    let rawJson = interaction.options.getString('data', true).trim();
+    if (rawJson.startsWith("'") && rawJson.endsWith("'")) rawJson = rawJson.slice(1, -1);
+    if (rawJson.startsWith("`") && rawJson.endsWith("`")) rawJson = rawJson.slice(1, -1);
+
     try {
       const parsed = JSON.parse(rawJson);
       const embed = embedFromConfig(parsed);
-      await interaction.reply({ content: 'Embed envoyé.', ephemeral: true });
+      await interaction.reply({ content: '✅ Embed envoyé.', ephemeral: true });
       await interaction.channel.send({ embeds: [embed] });
     } catch (e) {
-      await interaction.reply({ content: 'JSON invalide.', ephemeral: true });
+      await interaction.reply({ 
+        content: `❌ **JSON invalide.**\nErreur : \`${e.message}\``, 
+        ephemeral: true 
+      });
     }
   },
 

@@ -84,6 +84,23 @@
       font-size: 0.85rem;
       margin-bottom: 0.8rem;
     }
+
+    .md-btns {
+      display: flex;
+      gap: 0.3rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .md-btn {
+      background: #4e5058;
+      border: none;
+      color: #fff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .md-btn:hover { background: #6d6f78; }
     
     .discord-msg { max-width: 520px; width: 100%; display: flex; gap: 1rem; margin-bottom: 2rem; }
     .avatar { width: 40px; height: 40px; border-radius: 50%; background: #5865f2; flex-shrink: 0; }
@@ -189,6 +206,13 @@
         <label>Titre</label>
         <input type="text" id="t-title" value="Support & Commandes" oninput="updateTickets()">
         <label>Description</label>
+        <div class="md-btns">
+          <button class="md-btn" onclick="insertMD('t-desc', '**', '**')">B</button>
+          <button class="md-btn" onclick="insertMD('t-desc', '*', '*')">I</button>
+          <button class="md-btn" onclick="insertMD('t-desc', '__', '__')">U</button>
+          <button class="md-btn" onclick="insertMD('t-desc', '```', '```')">Code</button>
+          <button class="md-btn" onclick="insertMD('t-desc', '[', '](url)')">Lien</button>
+        </div>
         <textarea id="t-desc" oninput="updateTickets()">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</textarea>
         <label>Couleur (#Hex)</label>
         <input type="text" id="t-color" value="#5865f2" oninput="updateTickets()">
@@ -220,6 +244,11 @@
         <label>Titre</label>
         <input type="text" id="e-title" value="Exchanger Service" oninput="updateExchanger()">
         <label>Description</label>
+        <div class="md-btns">
+          <button class="md-btn" onclick="insertMD('e-desc', '**', '**')">B</button>
+          <button class="md-btn" onclick="insertMD('e-desc', '*', '*')">I</button>
+          <button class="md-btn" onclick="insertMD('e-desc', '__', '__')">U</button>
+        </div>
         <textarea id="e-desc" oninput="updateExchanger()">Sélectionnez la paire d'échange souhaitée.</textarea>
         <label>Couleur (#Hex)</label>
         <input type="text" id="e-color" value="#2ecc71" oninput="updateExchanger()">
@@ -295,6 +324,11 @@
         <label>Titre</label>
         <input type="text" id="w-title" value="Welcome to {guild_name}!" oninput="updateWelcome()">
         <label>Description</label>
+        <div class="md-btns">
+          <button class="md-btn" onclick="insertMD('w-desc', '**', '**')">B</button>
+          <button class="md-btn" onclick="insertMD('w-desc', '*', '*')">I</button>
+          <button class="md-btn" onclick="insertMD('w-desc', '__', '__')">U</button>
+        </div>
         <textarea id="w-desc" oninput="updateWelcome()">Merci de nous avoir rejoint ! Nous sommes maintenant {member_count} membres.</textarea>
         <label>Couleur (#Hex)</label>
         <input type="text" id="w-color-hex" value="#f1c40f" oninput="updateWelcome()">
@@ -313,6 +347,11 @@
         <label>Titre</label>
         <input type="text" id="c-title" value="Mon Message" oninput="updateCustom()">
         <label>Description</label>
+        <div class="md-btns">
+          <button class="md-btn" onclick="insertMD('c-desc', '**', '**')">B</button>
+          <button class="md-btn" onclick="insertMD('c-desc', '*', '*')">I</button>
+          <button class="md-btn" onclick="insertMD('c-desc', '__', '__')">U</button>
+        </div>
         <textarea id="c-desc" oninput="updateCustom()">Contenu de mon message personnalisé.</textarea>
         <label>Couleur (#Hex)</label>
         <input type="text" id="c-color-hex" value="#5865f2" oninput="updateCustom()">
@@ -982,6 +1021,27 @@
       const text = document.getElementById('cmd-output').innerText;
       navigator.clipboard.writeText(text);
       alert('Commande copiée !');
+    }
+
+    function insertMD(id, prefix, suffix) {
+      const el = document.getElementById(id);
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const text = el.value;
+      const before = text.substring(0, start);
+      const selected = text.substring(start, end);
+      const after = text.substring(end);
+      
+      el.value = before + prefix + selected + suffix + after;
+      el.focus();
+      el.selectionStart = start + prefix.length;
+      el.selectionEnd = start + prefix.length + selected.length;
+      
+      // Déclencher l'update correspondante
+      if(id === 't-desc') updateTickets();
+      if(id === 'e-desc') updateExchanger();
+      if(id === 'w-desc') updateWelcome();
+      if(id === 'c-desc') updateCustom();
     }
 
     // Init

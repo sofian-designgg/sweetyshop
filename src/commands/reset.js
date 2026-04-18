@@ -21,11 +21,13 @@ module.exports = {
     }
 
     cfg.ticketCategories = [];
+    cfg.ticketPanelEmbed = null; // Supprime aussi le texte custom du panel
     cfg.markModified('ticketCategories');
+    cfg.markModified('ticketPanelEmbed');
     await cfg.save();
 
     await interaction.reply({
-      content: '✅ Tous les boutons de tickets ont été supprimés. Utilisez `/ticket panel-envoyer` pour rafraîchir le panel.',
+      content: '✅ Tout le système de tickets a été réinitialisé (Boutons + Embed). Utilisez `/ticket panel-envoyer` pour afficher un panel vierge.',
       ephemeral: true,
     });
   },
@@ -38,9 +40,11 @@ module.exports = {
     if (!admin) return;
 
     cfg.ticketCategories = [];
+    cfg.ticketPanelEmbed = null;
     cfg.markModified('ticketCategories');
+    cfg.markModified('ticketPanelEmbed');
     await cfg.save();
 
-    await message.reply('✅ Boutons réinitialisés. Relance le panel avec `+ticket envoyer`.');
+    await message.reply('✅ Système réinitialisé. Relance le panel avec `/ticket panel-envoyer`.');
   },
 };
