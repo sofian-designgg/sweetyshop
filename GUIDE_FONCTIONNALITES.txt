@@ -40,15 +40,26 @@ Affiche tes fiches PayPal ou Crypto avec personnalisation complète.
 --------------------------------------------------
 4. L'EXCHANGER (SYSTÈME DE CHANGE)
 --------------------------------------------------
-Permet aux clients de demander un échange de monnaie.
+Permet aux clients de demander un échange de monnaie via un MENU DÉROULANT (Select Menu).
 
 - CONFIGURATION : Onglet "Exchanger" du Lab.
-- AJOUTER TAUX : /exchanger taux paire:<ex: paypal-ltc> taux:<ex: 0.90>
+- AJOUTER TAUX : /exchanger taux paire:<ex: paypal-ltc> taux:<ex: 0.90> [emoji:<emoji>] [description:<texte>]
 - ENVOYER PANEL : /exchanger panel-envoyer
-- FONCTIONNEMENT : Le client clique sur une paire -> Modal (fenêtre) -> Le bot calcule et ouvre un ticket spécial "Exchange".
+- FONCTIONNEMENT : Le client sélectionne une option dans le menu -> Modal (fenêtre) -> Le bot calcule et ouvre un ticket spécial "Exchange".
 
 --------------------------------------------------
-5. SYSTÈME DE TICKETS (SUPPORT)
+5. SYSTÈME DE BIENVENUE (NEW !)
+--------------------------------------------------
+Envoie un message automatique quand un membre rejoint le serveur.
+
+- CONFIGURATION : Onglet "Bienvenue" du Lab.
+- ACTIVER : /welcome config active:True salon:#salon-bienvenue
+- DÉFINIR EMBED : Utilisez la commande générée /welcome set-embed json:...
+- VARIABLES : Tu peux utiliser {user}, {guild_name}, {member_count} dans le texte.
+- AVATAR : Utilise {user_avatar} dans le champ Image ou Thumbnail pour afficher l'avatar du nouveau membre.
+
+--------------------------------------------------
+6. SYSTÈME DE TICKETS (SUPPORT)
 --------------------------------------------------
 Gestion du support client par boutons.
 

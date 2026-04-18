@@ -10,6 +10,7 @@ const LINES = [
   '**Produits** — `/setproduit` (nom + prix) pour les paiements',
   '**Paiement** — `/paiement` (config) · `/paypal` `/litecoin` `/ethereum` `/solana` (avec produit en option)',
   '**Exchanger** — `/exchanger` (taux, panel, supprimer)',
+  '**Bienvenue** — `/welcome` (config, embed, afficher)',
   '**Utilitaire** — `/say` (parler) · `/json` (embed custom)',
   '**Avis** — `/avis demander` après livraison',
 ];

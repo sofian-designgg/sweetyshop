@@ -58,6 +58,11 @@ const GuildConfigSchema = new mongoose.Schema(
     ticketMaxPerUser: { type: Number, default: 3 },
     ticketTranscriptChannelId: String,
     products: { type: Map, of: Number, default: {} },
+    welcomeConfig: {
+      enabled: { type: Boolean, default: false },
+      channelId: String,
+      embed: CustomEmbedSchema,
+    },
     exchangerConfig: {
       type: {
         channelId: String,

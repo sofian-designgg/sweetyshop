@@ -136,6 +136,27 @@ module.exports = {
         }
       }
 
+      if (interaction.isStringSelectMenu()) {
+        const id = interaction.customId;
+        if (id === 'exchange:select') {
+          const pair = interaction.values[0];
+          const modal = new ModalBuilder()
+            .setCustomId(`exchange:submit:${pair}`)
+            .setTitle(`Échange ${pair.toUpperCase()}`);
+
+          const amount = new TextInputBuilder()
+            .setCustomId('amount')
+            .setLabel('Montant que vous envoyez')
+            .setPlaceholder('Ex: 10')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
+
+          modal.addComponents(new ActionRowBuilder().addComponents(amount));
+          await interaction.showModal(modal);
+          return;
+        }
+      }
+
       if (interaction.isModalSubmit() && interaction.customId.startsWith('review:submit:')) {
         const parts = interaction.customId.split(':');
         const guildId = parts[2];
@@ -214,7 +235,8 @@ module.exports = {
         }
 
         const cfg = await getConfig(interaction.guildId);
-        const rate = cfg.exchangerConfig?.rates?.[pair];
+        const rateData = cfg.exchangerConfig?.rates?.[pair];
+        const rate = typeof rateData === 'object' ? rateData.rate : rateData;
 
         if (!rate) {
           await interaction.reply({

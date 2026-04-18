@@ -5,6 +5,7 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  StringSelectMenuBuilder,
 } = require('discord.js');
 const { getConfig, isConfigAdmin } = require('../util/permissions');
 const { embedFromConfig, parseHexColor } = require('../util/embeds');
@@ -24,6 +25,12 @@ module.exports = {
         )
         .addNumberOption((o) =>
           o.setName('taux').setDescription('Taux (ex: 0.95 pour 5% de frais)').setRequired(true)
+        )
+        .addStringOption((o) =>
+          o.setName('emoji').setDescription('Emoji pour le menu (ex: 💳)').setRequired(false)
+        )
+        .addStringOption((o) =>
+          o.setName('description').setDescription('Description courte (ex: Frais 7%)').setRequired(false)
         )
     )
     .addSubcommand((s) =>
@@ -60,9 +67,18 @@ module.exports = {
     if (sub === 'taux') {
       const paire = interaction.options.getString('paire', true).toLowerCase();
       const taux = interaction.options.getNumber('taux', true);
+      const emoji = interaction.options.getString('emoji') || null;
+      const desc = interaction.options.getString('description') || `Taux: ${taux}`;
+
       if (!cfg.exchangerConfig) cfg.exchangerConfig = { rates: {} };
       if (!cfg.exchangerConfig.rates) cfg.exchangerConfig.rates = {};
-      cfg.exchangerConfig.rates[paire] = taux;
+      
+      cfg.exchangerConfig.rates[paire] = {
+        rate: taux,
+        emoji: emoji,
+        description: desc
+      };
+      
       cfg.markModified('exchangerConfig');
       await cfg.save();
       await interaction.reply({
@@ -124,24 +140,24 @@ module.exports = {
         return;
       }
 
-      const rows = [];
-      let currentRow = new ActionRowBuilder();
-
-      pairs.forEach((pair, index) => {
-        if (index > 0 && index % 5 === 0) {
-          rows.push(currentRow);
-          currentRow = new ActionRowBuilder();
-        }
-        currentRow.addComponents(
-          new ButtonBuilder()
-            .setCustomId(`exchange:open:${pair}`)
-            .setLabel(pair.toUpperCase())
-            .setStyle(ButtonStyle.Primary)
+      const menu = new StringSelectMenuBuilder()
+        .setCustomId('exchange:select')
+        .setPlaceholder('Sélectionnez une option d’échange...')
+        .addOptions(
+          pairs.map((pair) => {
+            const data = rates[pair];
+            return {
+              label: pair.toUpperCase(),
+              description: typeof data === 'object' ? data.description : `Taux: ${data}`,
+              value: pair,
+              emoji: typeof data === 'object' ? data.emoji : null,
+            };
+          })
         );
-      });
-      rows.push(currentRow);
 
-      const msg = await channel.send({ embeds: [embed], components: rows });
+      const row = new ActionRowBuilder().addComponents(menu);
+
+      const msg = await channel.send({ embeds: [embed], components: [row] });
       if (!cfg.exchangerConfig) cfg.exchangerConfig = {};
       cfg.exchangerConfig.channelId = channel.id;
       cfg.exchangerConfig.messageId = msg.id;

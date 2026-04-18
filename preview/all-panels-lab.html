@@ -176,6 +176,7 @@
       <button class="tab" onclick="switchTab('exchanger')">🔄 Exchanger</button>
       <button class="tab" onclick="switchTab('payments')">💳 Paiements</button>
       <button class="tab" onclick="switchTab('products')">📦 Produits</button>
+      <button class="tab" onclick="switchTab('welcome')">👋 Bienvenue</button>
       <button class="tab" onclick="switchTab('custom')">🛠️ Custom JSON</button>
     </div>
   </header>
@@ -234,6 +235,8 @@
         <h2>Ajouter une paire</h2>
         <input type="text" id="e-pair" placeholder="Paire (ex: paypal-ltc)">
         <input type="number" id="e-rate" placeholder="Taux (ex: 0.95)" step="0.01">
+        <input type="text" id="e-p-emoji" placeholder="Emoji (ex: 💳)">
+        <input type="text" id="e-p-desc" placeholder="Description courte (ex: Frais 7%)">
         <button class="d-btn p" style="width: 100%" onclick="addPair()">Ajouter la paire</button>
       </div>
 
@@ -283,6 +286,26 @@
         </div>
       </div>
 
+      <!-- Section Bienvenue -->
+      <div id="side-welcome" class="hidden">
+        <h2>Message de Bienvenue</h2>
+        <p>Variables : {user}, {user_tag}, {user_name}, {guild_name}, {member_count}</p>
+        <label>Texte du message (Hors embed)</label>
+        <input type="text" id="w-content" value="Bienvenue {user} !" oninput="updateWelcome()">
+        <label>Titre</label>
+        <input type="text" id="w-title" value="Welcome to {guild_name}!" oninput="updateWelcome()">
+        <label>Description</label>
+        <textarea id="w-desc" oninput="updateWelcome()">Merci de nous avoir rejoint ! Nous sommes maintenant {member_count} membres.</textarea>
+        <label>Couleur (#Hex)</label>
+        <input type="text" id="w-color-hex" value="#f1c40f" oninput="updateWelcome()">
+        <label>Image URL (Mettre {user_avatar} pour l'avatar)</label>
+        <input type="text" id="w-image" placeholder="https://..." oninput="updateWelcome()">
+        <label>Thumbnail URL (Mettre {user_avatar} pour l'avatar)</label>
+        <input type="text" id="w-thumb" placeholder="https://..." oninput="updateWelcome()">
+        <label>Texte Footer</label>
+        <input type="text" id="w-footer" placeholder="Enjoy your stay" oninput="updateWelcome()">
+      </div>
+
       <!-- Section Custom JSON -->
       <div id="side-custom" class="hidden">
         <h2>Embed Personnalisé (100%)</h2>
@@ -309,6 +332,20 @@
           <button class="copy-btn" onclick="copyCmd()">Copier</button>
           <pre id="cmd-output">/ticket panel-envoyer</pre>
         </div>
+      </div>
+
+      <div class="help-section" style="margin-top: 2rem; background: #111214; padding: 1rem; border-radius: 4px; font-size: 0.8rem;">
+        <h2 style="margin-top: 0; font-size: 0.9rem;">💡 Aide Discord</h2>
+        <ul style="padding-left: 1.2rem; color: var(--muted);">
+          <li><b>Gras</b> : **texte**</li>
+          <li><i>Italique</i> : *texte*</li>
+          <li><u>Souligné</u> : __texte__</li>
+          <li><del>Barré</del> : ~~texte~~</li>
+          <li><code>Code</code> : \`texte\`</li>
+          <li>Lien : [nom](url)</li>
+          <li>Emoji : :emoji:</li>
+          <li>Emoji Custom : &lt;:nom:id&gt;</li>
+        </ul>
       </div>
     </div>
 
@@ -387,6 +424,24 @@
             </div>
           </div>
 
+          <!-- Aperçu Bienvenue -->
+          <div id="view-welcome" class="hidden">
+            <div id="vw-content" style="margin-bottom: 0.5rem;">Bienvenue {user} !</div>
+            <div class="embed" id="w-embed">
+              <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                  <div class="embed-title" id="vw-title">Welcome to {guild_name}!</div>
+                  <div class="embed-desc" id="vw-desc">Merci de nous avoir rejoint !</div>
+                </div>
+                <img id="vw-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
+              </div>
+              <img id="vw-image" src="" class="embed-image" style="display: none;">
+              <div id="vw-footer-area" class="embed-footer" style="display: none;">
+                <span id="vw-footer-text"></span>
+              </div>
+            </div>
+          </div>
+
           <!-- Aperçu Custom JSON -->
           <div id="view-custom" class="hidden">
             <div class="embed" id="c-embed">
@@ -455,6 +510,13 @@
         p_thumb: document.getElementById('p-thumb').value,
         p_footer: document.getElementById('p-footer').value,
         p_footer_icon: document.getElementById('p-footer-icon').value,
+        w_content: document.getElementById('w-content').value,
+        w_title: document.getElementById('w-title').value,
+        w_desc: document.getElementById('w-desc').value,
+        w_color: document.getElementById('w-color-hex').value,
+        w_image: document.getElementById('w-image').value,
+        w_thumb: document.getElementById('w-thumb').value,
+        w_footer: document.getElementById('w-footer').value,
         c_title: document.getElementById('c-title').value,
         c_desc: document.getElementById('c-desc').value,
         c_color: document.getElementById('c-color-hex').value,
@@ -494,6 +556,14 @@
         if(configs.p_footer) document.getElementById('p-footer').value = configs.p_footer;
         if(configs.p_footer_icon) document.getElementById('p-footer-icon').value = configs.p_footer_icon;
 
+        if(configs.w_content) document.getElementById('w-content').value = configs.w_content;
+        if(configs.w_title) document.getElementById('w-title').value = configs.w_title;
+        if(configs.w_desc) document.getElementById('w-desc').value = configs.w_desc;
+        if(configs.w_color) document.getElementById('w-color-hex').value = configs.w_color;
+        if(configs.w_image) document.getElementById('w-image').value = configs.w_image;
+        if(configs.w_thumb) document.getElementById('w-thumb').value = configs.w_thumb;
+        if(configs.w_footer) document.getElementById('w-footer').value = configs.w_footer;
+
         if(configs.c_title) document.getElementById('c-title').value = configs.c_title;
         if(configs.c_desc) document.getElementById('c-desc').value = configs.c_desc;
         if(configs.c_color) document.getElementById('c-color-hex').value = configs.c_color;
@@ -507,16 +577,20 @@
     function switchTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-
+      
       document.getElementById('side-tickets').classList.add('hidden');
       document.getElementById('side-exchanger').classList.add('hidden');
       document.getElementById('side-payments').classList.add('hidden');
       document.getElementById('side-products').classList.add('hidden');
+      document.getElementById('side-welcome').classList.add('hidden');
+      document.getElementById('side-custom').classList.add('hidden');
+      
       document.getElementById('view-tickets').classList.add('hidden');
       document.getElementById('view-exchanger').classList.add('hidden');
       document.getElementById('view-payments').classList.add('hidden');
       document.getElementById('view-products').classList.add('hidden');
+      document.getElementById('view-welcome').classList.add('hidden');
+      document.getElementById('view-custom').classList.add('hidden');
 
       document.getElementById('side-' + tab).classList.remove('hidden');
       document.getElementById('view-' + tab).classList.remove('hidden');
@@ -525,6 +599,7 @@
       if(tab === 'exchanger') updateExchanger();
       if(tab === 'payments') updatePayments();
       if(tab === 'products') updateProducts();
+      if(tab === 'welcome') updateWelcome();
       if(tab === 'custom') updateCustom();
     }
 
@@ -640,15 +715,31 @@
       } else vFoot.style.display = 'none';
 
       const btns = document.getElementById('e-btns');
-      btns.innerHTML = '';
+      btns.innerHTML = `
+        <div style="width: 100%; background: #1e1f22; border: 1px solid #3f4147; border-radius: 4px; padding: 0.6rem; color: #b5bac1; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+          <span>Sélectionnez une option d’échange...</span>
+          <span>▼</span>
+        </div>
+      `;
+      
+      // On affiche quand même les paires dessous pour pouvoir les supprimer dans le lab
+      btns.innerHTML += '<div style="margin-top: 1rem; width: 100%;">';
       exchangePairs.forEach(p => {
         btns.innerHTML += `
-          <div class="exchange-btn-container">
-            <button class="d-btn p">${p.pair.toUpperCase()}</button>
+          <div class="exchange-btn-container" style="margin-bottom: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 4px; justify-content: space-between;">
+            <div style="display:flex; align-items:center;">
+              <span style="margin-right:0.5rem">${p.emoji || '🔄'}</span>
+              <div>
+                <div style="font-weight:600; font-size:0.8rem">${p.pair.toUpperCase()}</div>
+                <div style="font-size:0.7rem; color:var(--muted)">${p.description || 'Taux: '+p.rate}</div>
+              </div>
+            </div>
             <button class="delete-btn" onclick="deletePair('${p.pair}')" title="Supprimer">×</button>
           </div>
         `;
       });
+      btns.innerHTML += '</div>';
+
       document.getElementById('cmd-output').innerText = `/exchanger panel-envoyer`;
     }
 
@@ -662,11 +753,13 @@
     function addPair() {
       const pair = document.getElementById('e-pair').value;
       const rate = document.getElementById('e-rate').value;
+      const emoji = document.getElementById('e-p-emoji').value;
+      const desc = document.getElementById('e-p-desc').value;
       if(!pair || !rate) return alert('Paire et Taux requis');
-      exchangePairs.push({ pair, rate });
+      exchangePairs.push({ pair, rate, emoji, description: desc });
       saveData();
       updateExchanger();
-      document.getElementById('cmd-output').innerText = `/exchanger taux paire:${pair} taux:${rate}`;
+      document.getElementById('cmd-output').innerText = `/exchanger taux paire:${pair} taux:${rate}${emoji ? ' emoji:'+emoji : ''}${desc ? ' description:"'+desc+'"' : ''}`;
     }
 
     function updatePayments() {
@@ -766,6 +859,67 @@
       // On n'a pas de commande directe pour supprimer un produit dans le bot actuel,
       // mais on peut le signaler.
       document.getElementById('cmd-output').innerText = `Produit ${name} retiré du lab.`;
+    }
+
+    function updateWelcome() {
+      const content = document.getElementById('w-content').value;
+      const title = document.getElementById('w-title').value;
+      const desc = document.getElementById('w-desc').value;
+      const colorHex = document.getElementById('w-color-hex').value;
+      const image = document.getElementById('w-image').value;
+      const thumb = document.getElementById('w-thumb').value;
+      const footer = document.getElementById('w-footer').value;
+
+      saveData();
+      
+      const replaceVars = (str) => {
+        return str
+          .replace(/{user}/g, '@Lara')
+          .replace(/{user_tag}/g, 'Lara#0001')
+          .replace(/{user_name}/g, 'Lara')
+          .replace(/{guild_name}/g, 'Ohio Machine Server')
+          .replace(/{member_count}/g, '123');
+      };
+
+      document.getElementById('vw-content').innerText = replaceVars(content);
+      document.getElementById('vw-title').innerText = replaceVars(title);
+      document.getElementById('vw-desc').innerText = replaceVars(desc);
+      document.getElementById('w-embed').style.borderLeftColor = colorHex;
+
+      // Thumb
+      const vThumb = document.getElementById('vw-thumb');
+      if(thumb) { 
+        vThumb.src = thumb === '{user_avatar}' ? 'https://cdn.discordapp.com/embed/avatars/0.png' : thumb; 
+        vThumb.style.display = 'block'; 
+      }
+      else vThumb.style.display = 'none';
+
+      // Image
+      const vImg = document.getElementById('vw-image');
+      if(image) { 
+        vImg.src = image === '{user_avatar}' ? 'https://cdn.discordapp.com/embed/avatars/0.png' : image; 
+        vImg.style.display = 'block'; 
+      }
+      else vImg.style.display = 'none';
+
+      // Footer
+      const vFoot = document.getElementById('vw-footer-area');
+      const vFootText = document.getElementById('vw-footer-text');
+      if(footer) {
+        vFoot.style.display = 'flex';
+        vFootText.innerText = replaceVars(footer);
+      } else vFoot.style.display = 'none';
+
+      const json = {
+        content: content,
+        title: title,
+        description: desc,
+        color: parseInt(colorHex.replace('#', ''), 16),
+        image: image || undefined,
+        thumbnail: thumb || undefined,
+        footer: footer || undefined
+      };
+      document.getElementById('cmd-output').innerText = `/welcome set-embed json:${JSON.stringify(json)}`;
     }
 
     function updateCustom() {
