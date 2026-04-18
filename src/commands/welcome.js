@@ -57,16 +57,25 @@ module.exports = {
     }
 
     if (sub === 'set-embed') {
-      const rawJson = interaction.options.getString('json', true);
+      let rawJson = interaction.options.getString('json', true).trim();
+      if (rawJson.startsWith("'") && rawJson.endsWith("'")) rawJson = rawJson.slice(1, -1);
+      if (rawJson.startsWith("`") && rawJson.endsWith("`")) rawJson = rawJson.slice(1, -1);
+
       try {
         const parsed = JSON.parse(rawJson);
         if (!cfg.welcomeConfig) cfg.welcomeConfig = {};
         cfg.welcomeConfig.embed = parsed;
         cfg.markModified('welcomeConfig');
         await cfg.save();
-        await interaction.reply({ content: 'Embed de bienvenue mis à jour.', ephemeral: true });
+        await interaction.reply({
+          content: '✅ Embed de bienvenue mis à jour. Testez avec l’arrivée d’un nouveau membre !',
+          ephemeral: true,
+        });
       } catch (e) {
-        await interaction.reply({ content: 'JSON invalide.', ephemeral: true });
+        await interaction.reply({ 
+          content: `❌ **JSON invalide.**\nErreur : \`${e.message}\``, 
+          ephemeral: true 
+        });
       }
       return;
     }

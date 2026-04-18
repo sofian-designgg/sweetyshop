@@ -14,7 +14,12 @@ function embedFromConfig(raw) {
   if (typeof raw.color === 'number') e.setColor(raw.color);
   if (raw.image) e.setImage(raw.image);
   if (raw.thumbnail) e.setThumbnail(raw.thumbnail);
-  if (raw.footer) e.setFooter({ text: raw.footer });
+  if (raw.footer) {
+    e.setFooter({
+      text: raw.footer,
+      iconURL: raw.footerIcon || undefined,
+    });
+  }
   if (Array.isArray(raw.fields)) {
     for (const f of raw.fields.slice(0, 25)) {
       e.addFields({

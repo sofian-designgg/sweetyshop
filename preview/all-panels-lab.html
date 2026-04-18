@@ -338,6 +338,8 @@
         <input type="text" id="w-thumb" placeholder="https://..." oninput="updateWelcome()">
         <label>Texte Footer</label>
         <input type="text" id="w-footer" placeholder="Enjoy your stay" oninput="updateWelcome()">
+        <label>Icon Footer URL</label>
+        <input type="text" id="w-footer-icon" placeholder="https://..." oninput="updateWelcome()">
       </div>
 
       <!-- Section Custom JSON -->
@@ -476,6 +478,7 @@
               </div>
               <img id="vw-image" src="" class="embed-image" style="display: none;">
               <div id="vw-footer-area" class="embed-footer" style="display: none;">
+                <img id="vw-footer-icon" src="" style="display: none;">
                 <span id="vw-footer-text"></span>
               </div>
             </div>
@@ -556,6 +559,7 @@
         w_image: document.getElementById('w-image').value,
         w_thumb: document.getElementById('w-thumb').value,
         w_footer: document.getElementById('w-footer').value,
+        w_footer_icon: document.getElementById('w-footer-icon').value,
         c_title: document.getElementById('c-title').value,
         c_desc: document.getElementById('c-desc').value,
         c_color: document.getElementById('c-color-hex').value,
@@ -602,6 +606,7 @@
         if(configs.w_image) document.getElementById('w-image').value = configs.w_image;
         if(configs.w_thumb) document.getElementById('w-thumb').value = configs.w_thumb;
         if(configs.w_footer) document.getElementById('w-footer').value = configs.w_footer;
+        if(configs.w_footer_icon) document.getElementById('w-footer-icon').value = configs.w_footer_icon;
 
         if(configs.c_title) document.getElementById('c-title').value = configs.c_title;
         if(configs.c_desc) document.getElementById('c-desc').value = configs.c_desc;
@@ -788,7 +793,16 @@
       });
       btns.innerHTML += '</div>';
 
-      document.getElementById('cmd-output').innerText = `/exchanger panel-envoyer`;
+      const json = {
+        title: title,
+        description: desc,
+        color: parseInt(color.replace('#', ''), 16),
+        image: image || undefined,
+        thumbnail: thumb || undefined,
+        footer: footer || undefined,
+        footerIcon: footerIcon || undefined
+      };
+      document.getElementById('cmd-output').innerText = `/exchanger config-embed json:${JSON.stringify(json)}`;
     }
 
     function deletePair(pair) {
@@ -917,6 +931,7 @@
       const image = document.getElementById('w-image').value;
       const thumb = document.getElementById('w-thumb').value;
       const footer = document.getElementById('w-footer').value;
+      const footerIcon = document.getElementById('w-footer-icon').value;
 
       saveData();
       
@@ -953,9 +968,14 @@
       // Footer
       const vFoot = document.getElementById('vw-footer-area');
       const vFootText = document.getElementById('vw-footer-text');
-      if(footer) {
+      const vFootIcon = document.getElementById('vw-footer-icon');
+      if(footer || footerIcon) {
         vFoot.style.display = 'flex';
-        vFootText.innerText = replaceVars(footer);
+        vFootText.innerText = replaceVars(footer || '');
+        if(footerIcon) {
+          vFootIcon.src = footerIcon;
+          vFootIcon.style.display = 'block';
+        } else vFootIcon.style.display = 'none';
       } else vFoot.style.display = 'none';
 
       const json = {
@@ -965,7 +985,8 @@
         color: parseInt(colorHex.replace('#', ''), 16),
         image: image || undefined,
         thumbnail: thumb || undefined,
-        footer: footer || undefined
+        footer: footer || undefined,
+        footerIcon: footerIcon || undefined
       };
       document.getElementById('cmd-output').innerText = `/welcome set-embed json:${JSON.stringify(json)}`;
     }

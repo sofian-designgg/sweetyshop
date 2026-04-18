@@ -87,12 +87,19 @@ module.exports = {
 
     if (sub === 'definir') {
       const key = interaction.options.getString('type', true).toLowerCase();
-      const rawJson = interaction.options.getString('json', true);
+      let rawJson = interaction.options.getString('json', true).trim();
+      
+      if (rawJson.startsWith("'") && rawJson.endsWith("'")) rawJson = rawJson.slice(1, -1);
+      if (rawJson.startsWith("`") && rawJson.endsWith("`")) rawJson = rawJson.slice(1, -1);
+
       let parsed;
       try {
         parsed = JSON.parse(rawJson);
-      } catch {
-        await interaction.reply({ content: 'JSON invalide.', ephemeral: true });
+      } catch (e) {
+        await interaction.reply({ 
+          content: `❌ **JSON invalide.**\nErreur : \`${e.message}\``, 
+          ephemeral: true 
+        });
         return;
       }
       if (typeof parsed.color === 'string' && parsed.color.startsWith('#')) {
