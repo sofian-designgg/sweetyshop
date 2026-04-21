@@ -26,13 +26,6 @@ module.exports = {
           return;
         }
         
-        // Exchanger button (exchanger_select_xxx) - Components V2
-        if (customId.startsWith('exchanger_select_')) {
-          const pair = customId.replace('exchanger_select_', '');
-          await handleExchangerSelect(interaction, pair);
-          return;
-        }
-        
         // Fermer un ticket
         if (customId === 'ticket_close') {
           await handleTicketClose(interaction);
@@ -52,7 +45,7 @@ module.exports = {
       if (interaction.isStringSelectMenu()) {
         const { customId, values } = interaction;
         
-        // Exchanger (ancien format avec menu)
+        // Exchanger select menu
         if (customId === 'exchanger_select') {
           await handleExchangerSelect(interaction, values[0]);
           return;
