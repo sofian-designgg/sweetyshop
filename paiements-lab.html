@@ -146,6 +146,85 @@
       border-radius: 4px 8px 8px 4px;
       padding: 0.75rem 1rem 0.75rem 0.75rem;
     }
+    /* Components V2 Container style */
+    .v2-container {
+      background: var(--panel-bg);
+      border: 1px solid #3f4147;
+      border-radius: 8px;
+      max-width: 520px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .v2-header {
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .v2-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .v2-desc {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: var(--text);
+    }
+    .v2-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      object-fit: cover;
+      margin-left: 1rem;
+    }
+    .v2-separator {
+      height: 1px;
+      background: #3f4147;
+      margin: 0 1rem;
+    }
+    .v2-section {
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .v2-section-text {
+      flex: 1;
+    }
+    .v2-section-title {
+      font-weight: 600;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .v2-section-sub {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .v2-btn {
+      background: #248046;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .v2-footer {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .v2-image {
+      width: calc(100% - 2rem);
+      margin: 0.5rem 1rem;
+      border-radius: 4px;
+      max-height: 200px;
+      object-fit: cover;
+    }
     .embed .title { color: #fff; font-weight: 600; margin-bottom: 0.45rem; }
     .embed .desc { font-size: 0.9rem; line-height: 1.45; white-space: pre-wrap; }
     .embed .fields { margin-top: 0.5rem; display: grid; gap: 0.35rem; }
@@ -159,20 +238,21 @@
 <body>
   <div class="layout">
     <div class="panel">
-      <h1>Fiches paiement — labo</h1>
+      <h1>Fiches paiement — Components V2</h1>
       <p class="sub">
-        Construis l’embed comme sur Discord, puis copie le <strong>JSON</strong> pour
-        <code>/paiement definir</code> ou <code>+paiement set</code>.
+        Construis le container avec sections et boutons intégrés, puis copie le <strong>JSON</strong> pour
+        <code>/paiement definir</code> ou <code>+paiement set</code>.<br>
+        <strong style="color: var(--ok);">✨ Nouveau : Les boutons sont maintenant intégrés dans les sections !</strong>
       </p>
 
       <details class="how" open>
-        <summary>Comment ça marche dans le bot ?</summary>
+        <summary>🎨 Components V2 — Structure du Container</summary>
         <ul>
-          <li>Les fiches sont stockées en <strong>MongoDB</strong> par <strong>clé</strong> : <code>paypal</code>, <code>litecoin</code>, <code>ethereum</code>, <code>solana</code>, ou n’importe quel nom (ex. <code>usdt</code>).</li>
-          <li>Sur Discord : <code>+paypal</code>, <code>+litecoin</code>, <code>+eth</code>, <code>+sol</code> affichent l’embed enregistré pour cette clé.</li>
-          <li><code>/paiement afficher</code> (autocomplete) — prévisualiser · <code>/paiement definir</code> avec un JSON — enregistrer.</li>
-          <li>Préfixe : <code>+paiement set &lt;clé&gt; &lt;json&gt;</code> (message sur une ligne ou JSON compact).</li>
-          <li>Couleur dans le JSON : nombre décimal <em>ou</em> chaîne <code>"#5865F2"</code> (le bot convertit).</li>
+          <li>Les fiches utilisent le nouveau système <strong>Discord Components V2</strong> avec des <strong>Containers</strong>.</li>
+          <li>Chaque fiche contient des <strong>sections</strong> avec texte + bouton intégré (accessory).</li>
+          <li>Le bouton de paiement apparaît directement dans la section produit.</li>
+          <li>Structure : <code>ContainerBuilder → SectionBuilder → TextDisplayBuilder + ButtonBuilder</code></li>
+          <li>Les commandes restent identiques : <code>/paypal</code>, <code>/litecoin</code>, <code>/ethereum</code>, <code>/solana</code></li>
         </ul>
       </details>
 
@@ -373,27 +453,71 @@
     function render() {
       const o = collectEmbed();
       const hex = "#" + (typeof o.color === "number" ? o.color : parseHex(colorEl.value)).toString(16).padStart(6, "0");
-      const borderColor = hex;
 
-      let html = `<div class="embed" style="border-left-color:${borderColor}">`;
-      if (o.title) html += `<div class="title">${escapeHtml(o.title)}</div>`;
-      if (o.description) html += `<div class="desc">${formatDescHtml(o.description)}</div>`;
-      if (o.fields && o.fields.length) {
-        html += `<div class="fields">`;
-        o.fields.forEach((f) => {
-          html += `<div class="field-name">${escapeHtml(f.name)}</div><div class="field-val">${formatDescHtml(f.value)}</div>`;
-        });
-        html += `</div>`;
-      }
+      // Components V2 Container Preview
+      let html = `<div class="v2-container" style="border-color:${hex}">`;
+      
+      // Header avec titre/description
+      html += `<div class="v2-header">`;
+      html += `<div style="flex:1;">`;
+      if (o.title) html += `<div class="v2-title">${escapeHtml(o.title)}</div>`;
+      if (o.description) html += `<div class="v2-desc">${formatDescHtml(o.description)}</div>`;
+      html += `</div></div>`;
+      
+      // Separator
+      html += `<div class="v2-separator"></div>`;
+      
+      // Section avec bouton intégré (simulation produit)
+      html += `<div class="v2-section">`;
+      html += `<div class="v2-section-text">`;
+      html += `<div class="v2-section-title">💳 Paiement</div>`;
+      html += `<div class="v2-section-sub">Cliquez pour confirmer le paiement</div>`;
+      html += `</div>`;
+      html += `<button class="v2-btn">Payer</button>`;
+      html += `</div>`;
+      
+      // Image si présente
       if (o.image && /^https?:\/\//i.test(o.image)) {
         const safe = o.image.replace(/"/g, "");
-        html += `<img class="banner" src="${safe}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'" />`;
+        html += `<img class="v2-image" src="${safe}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'" />`;
       }
-      if (o.footer) html += `<div class="footer">${escapeHtml(o.footer)}</div>`;
+      
+      // Footer
+      if (o.footer) {
+        html += `<div class="v2-separator"></div>`;
+        html += `<div class="v2-footer">${escapeHtml(o.footer)}</div>`;
+      }
+      
       html += `</div>`;
+      
+      // Info Components V2
+      html += `<div style="margin-top:1rem;padding:1rem;background:rgba(88,101,242,0.1);border-radius:8px;max-width:520px;width:100%;font-size:0.8rem;color:var(--muted);">`;
+      html += `<strong style="color:var(--accent);">📦 Components V2</strong><br>`;
+      html += `Ce message utilise le nouveau système Discord avec des sections et des boutons intégrés.`;
+      html += `</div>`;
+      
       host.innerHTML = html;
 
-      const json = JSON.stringify(o);
+      // JSON avec sections pour Components V2
+      const v2Json = {
+        title: o.title,
+        description: o.description,
+        color: o.color,
+        image: o.image,
+        footer: o.footer,
+        sections: [
+          {
+            text: "💳 **Paiement**\nCliquez pour confirmer",
+            button: {
+              label: "Payer",
+              style: "Success",
+              customId: `payment:confirm:${cleEl.value || 'paypal'}`
+            }
+          }
+        ]
+      };
+      
+      const json = JSON.stringify(v2Json);
       jsonPre.textContent = json;
       cleHint.textContent = cleEl.value.trim() || "ta_cle";
     }

@@ -194,7 +194,7 @@
       <button class="tab" onclick="switchTab('payments')">💳 Paiements</button>
       <button class="tab" onclick="switchTab('products')">📦 Produits</button>
       <button class="tab" onclick="switchTab('welcome')">👋 Bienvenue</button>
-      <button class="tab" onclick="switchTab('custom')">🛠️ Custom JSON</button>
+      <button class="tab" onclick="switchTab('custom')">🛠️ Components V2</button>
     </div>
   </header>
 
@@ -342,29 +342,56 @@
         <input type="text" id="w-footer-icon" placeholder="https://..." oninput="updateWelcome()">
       </div>
 
-      <!-- Section Custom JSON -->
+      <!-- Section Custom / Components V2 -->
       <div id="side-custom" class="hidden">
-        <h2>Embed Personnalisé (100%)</h2>
-        <p>Créez n'importe quel embed et envoyez-le avec la commande /json.</p>
+        <h2>Components V2 - Container Builder</h2>
         <label>Titre</label>
-        <input type="text" id="c-title" value="Mon Message" oninput="updateCustom()">
+        <input type="text" id="c-title" value="Ohio Machine Shop" oninput="updateCustom()">
         <label>Description</label>
         <div class="md-btns">
           <button class="md-btn" onclick="insertMD('c-desc', '**', '**')">B</button>
           <button class="md-btn" onclick="insertMD('c-desc', '*', '*')">I</button>
           <button class="md-btn" onclick="insertMD('c-desc', '__', '__')">U</button>
         </div>
-        <textarea id="c-desc" oninput="updateCustom()">Contenu de mon message personnalisé.</textarea>
-        <label>Couleur (#Hex)</label>
+        <textarea id="c-desc" oninput="updateCustom()" rows="3">Bienvenue dans notre shop! Sélectionne une option ci-dessous.</textarea>
+        <label>Couleur d'accentuation (#Hex)</label>
         <input type="text" id="c-color-hex" value="#5865f2" oninput="updateCustom()">
-        <label>Image URL</label>
-        <input type="text" id="c-image" placeholder="https://..." oninput="updateCustom()">
-        <label>Thumbnail URL</label>
-        <input type="text" id="c-thumb" placeholder="https://..." oninput="updateCustom()">
+        <label>Thumbnail Header URL</label>
+        <input type="text" id="c-thumb" placeholder="https://... (en haut à droite)" oninput="updateCustom()">
+        <label>Image/Gallery URL</label>
+        <input type="text" id="c-image" placeholder="https://... (image principale)" oninput="updateCustom()">
         <label>Texte Footer</label>
         <input type="text" id="c-footer" placeholder="Mon Footer" oninput="updateCustom()">
-        <label>Icon Footer URL</label>
-        <input type="text" id="c-footer-icon" placeholder="https://..." oninput="updateCustom()">
+
+        <h2>Sections avec Boutons (intégrés)</h2>
+        <div id="c-section-list" style="margin-bottom:1rem"></div>
+
+        <div style="background: #1e1f22; padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem;">
+          <label>Nom de la section</label>
+          <input type="text" id="cs-name" placeholder="Ex: Nitro Boost">
+          <label>Description</label>
+          <input type="text" id="cs-desc" placeholder="Ex: Accès premium pendant 1 mois">
+          <label>Emoji</label>
+          <input type="text" id="cs-emoji" placeholder="💎">
+          <label>Texte du bouton</label>
+          <input type="text" id="cs-btn-label" placeholder="Acheter - 4.99€">
+          <label>Style du bouton</label>
+          <select id="cs-btn-style">
+            <option value="Primary">Primary (Bleu)</option>
+            <option value="Secondary">Secondary (Gris)</option>
+            <option value="Success">Success (Vert)</option>
+            <option value="Danger">Danger (Rouge)</option>
+          </select>
+          <label>Custom ID</label>
+          <input type="text" id="cs-btn-id" placeholder="buy:nitro:boost">
+          <button class="d-btn g" style="width: 100%; margin-top: 0.5rem;" onclick="addCustomSection()">Ajouter une Section + Bouton</button>
+        </div>
+
+        <div style="background: #232136; padding: 1rem; border-radius: 4px; font-size: 0.8rem; color: var(--muted);">
+          <strong>💡 Components V2 :</strong><br>
+          Les boutons sont maintenant intégrés dans des sections avec du texte.
+          Chaque section peut avoir un bouton à droite (accessory).
+        </div>
       </div>
 
       <div class="cmd-section">
@@ -484,21 +511,40 @@
             </div>
           </div>
 
-          <!-- Aperçu Custom JSON -->
+          <!-- Aperçu Components V2 -->
           <div id="view-custom" class="hidden">
-            <div class="embed" id="c-embed">
-              <div style="display: flex; justify-content: space-between;">
+            <div style="background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--row-border); overflow: hidden; max-width: 520px; width: 100%;">
+              <!-- Header avec thumbnail -->
+              <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: flex-start;">
                 <div style="flex: 1;">
-                  <div class="embed-title" id="vc-title">Mon Message</div>
-                  <div class="embed-desc" id="vc-desc">Contenu de mon message personnalisé.</div>
+                  <div id="vc-title" style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">Ohio Machine Shop</div>
+                  <div id="vc-desc" style="font-size: 0.9rem; color: var(--text); line-height: 1.4; white-space: pre-wrap;">Bienvenue dans notre shop! Sélectionne une option ci-dessous.</div>
                 </div>
-                <img id="vc-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
+                <img id="vc-thumb" src="" style="width: 60px; height: 60px; border-radius: 4px; margin-left: 1rem; display: none; object-fit: cover;">
               </div>
-              <img id="vc-image" src="" class="embed-image" style="display: none;">
-              <div id="vc-footer-area" class="embed-footer" style="display: none;">
-                <img id="vc-footer-icon" src="" style="display: none;">
+
+              <!-- Séparateur -->
+              <div style="height: 1px; background: var(--row-border); margin: 0 1rem;"></div>
+
+              <!-- Sections avec boutons (Components V2 style) -->
+              <div id="vc-sections" style="padding: 0.5rem 0;">
+                <!-- Sections générées ici -->
+              </div>
+
+              <!-- Image principale -->
+              <img id="vc-image" src="" style="width: calc(100% - 2rem); margin: 0.5rem 1rem; border-radius: 4px; max-height: 200px; object-fit: cover; display: none;">
+
+              <!-- Footer -->
+              <div id="vc-footer-area" style="padding: 0.5rem 1rem; font-size: 0.75rem; color: var(--muted); display: none;">
                 <span id="vc-footer-text"></span>
               </div>
+            </div>
+
+            <!-- Info Components V2 -->
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(88, 101, 242, 0.1); border-radius: 8px; max-width: 520px; width: 100%; font-size: 0.8rem; color: var(--muted);">
+              <strong style="color: var(--blurple);">📦 Components V2</strong><br>
+              Ce message utilise le nouveau système Discord avec des sections et des boutons intégrés.
+              Les boutons sont attachés comme "accessory" aux sections.
             </div>
           </div>
 
