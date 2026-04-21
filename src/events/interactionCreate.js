@@ -1,4 +1,4 @@
-const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, PermissionFlagsBits } = require('discord.js');
+const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, PermissionFlagsBits, MessageFlags } = require('discord.js');
 const { getConfig, isTicketStaff } = require('../utils/permissions');
 const { createTicket, closeTicket, deleteTicket } = require('../services/ticketService');
 const { createEmbed } = require('../utils/embeds');
@@ -78,12 +78,12 @@ module.exports = {
         if (interaction.replied || interaction.deferred) {
           await interaction.followUp({
             content: `❌ Une erreur est survenue: ${error.message}`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           });
         } else {
           await interaction.reply({
             content: `❌ Une erreur est survenue: ${error.message}`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           });
         }
         
@@ -111,7 +111,7 @@ async function handleTicketOpen(interaction) {
   if (!category) {
     return interaction.reply({
       content: '❌ Cette catégorie n\'existe plus.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -119,7 +119,7 @@ async function handleTicketOpen(interaction) {
   if (!cfg.ticketCategoryId) {
     return interaction.reply({
       content: '❌ La catégorie des tickets n\'est pas configurée. Contacte un admin.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -137,14 +137,14 @@ async function handleTicketOpen(interaction) {
     if (channel) {
       return interaction.reply({
         content: `❌ Tu as déjà un ticket ouvert: ${channel}`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
   }
 
   // Si pas de prompt spécifique, créer directement
   if (!category.prompt || category.prompt.trim().length < 3) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     
     try {
       const channel = await createTicket(interaction.guild, interaction.user, categoryId, cfg);
@@ -183,7 +183,7 @@ async function handleTicketModalSubmit(interaction) {
   const categoryId = interaction.customId.replace('ticket_modal_', '');
   const reason = interaction.fields.getTextInputValue('ticket_reason');
   
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   
   const cfg = await getConfig(interaction.guild.id);
   
@@ -217,7 +217,7 @@ async function handleTicketClose(interaction) {
   if (!ticket) {
     return interaction.reply({
       content: '❌ Ce salon n\'est pas un ticket.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -229,7 +229,7 @@ async function handleTicketClose(interaction) {
   if (!isStaff && !isCreator && !isAdmin) {
     return interaction.reply({
       content: '❌ Tu ne peux pas fermer ce ticket.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -251,7 +251,7 @@ async function handleTicketDelete(interaction) {
   if (!ticket) {
     return interaction.reply({
       content: '❌ Ce salon n\'est pas un ticket.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -262,7 +262,7 @@ async function handleTicketDelete(interaction) {
   if (!isStaff && !isAdmin) {
     return interaction.reply({
       content: '❌ Seul le staff peut supprimer un ticket.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -284,7 +284,7 @@ async function handleExchangerSelect(interaction, pair) {
   if (!rate) {
     return interaction.reply({
       content: '❌ Cette paire n\'existe plus.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -292,13 +292,13 @@ async function handleExchangerSelect(interaction, pair) {
   
   await interaction.reply({
     content: `💱 **${pair.toUpperCase()}**\nTaux actuel: \`${rateValue}\`\n\nContacte le staff pour effectuer l'échange.`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
 // Handler: Modal pour créer l'embed du panel ticket
 async function handleTicketEmbedBuilderSubmit(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   
   try {
     // Récupérer les valeurs du modal

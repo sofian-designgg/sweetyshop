@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } = require('discord.js');
 const { getConfig } = require('../utils/permissions');
 const { buildTicketPanel } = require('../utils/embeds');
 const { createTicket } = require('../services/ticketService');
@@ -52,7 +52,7 @@ module.exports = {
     if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
       return interaction.reply({
         content: '❌ Tu dois avoir la permission **Gérer le serveur**.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -82,7 +82,7 @@ module.exports = {
       console.error('[Ticket]', error);
       await interaction.reply({
         content: `❌ Erreur: ${error.message}`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       }).catch(() => {});
     }
   }
@@ -93,14 +93,14 @@ async function handlePanelSend(interaction, cfg) {
   if (!cfg.ticketPanelChannelId) {
     return interaction.reply({
       content: '❌ Configure d\'abord un salon avec `/ticket configurer salon:#salon`',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
   if (!cfg.ticketCategories?.length) {
     return interaction.reply({
       content: '❌ Ajoute d\'abord des catégories avec `/ticket bouton-ajouter`',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -108,7 +108,7 @@ async function handlePanelSend(interaction, cfg) {
   if (!channel) {
     return interaction.reply({
       content: '❌ Salon panel introuvable. Reconfigure avec `/ticket configurer`.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
   
@@ -122,7 +122,7 @@ async function handlePanelSend(interaction, cfg) {
       
       await interaction.reply({
         content: `✅ Panel mis à jour dans ${channel}`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     } catch {
@@ -136,7 +136,7 @@ async function handlePanelSend(interaction, cfg) {
   
   await interaction.reply({
     content: `✅ Panel envoyé dans ${channel}`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -152,7 +152,7 @@ async function handleAddButton(interaction, cfg) {
   if (cfg.ticketCategories?.find(c => c.id === id)) {
     return interaction.reply({
       content: `❌ L'ID \`${id}\` existe déjà.`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -173,7 +173,7 @@ async function handleAddButton(interaction, cfg) {
   
   await interaction.reply({
     content: `✅ Catégorie \`${id}\` ajoutée.\nUtilise "/ticket panel-envoyer" pour rafraîchir.`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -187,7 +187,7 @@ async function handleRemoveButton(interaction, cfg) {
   if (cfg.ticketCategories.length === initialLength) {
     return interaction.reply({
       content: `❌ ID \`${id}\` introuvable.`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
   
@@ -195,7 +195,7 @@ async function handleRemoveButton(interaction, cfg) {
   
   await interaction.reply({
     content: `✅ Catégorie \`${id}\` supprimée.\nPense à "/ticket panel-envoyer" pour rafraîchir.`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -230,13 +230,13 @@ async function handleConfigure(interaction, cfg) {
   if (updates.length === 0) {
     return interaction.reply({
       content: '❌ Précise au moins une option à configurer.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
   
   await interaction.reply({
     content: `✅ Configuration mise à jour:\n${updates.join('\n')}`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -247,7 +247,7 @@ async function handleList(interaction, cfg) {
   if (cats.length === 0) {
     return interaction.reply({
       content: '📭 Aucune catégorie configurée.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
   
@@ -257,6 +257,6 @@ async function handleList(interaction, cfg) {
   
   await interaction.reply({
     content: `📋 **Catégories de tickets (${cats.length}):**\n${list}`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }

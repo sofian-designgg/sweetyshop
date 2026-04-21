@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require('discord.js');
 const { getConfig } = require('../utils/permissions');
 const { buildExchangerPanel } = require('../utils/embeds');
 
@@ -57,7 +57,7 @@ module.exports = {
     if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
       return interaction.reply({
         content: '❌ Tu dois avoir la permission **Gérer le serveur**.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -92,7 +92,7 @@ module.exports = {
       console.error('[Exchanger]', error);
       await interaction.reply({
         content: `❌ Erreur: ${error.message}`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       }).catch(() => {});
     }
   }
@@ -103,7 +103,7 @@ async function handlePanelSend(interaction, cfg) {
   if (!cfg.exchangerConfig?.enabled) {
     return interaction.reply({
       content: '❌ L\'exchanger n\'est pas activé. Utilise `/exchanger activer`.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -111,7 +111,7 @@ async function handlePanelSend(interaction, cfg) {
   if (Object.keys(rates).length === 0) {
     return interaction.reply({
       content: '❌ Aucune paire configurée. Ajoute des paires avec `/exchanger paire-ajouter`.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -122,7 +122,7 @@ async function handlePanelSend(interaction, cfg) {
   
   await interaction.reply({
     content: '✅ Panel d\'exchanger envoyé.',
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -144,7 +144,7 @@ async function handleAddPair(interaction, cfg) {
   if (cfg.exchangerConfig.rates[name]) {
     return interaction.reply({
       content: `❌ La paire \`${name}\` existe déjà. Utilise "/exchanger paire-modifier" pour changer le taux.`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -158,7 +158,7 @@ async function handleAddPair(interaction, cfg) {
 
   await interaction.reply({
     content: `✅ Paire \`${name}\` ajoutée avec un taux de ${rate}.`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -169,7 +169,7 @@ async function handleRemovePair(interaction, cfg) {
   if (!cfg.exchangerConfig?.rates?.[name]) {
     return interaction.reply({
       content: `❌ La paire \`${name}\` n\'existe pas.`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -178,7 +178,7 @@ async function handleRemovePair(interaction, cfg) {
 
   await interaction.reply({
     content: `✅ Paire \`${name}\` supprimée.`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -190,7 +190,7 @@ async function handleUpdatePair(interaction, cfg) {
   if (!cfg.exchangerConfig?.rates?.[name]) {
     return interaction.reply({
       content: `❌ La paire \`${name}\` n\'existe pas.`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -205,7 +205,7 @@ async function handleUpdatePair(interaction, cfg) {
 
   await interaction.reply({
     content: `✅ Paire \`${name}\` mise à jour avec un taux de ${rate}.`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -217,7 +217,7 @@ async function handleList(interaction, cfg) {
   if (pairs.length === 0) {
     return interaction.reply({
       content: '📭 Aucune paire configurée.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 
@@ -229,7 +229,7 @@ async function handleList(interaction, cfg) {
 
   await interaction.reply({
     content: `💱 **Paires disponibles (${pairs.length}):**\n${list}`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -243,7 +243,7 @@ async function handleEnable(interaction, cfg) {
 
   await interaction.reply({
     content: '✅ Exchanger activé.',
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -256,7 +256,7 @@ async function handleDisable(interaction, cfg) {
 
   await interaction.reply({
     content: '✅ Exchanger désactivé.',
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -281,6 +281,6 @@ async function handleConfigure(interaction, cfg) {
 
   await interaction.reply({
     content: '✅ Configuration de l\'exchanger mise à jour.',
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }

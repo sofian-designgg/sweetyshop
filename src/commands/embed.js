@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags, EmbedBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -133,7 +133,7 @@ module.exports = {
       console.error('[Embed]', error);
       await interaction.reply({
         content: `❌ Erreur: ${error.message}`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       }).catch(() => {});
     }
   }
@@ -200,7 +200,7 @@ async function handleSend(interaction) {
 
   await interaction.reply({
     content: `✅ Embed envoyé dans ${channel}`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -222,7 +222,7 @@ async function handleEdit(interaction) {
     if (!message.embeds || message.embeds.length === 0) {
       return interaction.reply({
         content: '❌ Ce message ne contient pas d\'embed.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -248,12 +248,12 @@ async function handleEdit(interaction) {
 
     await interaction.reply({
       content: `✅ Embed modifié dans ${channel}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   } catch (error) {
     await interaction.reply({
       content: `❌ Impossible de modifier le message: ${error.message}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 }

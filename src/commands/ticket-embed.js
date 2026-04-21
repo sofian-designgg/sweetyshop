@@ -48,10 +48,10 @@ module.exports = {
     // Champ: Description (paragraphe entier)
     const descInput = new TextInputBuilder()
       .setCustomId('embed_description')
-      .setLabel('Description (utilise Shift+Enter pour saut de ligne)')
-      .setPlaceholder('Décris ton système de tickets ici...')
+      .setLabel('Description (4000 caractères max)')
+      .setPlaceholder('Décris ton système de tickets ici...\nUtilise Shift+Enter pour les sauts de ligne')
       .setStyle(TextInputStyle.Paragraph)
-      .setValue('Bienvenue dans notre système de support.\n\nSélectionne le type de ticket approprié dans le menu ci-dessous.')
+      .setValue('# 🎫 Système de Tickets\n\nBienvenue ! Choisis une catégorie ci-dessous.')
       .setRequired(true)
       .setMaxLength(4000);
 

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags, EmbedBuilder } = require('discord.js');
 const { getConfig } = require('../utils/permissions');
 
 module.exports = {
@@ -22,7 +22,7 @@ module.exports = {
     if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
       return interaction.reply({
         content: '❌ Permission **Gérer le serveur** requise.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -50,7 +50,7 @@ module.exports = {
           )
           .setTimestamp();
 
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
       }
       
       else if (subcommand === 'panel-embed') {
@@ -73,14 +73,14 @@ module.exports = {
         
         await interaction.reply({
           content: '✅ Configuration de l\'embed mise à jour.\nUtilise `/ticket panel-envoyer` pour appliquer.',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         });
       }
     } catch (error) {
       console.error('[Config]', error);
       await interaction.reply({
         content: `❌ Erreur: ${error.message}`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       }).catch(() => {});
     }
   }
