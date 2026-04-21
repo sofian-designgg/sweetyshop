@@ -295,6 +295,9 @@ function buildTicketPanelV2(cfg, guildName) {
     const prompt = c.prompt || c.label;
     const hint = c.hint || 'Clique pour ouvrir un ticket';
     
+    // S'assurer que le texte n'est pas vide (Discord rejette les strings vides)
+    const safeHint = hint.trim() || '\u200b'; // Espace insécable si vide
+    
     console.log(`[buildTicketPanelV2] Création section - prompt: "${prompt}" (${typeof prompt}), hint: "${hint}" (${typeof hint})`);
     console.log(`[buildTicketPanelV2] c.style: "${c.style}" (${typeof c.style}), ButtonStyle[c.style]:`, ButtonStyle[c.style]);
     
@@ -314,17 +317,28 @@ function buildTicketPanelV2(cfg, guildName) {
         .setStyle(style);
 
       if (c.emoji) {
-        const emojiStr = String(c.emoji);
+        const emojiStr = String(c.emoji).trim();
         console.log(`[buildTicketPanelV2] Emoji: "${emojiStr}"`);
-        const customEmojiMatch = emojiStr.match(/<?(?:a:)?\w+:(\d+)>?/);
-        if (customEmojiMatch) btn.setEmoji(customEmojiMatch[1]);
-        else btn.setEmoji(emojiStr);
+        
+        // Extraire l'ID pour les emojis custom (format: <a:name:id> ou <name:id> ou :name:id)
+        const customEmojiMatch = emojiStr.match(/<?a?:?(\w+):(\d+)>?/);
+        if (customEmojiMatch) {
+          const emojiId = customEmojiMatch[2];
+          console.log(`[buildTicketPanelV2] Emoji custom ID: ${emojiId}`);
+          btn.setEmoji(emojiId);
+        } else if (/^\d+$/.test(emojiStr)) {
+          // C'est déjà un ID
+          btn.setEmoji(emojiStr);
+        } else {
+          // Emoji unicode
+          btn.setEmoji(emojiStr);
+        }
       }
 
       // Section avec texte et bouton accessory (passé au constructeur)
       const section = new SectionBuilder({
         components: [new TextDisplayBuilder({
-          content: `**${String(prompt)}**\n${String(hint)}`.slice(0, 1024),
+          content: `**${String(prompt)}**\n${safeHint}`.slice(0, 1024),
         })],
         accessory: btn
       });
