@@ -109,18 +109,20 @@ function messageFromConfig(raw) {
 
   // Titre comme premier texte
   if (raw.title) {
-    const titleText = new TextDisplayBuilder({
+    const titleSection = new SectionBuilder();
+    titleSection.addTextDisplay(new TextDisplayBuilder({
       content: `## ${raw.title}`,
-    });
-    container.addTextDisplay(titleText);
+    }));
+    container.addSection(titleSection);
   }
 
   // Description principale
   if (raw.description) {
-    const descText = new TextDisplayBuilder({
+    const descSection = new SectionBuilder();
+    descSection.addTextDisplay(new TextDisplayBuilder({
       content: raw.description.slice(0, 4000),
-    });
-    container.addTextDisplay(descText);
+    }));
+    container.addSection(descSection);
   }
 
   // Séparateur après le texte initial
@@ -224,10 +226,11 @@ function messageFromConfig(raw) {
   // Footer textuel en bas
   if (raw.footer) {
     container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
-    const footerText = new TextDisplayBuilder({
+    const footerSection = new SectionBuilder();
+    footerSection.addTextDisplay(new TextDisplayBuilder({
       content: `*${raw.footer.slice(0, 2048)}*`,
-    });
-    container.addTextDisplay(footerText);
+    }));
+    container.addSection(footerSection);
   }
 
   return { components: [container] };
@@ -284,11 +287,15 @@ function buildTicketPanelV2(cfg, guildName) {
 
   // Titre
   const title = cfg.ticketPanelEmbed?.title || '🎫 Support';
-  container.addTextDisplay(new TextDisplayBuilder({ content: `## ${title}` }));
+  const titleSection = new SectionBuilder();
+  titleSection.addTextDisplay(new TextDisplayBuilder({ content: `## ${title}` }));
+  container.addSection(titleSection);
 
   // Description
   const description = cfg.ticketPanelEmbed?.description || `Bienvenue sur **${guildName}**. Choisis l'option qui correspond à ton besoin.`;
-  container.addTextDisplay(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
+  const descSection = new SectionBuilder();
+  descSection.addTextDisplay(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
+  container.addSection(descSection);
 
   container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
 
@@ -338,9 +345,11 @@ function buildTicketPanelV2(cfg, guildName) {
   // Footer
   if (cfg.ticketPanelEmbed?.footer) {
     container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
-    container.addTextDisplay(new TextDisplayBuilder({
+    const footerSection = new SectionBuilder();
+    footerSection.addTextDisplay(new TextDisplayBuilder({
       content: `*${cfg.ticketPanelEmbed.footer.slice(0, 2048)}*`,
     }));
+    container.addSection(footerSection);
   }
 
   return { components: [container] };
@@ -370,11 +379,15 @@ function buildExchangerPanelV2(cfg) {
 
   // Titre
   const title = exchangerCfg.embed?.title || '💱 Exchanger';
-  container.addTextDisplay(new TextDisplayBuilder({ content: `## ${title}` }));
+  const titleSection = new SectionBuilder();
+  titleSection.addTextDisplay(new TextDisplayBuilder({ content: `## ${title}` }));
+  container.addSection(titleSection);
 
   // Description
   const description = exchangerCfg.embed?.description || 'Sélectionne une paire pour voir le taux et faire un échange.';
-  container.addTextDisplay(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
+  const descSection = new SectionBuilder();
+  descSection.addTextDisplay(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
+  container.addSection(descSection);
 
   container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
 
