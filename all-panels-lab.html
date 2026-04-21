@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SweetyShop — Laboratoire de Panels</title>
+  <title>SweetyShop — Laboratoire Components V2</title>
   <style>
     :root {
       --bg: #313338;
@@ -171,6 +171,95 @@
 
     .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
     .exchange-btn-container { display: flex; align-items: center; position: relative; }
+
+    /* Components V2 Container Styles */
+    .v2-container {
+      background: var(--panel-bg);
+      border-radius: 8px;
+      border: 1px solid var(--row-border);
+      overflow: hidden;
+      max-width: 520px;
+      width: 100%;
+    }
+    .v2-header {
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .v2-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .v2-desc {
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    .v2-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      object-fit: cover;
+      margin-left: 1rem;
+    }
+    .v2-separator {
+      height: 1px;
+      background: var(--row-border);
+      margin: 0 1rem;
+    }
+    .v2-section {
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .v2-section:last-of-type {
+      border-bottom: none;
+    }
+    .v2-section-text {
+      flex: 1;
+    }
+    .v2-section-title {
+      font-weight: 600;
+      color: #fff;
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
+    }
+    .v2-section-sub {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .v2-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      border: none;
+      color: #fff;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .v2-btn.p { background: var(--blurple); }
+    .v2-btn.s { background: #4e5058; }
+    .v2-btn.g { background: #248046; }
+    .v2-btn.r { background: #da373c; }
+    .v2-footer {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .v2-image {
+      width: calc(100% - 2rem);
+      margin: 0.5rem 1rem;
+      border-radius: 4px;
+      max-height: 200px;
+      object-fit: cover;
+    }
 
     .cmd-box {
       background: #111214;
@@ -423,47 +512,11 @@
         <div class="bubble">
           <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
           
-          <!-- Aperçu Tickets -->
-          <div id="view-tickets">
-            <div class="embed" id="t-embed">
-              <div style="display: flex; justify-content: space-between;">
-                <div style="flex: 1;">
-                  <div class="embed-title" id="vt-title">Support & Commandes</div>
-                  <div class="embed-desc" id="vt-desc">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</div>
-                </div>
-                <img id="vt-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
-              </div>
-              <img id="vt-image" src="" class="embed-image" style="display: none;">
-              <div id="vt-footer-area" class="embed-footer" style="display: none;">
-                <img id="vt-footer-icon" src="" style="display: none;">
-                <span id="vt-footer-text"></span>
-              </div>
-            </div>
-            <div class="panel-box" id="t-rows">
-              <!-- Boutons générés ici -->
-            </div>
-          </div>
+          <!-- Aperçu Tickets - Généré dynamiquement par JS -->
+          <div id="view-tickets"></div>
 
-          <!-- Aperçu Exchanger -->
-          <div id="view-exchanger" class="hidden">
-            <div class="embed" id="e-embed" style="border-left-color: #2ecc71;">
-              <div style="display: flex; justify-content: space-between;">
-                <div style="flex: 1;">
-                  <div class="embed-title" id="ve-title">Exchanger Service</div>
-                  <div class="embed-desc" id="ve-desc">Sélectionnez la paire d'échange souhaitée.</div>
-                </div>
-                <img id="ve-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
-              </div>
-              <img id="ve-image" src="" class="embed-image" style="display: none;">
-              <div id="ve-footer-area" class="embed-footer" style="display: none;">
-                <img id="ve-footer-icon" src="" style="display: none;">
-                <span id="ve-footer-text"></span>
-              </div>
-            </div>
-            <div class="btn-group" id="e-btns">
-              <!-- Boutons d'échange ici -->
-            </div>
-          </div>
+          <!-- Aperçu Exchanger - Généré dynamiquement par JS -->
+          <div id="view-exchanger" class="hidden"></div>
 
           <!-- Aperçu Paiements -->
           <div id="view-payments" class="hidden">
@@ -703,55 +756,86 @@
       const footerIcon = document.getElementById('t-footer-icon').value;
       
       saveData();
-      document.getElementById('vt-title').innerText = title;
-      document.getElementById('vt-desc').innerText = desc;
-      document.getElementById('t-embed').style.borderLeftColor = color;
-
-      // Thumb
-      const vThumb = document.getElementById('vt-thumb');
-      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
-      else vThumb.style.display = 'none';
-
-      // Image
-      const vImg = document.getElementById('vt-image');
-      if(image) { vImg.src = image; vImg.style.display = 'block'; }
-      else vImg.style.display = 'none';
-
-      // Footer
-      const vFoot = document.getElementById('vt-footer-area');
-      const vFootText = document.getElementById('vt-footer-text');
-      const vFootIcon = document.getElementById('vt-footer-icon');
-      if(footer || footerIcon) {
-        vFoot.style.display = 'flex';
-        vFootText.innerText = footer || '';
-        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
-        else vFootIcon.style.display = 'none';
-      } else vFoot.style.display = 'none';
-
-      const rows = document.getElementById('t-rows');
-      rows.innerHTML = '';
+      
+      // Components V2 Container
+      let html = `<div class="v2-container" style="border: 1px solid ${color}40;">`;
+      
+      // Header
+      html += `<div class="v2-header">`;
+      html += `<div style="flex:1;">`;
+      html += `<div class="v2-title">${title}</div>`;
+      html += `<div class="v2-desc">${desc}</div>`;
+      html += `</div>`;
+      if(thumb) {
+        html += `<img src="${thumb}" class="v2-thumb" onerror="this.style.display='none'">`;
+      }
+      html += `</div>`;
+      
+      // Separator
+      html += `<div class="v2-separator"></div>`;
+      
+      // Sections avec boutons
       ticketButtons.forEach(b => {
-        rows.innerHTML += `
-          <div class="panel-item">
-            <div class="panel-txt">
-              <span class="head">${b.label}</span>
-              <span class="sub">Ouvrir un ticket ${b.id}</span>
+        html += `
+          <div class="v2-section">
+            <div class="v2-section-text">
+              <div class="v2-section-title">${b.emoji} ${b.label}</div>
+              <div class="v2-section-sub">Ouvrir un ticket ${b.id}</div>
             </div>
-            <div style="display:flex; align-items:center;">
-              <button class="d-btn ${b.style}">${b.emoji} ${b.label}</button>
-              <button class="delete-btn" onclick="deleteButton('${b.id}')" title="Supprimer">×</button>
-            </div>
+            <button class="v2-btn ${b.style}">${b.label}</button>
+            <button class="delete-btn" onclick="deleteButton('${b.id}')" title="Supprimer">×</button>
           </div>
         `;
       });
+      
+      // Image
+      if(image) {
+        html += `<img src="${image}" class="v2-image" onerror="this.style.display='none'">`;
+      }
+      
+      // Footer
+      if(footer) {
+        html += `<div class="v2-separator"></div>`;
+        html += `<div class="v2-footer">${footer}</div>`;
+      }
+      
+      html += `</div>`;
+      
+      // Info Components V2
+      html += `<div style="margin-top:1rem;padding:1rem;background:rgba(88,101,242,0.1);border-radius:8px;max-width:520px;width:100%;font-size:0.8rem;color:var(--muted);">`;
+      html += `<strong style="color:var(--blurple);">🎨 Components V2</strong><br>`;
+      html += `Les boutons sont intégrés dans des sections avec du texte.<br>`;
+      html += `Le bot utilise: ContainerBuilder → SectionBuilder → ButtonBuilder`;
+      html += `</div>`;
+      
+      document.getElementById('view-tickets').innerHTML = `
+        <div class="discord-msg">
+          <div class="avatar"></div>
+          <div class="bubble" style="flex:1;min-width:0;">
+            <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
+            ${html}
+          </div>
+        </div>
+      `;
+      
+      // JSON pour Components V2
+      const sections = ticketButtons.map(b => ({
+        text: `${b.emoji} **${b.label}**\nOuvrir un ticket ${b.id}`,
+        button: {
+          label: b.label,
+          style: {p:'Primary',s:'Secondary',g:'Success',r:'Danger'}[b.style] || 'Secondary',
+          customId: `ticket:open:${b.id}`
+        }
+      }));
+      
       const json = {
         title: title,
         description: desc,
         color: parseInt(color.replace('#', ''), 16),
-        image: image || undefined,
         thumbnail: thumb || undefined,
+        image: image || undefined,
         footer: footer || undefined,
-        footerIcon: footerIcon || undefined
+        sections: sections
       };
       document.getElementById('cmd-output').innerText = `/ticket panel-config json:${JSON.stringify(json)}`;
     }
@@ -788,65 +872,98 @@
       const footerIcon = document.getElementById('e-footer-icon').value;
       
       saveData();
-      document.getElementById('ve-title').innerText = title;
-      document.getElementById('ve-desc').innerText = desc;
-      document.getElementById('e-embed').style.borderLeftColor = color;
-
-      // Thumb
-      const vThumb = document.getElementById('ve-thumb');
-      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
-      else vThumb.style.display = 'none';
-
-      // Image
-      const vImg = document.getElementById('ve-image');
-      if(image) { vImg.src = image; vImg.style.display = 'block'; }
-      else vImg.style.display = 'none';
-
-      // Footer
-      const vFoot = document.getElementById('ve-footer-area');
-      const vFootText = document.getElementById('ve-footer-text');
-      const vFootIcon = document.getElementById('ve-footer-icon');
-      if(footer || footerIcon) {
-        vFoot.style.display = 'flex';
-        vFootText.innerText = footer || '';
-        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
-        else vFootIcon.style.display = 'none';
-      } else vFoot.style.display = 'none';
-
-      const btns = document.getElementById('e-btns');
-      btns.innerHTML = `
-        <div style="width: 100%; background: #1e1f22; border: 1px solid #3f4147; border-radius: 4px; padding: 0.6rem; color: #b5bac1; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-          <span>Sélectionnez une option d’échange...</span>
-          <span>▼</span>
+      
+      // Components V2 Container pour Exchanger
+      let html = `<div class="v2-container" style="border: 1px solid ${color}40;">`;
+      
+      // Header
+      html += `<div class="v2-header">`;
+      html += `<div style="flex:1;">`;
+      html += `<div class="v2-title">${title}</div>`;
+      html += `<div class="v2-desc">${desc}</div>`;
+      html += `</div>`;
+      if(thumb) {
+        html += `<img src="${thumb}" class="v2-thumb" onerror="this.style.display='none'">`;
+      }
+      html += `</div>`;
+      
+      // Separator
+      html += `<div class="v2-separator"></div>`;
+      
+      // Select dropdown simulation (header)
+      html += `
+        <div style="padding: 0.75rem 1rem; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--row-border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; color: var(--muted); font-size: 0.9rem;">
+            <span>Sélectionnez une paire d'échange...</span>
+            <span>▼</span>
+          </div>
         </div>
       `;
       
-      // On affiche quand même les paires dessous pour pouvoir les supprimer dans le lab
-      btns.innerHTML += '<div style="margin-top: 1rem; width: 100%;">';
+      // Sections avec paires d'échange
       exchangePairs.forEach(p => {
-        btns.innerHTML += `
-          <div class="exchange-btn-container" style="margin-bottom: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 4px; justify-content: space-between;">
-            <div style="display:flex; align-items:center;">
-              <span style="margin-right:0.5rem">${p.emoji || '🔄'}</span>
-              <div>
-                <div style="font-weight:600; font-size:0.8rem">${p.pair.toUpperCase()}</div>
-                <div style="font-size:0.7rem; color:var(--muted)">${p.description || 'Taux: '+p.rate}</div>
-              </div>
+        const fee = Math.round((1 - p.rate) * 100);
+        const feeText = fee > 0 ? `(-${fee}% frais)` : '';
+        html += `
+          <div class="v2-section">
+            <div class="v2-section-text">
+              <div class="v2-section-title">${p.emoji || '🔄'} ${p.pair.toUpperCase()} ${feeText}</div>
+              <div class="v2-section-sub">${p.description || 'Taux: ' + p.rate}</div>
             </div>
+            <button class="v2-btn p">Échanger</button>
             <button class="delete-btn" onclick="deletePair('${p.pair}')" title="Supprimer">×</button>
           </div>
         `;
       });
-      btns.innerHTML += '</div>';
+      
+      // Image
+      if(image) {
+        html += `<img src="${image}" class="v2-image" onerror="this.style.display='none'">`;
+      }
+      
+      // Footer
+      if(footer) {
+        html += `<div class="v2-separator"></div>`;
+        html += `<div class="v2-footer">${footer}</div>`;
+      }
+      
+      html += `</div>`;
+      
+      // Info Components V2
+      html += `<div style="margin-top:1rem;padding:1rem;background:rgba(46,204,113,0.1);border-radius:8px;max-width:520px;width:100%;font-size:0.8rem;color:var(--muted);">`;
+      html += `<strong style="color:#2ecc71;">💱 Exchanger Components V2</strong><br>`;
+      html += `Chaque paire d'échange est une section avec un bouton intégré.<br>`;
+      html += `Les taux et descriptions sont affichés dans le texte de la section.`;
+      html += `</div>`;
+      
+      document.getElementById('view-exchanger').innerHTML = `
+        <div class="discord-msg">
+          <div class="avatar"></div>
+          <div class="bubble" style="flex:1;min-width:0;">
+            <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
+            ${html}
+          </div>
+        </div>
+      `;
 
+      // JSON pour Components V2
+      const sections = exchangePairs.map(p => ({
+        text: `${p.emoji || '🔄'} **${p.pair.toUpperCase()}**\n${p.description || 'Taux: ' + p.rate}`,
+        button: {
+          label: 'Échanger',
+          style: 'Primary',
+          customId: `exchange:select:${p.pair}`
+        }
+      }));
+      
       const json = {
         title: title,
         description: desc,
         color: parseInt(color.replace('#', ''), 16),
-        image: image || undefined,
         thumbnail: thumb || undefined,
+        image: image || undefined,
         footer: footer || undefined,
-        footerIcon: footerIcon || undefined
+        sections: sections
       };
       document.getElementById('cmd-output').innerText = `/exchanger config-embed json:${JSON.stringify(json)}`;
     }
