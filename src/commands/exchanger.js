@@ -1,14 +1,13 @@
 const {
   SlashCommandBuilder,
   PermissionFlagsBits,
-  EmbedBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  StringSelectMenuBuilder,
 } = require('discord.js');
 const { getConfig, isConfigAdmin } = require('../util/permissions');
-const { embedFromConfig, parseHexColor } = require('../util/embeds');
+const { parseHexColor, buildExchangerPanelV2 } = require('../util/embeds');
 
 module.exports = {
   name: 'exchanger',
@@ -141,13 +140,6 @@ module.exports = {
         return;
       }
 
-      const embedData = exchangerCfg.embed || {
-        title: 'Exchanger',
-        description: 'Choisissez votre paire d’échange ci-dessous.',
-        color: 0x00ff00,
-      };
-
-      const embed = embedFromConfig(embedData);
       const rates = exchangerCfg.rates || {};
       const pairs = Object.keys(rates);
 
@@ -159,32 +151,11 @@ module.exports = {
         return;
       }
 
-      const menu = new StringSelectMenuBuilder()
-        .setCustomId('exchange:select')
-        .setPlaceholder('Sélectionnez une option d’échange...')
-        .addOptions(
-          pairs.map((pair) => {
-            const data = rates[pair];
-            const option = {
-              label: pair.toUpperCase(),
-              description: typeof data === 'object' ? data.description : `Taux: ${data}`,
-              value: pair,
-            };
-
-            const rawEmoji = typeof data === 'object' ? data.emoji : null;
-            if (rawEmoji) {
-              const customEmojiMatch = rawEmoji.match(/<?(?:a:)?\w+:(\d+)>?/);
-              if (customEmojiMatch) option.emoji = customEmojiMatch[1];
-              else option.emoji = rawEmoji;
-            }
-            return option;
-          })
-        );
-
-      const row = new ActionRowBuilder().addComponents(menu);
-
       try {
-        const msg = await channel.send({ embeds: [embed], components: [row] });
+        // Utilise le nouveau système Components V2
+        const payload = buildExchangerPanelV2(cfg);
+        const msg = await channel.send(payload);
+
         if (!cfg.exchangerConfig) cfg.exchangerConfig = {};
         cfg.exchangerConfig.channelId = channel.id;
         cfg.exchangerConfig.messageId = msg.id;
@@ -192,13 +163,13 @@ module.exports = {
         await cfg.save();
 
         await interaction.reply({
-          content: `✅ Panel exchanger envoyé dans ${channel}.`,
+          content: `✅ Panel exchanger envoyé dans ${channel} avec Components V2 (boutons intégrés dans les sections).`,
           ephemeral: true,
         });
       } catch (e) {
         console.error('Error sending exchanger panel:', e);
         await interaction.reply({
-          content: `❌ Impossible d’envoyer le panel.\nErreur : \`${e.message}\``,
+          content: `❌ Impossible d'envoyer le panel.\nErreur : \`${e.message}\``,
           ephemeral: true,
         });
       }

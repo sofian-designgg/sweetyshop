@@ -1,92 +1,28 @@
-const {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} = require('discord.js');
-const { embedFromConfig } = require('./embeds');
+const { buildTicketPanelV2 } = require('./embeds');
 
 const STYLE_MAP = {
-  Primary: ButtonStyle.Primary,
-  Secondary: ButtonStyle.Secondary,
-  Success: ButtonStyle.Success,
-  Danger: ButtonStyle.Danger,
+  Primary: 1,
+  Secondary: 2,
+  Success: 3,
+  Danger: 4,
 };
 
 /**
- * Construit l'embed + les rangées de boutons (max 5 rangées Discord).
- * Les catégories sont groupées par `row` puis ordre d'insertion.
+ * Construit le panel de tickets avec Components V2.
+ * Les boutons sont intégrés dans des sections avec le texte.
+ * @deprecated Utilise directement buildTicketPanelV2 depuis embeds.js
  */
 function buildTicketPanel(cfg, guildName) {
-  const base = cfg.ticketPanelEmbed || {};
-  const embed = embedFromConfig({
-    ...base,
-    description: base.description || `Bienvenue sur **${guildName}**. Choisis l’option qui correspond à ton besoin.`,
-  });
-
-  const cats = [...(cfg.ticketCategories || [])].sort((a, b) => {
-    if (a.row !== b.row) return a.row - b.row;
-    return 0;
-  });
-
-  const rowsMap = new Map();
-  for (const c of cats) {
-    const r = Math.min(4, Math.max(0, c.row ?? 0));
-    if (!rowsMap.has(r)) rowsMap.set(r, []);
-    const arr = rowsMap.get(r);
-    if (arr.length >= 5) continue;
-    arr.push(c);
-  }
-
-  const sortedRows = [...rowsMap.keys()].sort((a, b) => a - b).slice(0, 5);
-  const actionRows = [];
-
-  for (const rowIndex of sortedRows) {
-    const list = rowsMap.get(rowIndex);
-    const row = new ActionRowBuilder();
-    for (const c of list) {
-      const style = STYLE_MAP[c.style] ?? ButtonStyle.Secondary;
-      const label = (c.label || 'Ticket').slice(0, 80);
-      const btn = new ButtonBuilder()
-        .setCustomId(`ticket:open:${c.id}`)
-        .setLabel(label)
-        .setStyle(style);
-      
-      if (c.emoji) {
-        try {
-          // Si c'est un emoji Discord custom <:nom:id> ou <a:nom:id>
-          const customEmojiMatch = c.emoji.match(/<?(?:a:)?\w+:(\d+)>?/);
-          if (customEmojiMatch) {
-            btn.setEmoji(customEmojiMatch[1]);
-          } else {
-            // Sinon on tente tel quel (unicode)
-            btn.setEmoji(c.emoji);
-          }
-        } catch (e) {
-          console.error(`Erreur emoji pour le bouton ${c.id}:`, e.message);
-        }
-      }
-      row.addComponents(btn);
-    }
-    if (row.components.length) actionRows.push(row);
-  }
-
-  return { embeds: [embed], components: actionRows };
+  // Utilise la nouvelle implémentation Components V2
+  return buildTicketPanelV2(cfg, guildName);
 }
 
 /**
- * Texte du corps d'embed façon « une ligne par catégorie » (comme ton exemple).
+ * Fonction legacy - non utilisée avec Components V2
+ * Gardée pour compatibilité
  */
 function enrichPanelDescription(embed, categories) {
-  if (!categories?.length) return embed;
-  const lines = categories.map((c) => {
-    const title = c.prompt ? `**${c.prompt}**` : `**${c.label}**`;
-    const hint = c.hint || '';
-    return `${title}\n*${hint}*`;
-  });
-  const block = lines.join('\n\n');
-  const current = embed.data.description || '';
-  embed.setDescription(`${current}\n\n${block}`.trim());
+  // Les sections sont maintenant gérées nativement par Components V2
   return embed;
 }
 

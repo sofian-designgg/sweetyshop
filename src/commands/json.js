@@ -1,13 +1,13 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { getConfig, isConfigAdmin } = require('../util/permissions');
-const { embedFromConfig } = require('../util/embeds');
+const { messageFromConfig } = require('../util/embeds');
 
 module.exports = {
   name: 'json',
-  description: 'Envoyer un embed personnalisé via JSON',
+  description: 'Envoyer un embed personnalisé (avec boutons) via JSON',
   slashData: new SlashCommandBuilder()
     .setName('json')
-    .setDescription('Envoyer un embed personnalisé via JSON')
+    .setDescription('Envoyer un embed personnalisé (avec boutons) via JSON')
     .addStringOption((o) =>
       o.setName('data').setDescription('Le JSON de l’embed').setRequired(true)
     )
@@ -30,9 +30,9 @@ module.exports = {
 
     try {
       const parsed = JSON.parse(rawJson);
-      const embed = embedFromConfig(parsed);
-      await interaction.reply({ content: '✅ Embed envoyé.', ephemeral: true });
-      await interaction.channel.send({ embeds: [embed] });
+      const msgData = messageFromConfig(parsed);
+      await interaction.reply({ content: '✅ Message envoyé.', ephemeral: true });
+      await interaction.channel.send(msgData);
     } catch (e) {
       await interaction.reply({ 
         content: `❌ **JSON invalide.**\nErreur : \`${e.message}\``, 
@@ -53,9 +53,9 @@ module.exports = {
 
     try {
       const parsed = JSON.parse(rawJson);
-      const embed = embedFromConfig(parsed);
+      const msgData = messageFromConfig(parsed);
       await message.delete().catch(() => {});
-      await message.channel.send({ embeds: [embed] });
+      await message.channel.send(msgData);
     } catch (e) {
       await message.reply('JSON invalide.');
     }

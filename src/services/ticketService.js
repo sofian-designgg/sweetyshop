@@ -1,13 +1,17 @@
 const {
   ChannelType,
   PermissionFlagsBits,
-  ActionRowBuilder,
+  EmbedBuilder,
+  ContainerBuilder,
+  SectionBuilder,
+  TextDisplayBuilder,
+  ThumbnailBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
 } = require('discord.js');
 const Ticket = require('../models/Ticket');
-const { embedFromConfig } = require('../util/embeds');
 const { isTicketStaff } = require('../util/permissions');
 
 async function countOpenTickets(guildId, userId) {
@@ -83,12 +87,39 @@ async function createTicketChannel(guild, member, categoryKey, cfg, product = nu
     status: 'open',
   });
 
+  // Construction du message de bienvenue en Components V2
   const welcomeRaw = cfg.ticketWelcomeEmbed || {
     title: '🎫 Ticket ouvert',
     description: `Salut {user}, décris ta demande avec un maximum de détails.\nUn membre du staff te répondra bientôt.`,
     color: 0x5865f2,
   };
 
+  const container = new ContainerBuilder();
+  
+  // Couleur
+  if (typeof welcomeRaw.color === 'number') {
+    container.setAccentColor(welcomeRaw.color);
+  } else {
+    container.setAccentColor(0x5865f2);
+  }
+
+  // Thumbnail optionnel
+  if (welcomeRaw.thumbnail) {
+    try {
+      const thumbnail = new ThumbnailBuilder({ media: { url: welcomeRaw.thumbnail } });
+      container.addThumbnail(thumbnail);
+    } catch (e) {
+      console.error('Erreur thumbnail ticket:', e.message);
+    }
+  }
+
+  // Titre
+  const title = welcomeRaw.title || '🎫 Ticket ouvert';
+  container.addTextDisplay(new TextDisplayBuilder({ 
+    content: `## ${title.slice(0, 256)}` 
+  }));
+
+  // Description avec variables
   let desc = (welcomeRaw.description || '')
     .replace(/{user}/g, `${member}`)
     .replace(/{product}/g, product || 'Non spécifié');
@@ -97,15 +128,36 @@ async function createTicketChannel(guild, member, categoryKey, cfg, product = nu
     desc += `\n\n**Produit demandé :** \`${product}\``;
   }
 
-  const embed = embedFromConfig({ ...welcomeRaw, description: desc });
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('ticket:close')
-      .setLabel('Fermer le ticket')
-      .setStyle(ButtonStyle.Danger)
-  );
+  container.addTextDisplay(new TextDisplayBuilder({ 
+    content: desc.slice(0, 4000) 
+  }));
 
-  await channel.send({ content: `${member}`, embeds: [embed], components: [row] });
+  container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
+
+  // Section avec bouton de fermeture intégré
+  const section = new SectionBuilder();
+  section.addTextDisplay(new TextDisplayBuilder({
+    content: '**🛠️ Actions**\nUtilisez le bouton ci-contre pour fermer ce ticket quand c\'est résolu.',
+  }));
+
+  const closeBtn = new ButtonBuilder()
+    .setCustomId('ticket:close')
+    .setLabel('Fermer le ticket')
+    .setStyle(ButtonStyle.Danger)
+    .setEmoji('🔒');
+  section.setAccessory(closeBtn);
+
+  container.addSection(section);
+
+  // Footer optionnel
+  if (welcomeRaw.footer) {
+    container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    container.addTextDisplay(new TextDisplayBuilder({
+      content: `*${welcomeRaw.footer.slice(0, 2048)}*`,
+    }));
+  }
+
+  await channel.send({ content: `${member}`, components: [container] });
   return channel;
 }
 
@@ -169,25 +221,53 @@ async function createExchangeTicket(guild, member, pair, amount, result, cfg) {
     status: 'open',
   });
 
-  const embed = new EmbedBuilder()
-    .setTitle('🔄 Demande d’échange')
-    .setColor(0x00ff00)
-    .setDescription(`Nouvelle demande d’échange de ${member}.`)
-    .addFields(
-      { name: 'Paire', value: pair.toUpperCase(), inline: true },
-      { name: 'Montant envoyé', value: `${amount}`, inline: true },
-      { name: 'Montant reçu (estimé)', value: `${result}`, inline: true }
-    )
-    .setFooter({ text: 'Attendez qu’un staff valide l’échange.' });
+  // Construction Components V2 pour le ticket d'échange
+  const container = new ContainerBuilder();
+  container.setAccentColor(0x00ff00);
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('ticket:close')
-      .setLabel('Fermer le ticket')
-      .setStyle(ButtonStyle.Danger)
-  );
+  // Titre
+  container.addTextDisplay(new TextDisplayBuilder({
+    content: '## 🔄 Demande d\'échange',
+  }));
 
-  await channel.send({ content: `${member}`, embeds: [embed], components: [row] });
+  // Description
+  container.addTextDisplay(new TextDisplayBuilder({
+    content: `Nouvelle demande d\'échange de ${member}.`,
+  }));
+
+  container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+
+  // Section avec infos de l'échange
+  const infoSection = new SectionBuilder();
+  infoSection.addTextDisplay(new TextDisplayBuilder({
+    content: `**Paire:** ${pair.toUpperCase()}\n**Montant envoyé:** ${amount}\n**Montant reçu (estimé):** ${result}`,
+  }));
+  container.addSection(infoSection);
+
+  container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
+
+  // Section avec bouton de fermeture intégré
+  const actionSection = new SectionBuilder();
+  actionSection.addTextDisplay(new TextDisplayBuilder({
+    content: '**🛠️ Actions**\nAttendez qu\'un staff valide l\'échange, puis fermez le ticket.',
+  }));
+
+  const closeBtn = new ButtonBuilder()
+    .setCustomId('ticket:close')
+    .setLabel('Fermer le ticket')
+    .setStyle(ButtonStyle.Danger)
+    .setEmoji('🔒');
+  actionSection.setAccessory(closeBtn);
+
+  container.addSection(actionSection);
+
+  // Footer
+  container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+  container.addTextDisplay(new TextDisplayBuilder({
+    content: '*Attendez qu\'un staff valide l\'échange.*',
+  }));
+
+  await channel.send({ content: `${member}`, components: [container] });
   return channel;
 }
 
