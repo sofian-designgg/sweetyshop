@@ -109,19 +109,19 @@ function messageFromConfig(raw) {
 
   // Titre comme premier texte
   if (raw.title) {
-    const titleSection = new SectionBuilder();
-    titleSection.addTextDisplay(new TextDisplayBuilder({
-      content: `## ${raw.title}`,
-    }));
+    const titleSection = new SectionBuilder()
+      .addComponent(new TextDisplayBuilder({
+        content: `## ${raw.title}`,
+      }));
     container.addSection(titleSection);
   }
 
   // Description principale
   if (raw.description) {
-    const descSection = new SectionBuilder();
-    descSection.addTextDisplay(new TextDisplayBuilder({
-      content: raw.description.slice(0, 4000),
-    }));
+    const descSection = new SectionBuilder()
+      .addComponent(new TextDisplayBuilder({
+        content: raw.description.slice(0, 4000),
+      }));
     container.addSection(descSection);
   }
 
@@ -137,10 +137,10 @@ function messageFromConfig(raw) {
 
       // Texte de la section
       if (section.text || section.description) {
-        const sectionText = new TextDisplayBuilder({
+        const textComponent = new TextDisplayBuilder({
           content: (section.text || section.description).slice(0, 1024),
         });
-        sectionBuilder.addTextDisplay(sectionText);
+        sectionBuilder.addComponent(textComponent);
       }
 
       // Thumbnail de la section
@@ -174,7 +174,7 @@ function messageFromConfig(raw) {
       const fieldText = new TextDisplayBuilder({
         content: `**${field.name || '\u200b'}**\n${field.value || '\u200b'}`.slice(0, 1024),
       });
-      sectionBuilder.addTextDisplay(fieldText);
+      sectionBuilder.addComponent(fieldText);
 
       container.addSection(sectionBuilder);
     }
@@ -226,10 +226,10 @@ function messageFromConfig(raw) {
   // Footer textuel en bas
   if (raw.footer) {
     container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
-    const footerSection = new SectionBuilder();
-    footerSection.addTextDisplay(new TextDisplayBuilder({
-      content: `*${raw.footer.slice(0, 2048)}*`,
-    }));
+    const footerSection = new SectionBuilder()
+      .addComponent(new TextDisplayBuilder({
+        content: `*${raw.footer.slice(0, 2048)}*`,
+      }));
     container.addSection(footerSection);
   }
 
@@ -287,14 +287,14 @@ function buildTicketPanelV2(cfg, guildName) {
 
   // Titre
   const title = cfg.ticketPanelEmbed?.title || '🎫 Support';
-  const titleSection = new SectionBuilder();
-  titleSection.addTextDisplay(new TextDisplayBuilder({ content: `## ${title}` }));
+  const titleSection = new SectionBuilder()
+    .addComponent(new TextDisplayBuilder({ content: `## ${title}` }));
   container.addSection(titleSection);
 
   // Description
   const description = cfg.ticketPanelEmbed?.description || `Bienvenue sur **${guildName}**. Choisis l'option qui correspond à ton besoin.`;
-  const descSection = new SectionBuilder();
-  descSection.addTextDisplay(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
+  const descSection = new SectionBuilder()
+    .addComponent(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
   container.addSection(descSection);
 
   container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
@@ -314,7 +314,7 @@ function buildTicketPanelV2(cfg, guildName) {
     const sectionText = new TextDisplayBuilder({
       content: `**${prompt}**\n${hint}`.slice(0, 1024),
     });
-    section.addTextDisplay(sectionText);
+    section.addComponent(sectionText);
 
     // Bouton accessory intégré dans la section
     const style = ButtonStyle[c.style] || ButtonStyle.Secondary;
@@ -345,10 +345,10 @@ function buildTicketPanelV2(cfg, guildName) {
   // Footer
   if (cfg.ticketPanelEmbed?.footer) {
     container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
-    const footerSection = new SectionBuilder();
-    footerSection.addTextDisplay(new TextDisplayBuilder({
-      content: `*${cfg.ticketPanelEmbed.footer.slice(0, 2048)}*`,
-    }));
+    const footerSection = new SectionBuilder()
+      .addComponent(new TextDisplayBuilder({
+        content: `*${cfg.ticketPanelEmbed.footer.slice(0, 2048)}*`,
+      }));
     container.addSection(footerSection);
   }
 
@@ -379,14 +379,14 @@ function buildExchangerPanelV2(cfg) {
 
   // Titre
   const title = exchangerCfg.embed?.title || '💱 Exchanger';
-  const titleSection = new SectionBuilder();
-  titleSection.addTextDisplay(new TextDisplayBuilder({ content: `## ${title}` }));
+  const titleSection = new SectionBuilder()
+    .addComponent(new TextDisplayBuilder({ content: `## ${title}` }));
   container.addSection(titleSection);
 
   // Description
   const description = exchangerCfg.embed?.description || 'Sélectionne une paire pour voir le taux et faire un échange.';
-  const descSection = new SectionBuilder();
-  descSection.addTextDisplay(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
+  const descSection = new SectionBuilder()
+    .addComponent(new TextDisplayBuilder({ content: description.slice(0, 4000) }));
   container.addSection(descSection);
 
   container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
@@ -408,7 +408,7 @@ function buildExchangerPanelV2(cfg) {
     const sectionText = new TextDisplayBuilder({
       content: `${emoji} **${pair.toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
     });
-    section.addTextDisplay(sectionText);
+    section.addComponent(sectionText);
 
     // Bouton pour sélectionner cette paire
     const btn = new ButtonBuilder()
