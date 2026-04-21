@@ -138,7 +138,7 @@ function messageFromConfig(raw) {
         const textComponent = new TextDisplayBuilder({
           content: (section.text || section.description).slice(0, 1024),
         });
-        sectionBuilder.setComponents([textComponent]);
+        sectionBuilder.addComponents(textComponent);
       }
 
       // Thumbnail de la section
@@ -172,7 +172,7 @@ function messageFromConfig(raw) {
       const fieldText = new TextDisplayBuilder({
         content: `**${field.name || '\u200b'}**\n${field.value || '\u200b'}`.slice(0, 1024),
       });
-      sectionBuilder.setComponents([fieldText]);
+      sectionBuilder.addComponents(fieldText);
 
       container.addSection(sectionBuilder);
     }
@@ -313,7 +313,7 @@ function buildTicketPanelV2(cfg, guildName) {
     const sectionText = new TextDisplayBuilder({
       content: `**${prompt}**\n${hint}`.slice(0, 1024),
     });
-    section.setComponents([sectionText]);
+    section.addComponents(sectionText);
 
     // Bouton accessory intégré dans la section
     const style = ButtonStyle[c.style] || ButtonStyle.Secondary;
@@ -408,7 +408,7 @@ function buildExchangerPanelV2(cfg) {
     const sectionText = new TextDisplayBuilder({
       content: `${emoji} **${pair.toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
     });
-    section.setComponents([sectionText]);
+    section.addComponents(sectionText);
 
     // Bouton pour sélectionner cette paire
     const btn = new ButtonBuilder()
