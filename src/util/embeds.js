@@ -50,21 +50,25 @@ function embedFromConfig(raw) {
  * Crée un bouton à partir d'une config
  */
 function createButtonFromConfig(comp, index) {
+  const label = comp?.label || 'Bouton';
+  const style = comp?.style || 'Primary';
+  
   const btn = new ButtonBuilder()
-    .setLabel((comp.label || 'Bouton').slice(0, 80))
-    .setStyle(ButtonStyle[comp.style] || ButtonStyle.Primary);
+    .setLabel(String(label).slice(0, 80))
+    .setStyle(ButtonStyle[style] || ButtonStyle.Primary);
 
-  if (comp.url) {
-    btn.setURL(comp.url);
+  if (comp?.url) {
+    btn.setURL(String(comp.url));
     btn.setStyle(ButtonStyle.Link);
   } else {
-    btn.setCustomId(comp.customId || comp.id || `btn_${index}`);
+    const customId = comp?.customId || comp?.id || `btn_${index}`;
+    btn.setCustomId(String(customId));
   }
 
-  if (comp.emoji) {
-    const customEmojiMatch = comp.emoji.match(/<?(?:a:)?\w+:(\d+)>?/);
+  if (comp?.emoji) {
+    const customEmojiMatch = String(comp.emoji).match(/<?(?:a:)?\w+:(\d+)>?/);
     if (customEmojiMatch) btn.setEmoji(customEmojiMatch[1]);
-    else btn.setEmoji(comp.emoji);
+    else btn.setEmoji(String(comp.emoji));
   }
 
   return btn;
@@ -89,14 +93,14 @@ function messageFromConfig(raw) {
   // Titre comme premier texte
   if (raw.title) {
     containerComponents.push(new SectionBuilder({
-      components: [new TextDisplayBuilder({ content: `## ${raw.title}` })]
+      components: [new TextDisplayBuilder({ content: `## ${String(raw.title)}` })]
     }));
   }
 
   // Description principale
   if (raw.description) {
     containerComponents.push(new SectionBuilder({
-      components: [new TextDisplayBuilder({ content: raw.description.slice(0, 4000) })]
+      components: [new TextDisplayBuilder({ content: String(raw.description).slice(0, 4000) })]
     }));
   }
 
@@ -113,7 +117,7 @@ function messageFromConfig(raw) {
       // Texte de la section
       if (section.text || section.description) {
         sectionComponents.push(new TextDisplayBuilder({
-          content: (section.text || section.description).slice(0, 1024),
+          content: String(section.text || section.description).slice(0, 1024),
         }));
       }
 
@@ -149,7 +153,7 @@ function messageFromConfig(raw) {
       const field = raw.fields[i];
       containerComponents.push(new SectionBuilder({
         components: [new TextDisplayBuilder({
-          content: `**${field.name || '\u200b'}**\n${field.value || '\u200b'}`.slice(0, 1024),
+          content: `**${String(field.name || '\u200b')}**\n${String(field.value || '\u200b')}`.slice(0, 1024),
         })]
       }));
     }
@@ -197,7 +201,7 @@ function messageFromConfig(raw) {
   if (raw.footer) {
     containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
     containerComponents.push(new SectionBuilder({
-      components: [new TextDisplayBuilder({ content: `*${raw.footer.slice(0, 2048)}*` })]
+      components: [new TextDisplayBuilder({ content: `*${String(raw.footer).slice(0, 2048)}*` })]
     }));
   }
 
@@ -206,12 +210,10 @@ function messageFromConfig(raw) {
     components: containerComponents
   });
 
-  // Couleur d'accentuation
-  if (typeof raw.color === 'number' || raw.accentColor) {
-    const accentColor = typeof raw.color === 'number' ? raw.color : parseHexColor(raw.accentColor);
-    if (accentColor != null) {
-      container.setAccentColor(accentColor);
-    }
+  // Couleur d'accentuation - s'assurer que c'est un nombre valide
+  let accentColor = typeof raw.color === 'number' ? raw.color : parseHexColor(raw.accentColor);
+  if (accentColor != null && !isNaN(accentColor)) {
+    container.setAccentColor(accentColor);
   }
 
   return { components: [container] };
@@ -271,21 +273,24 @@ function buildTicketPanelV2(cfg, guildName) {
   });
 
   for (const c of cats.slice(0, 10)) {
+    // Vérifier que l'ID et le label existent
+    if (!c.id || !c.label) continue;
+    
     // Texte de la section
     const prompt = c.prompt || c.label;
     const hint = c.hint || 'Clique pour ouvrir un ticket';
     
     const section = new SectionBuilder({
       components: [new TextDisplayBuilder({
-        content: `**${prompt}**\n${hint}`.slice(0, 1024),
+        content: `**${String(prompt)}**\n${String(hint)}`.slice(0, 1024),
       })]
     });
 
     // Bouton accessory intégré dans la section
     const style = ButtonStyle[c.style] || ButtonStyle.Secondary;
     const btn = new ButtonBuilder()
-      .setCustomId(`ticket:open:${c.id}`)
-      .setLabel(c.label.slice(0, 80))
+      .setCustomId(`ticket:open:${String(c.id)}`)
+      .setLabel(String(c.label).slice(0, 80))
       .setStyle(style);
 
     if (c.emoji) {
@@ -319,8 +324,11 @@ function buildTicketPanelV2(cfg, guildName) {
     components: containerComponents
   });
 
-  // Couleur d'accentuation
-  const accentColor = cfg.ticketPanelEmbed?.color || 0x5865f2;
+  // Couleur d'accentuation - s'assurer que c'est un nombre valide
+  let accentColor = cfg.ticketPanelEmbed?.color;
+  if (typeof accentColor !== 'number' || isNaN(accentColor)) {
+    accentColor = 0x5865f2;
+  }
   container.setAccentColor(accentColor);
 
   return { components: [container] };
@@ -352,22 +360,25 @@ function buildExchangerPanelV2(cfg) {
   const rateEntries = Object.entries(rates).slice(0, 10);
 
   for (const [pair, rateData] of rateEntries) {
-    const rateValue = typeof rateData === 'number' ? rateData : rateData.rate;
-    const emoji = typeof rateData === 'object' ? rateData.emoji : '💱';
-    const desc = typeof rateData === 'object' ? rateData.description : '';
+    // Vérifier que la paire existe
+    if (!pair) continue;
+    
+    const rateValue = typeof rateData === 'number' ? rateData : (rateData?.rate || 1);
+    const emoji = typeof rateData === 'object' && rateData ? (rateData.emoji || '💱') : '💱';
+    const desc = typeof rateData === 'object' && rateData ? (rateData.description || '') : '';
 
     const percent = Math.round((1 - rateValue) * 100);
     const feeText = percent > 0 ? `(-${percent}% frais)` : percent < 0 ? `(+${Math.abs(percent)}% bonus)` : '';
 
     const section = new SectionBuilder({
       components: [new TextDisplayBuilder({
-        content: `${emoji} **${pair.toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
+        content: `${emoji} **${String(pair).toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
       })]
     });
 
     // Bouton pour sélectionner cette paire
     const btn = new ButtonBuilder()
-      .setCustomId(`exchanger:select:${pair}`)
+      .setCustomId(`exchanger:select:${String(pair)}`)
       .setLabel('Échanger')
       .setStyle(ButtonStyle.Primary);
 
@@ -380,8 +391,11 @@ function buildExchangerPanelV2(cfg) {
     components: containerComponents
   });
 
-  // Couleur
-  const accentColor = exchangerCfg.embed?.color || 0x5865f2;
+  // Couleur - s'assurer que c'est un nombre valide
+  let accentColor = exchangerCfg.embed?.color;
+  if (typeof accentColor !== 'number' || isNaN(accentColor)) {
+    accentColor = 0x5865f2;
+  }
   container.setAccentColor(accentColor);
 
   return { components: [container] };
