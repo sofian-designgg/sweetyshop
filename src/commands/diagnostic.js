@@ -23,11 +23,30 @@ module.exports = {
       });
     }
 
-    await interaction.deferReply({ ephemeral: true });
-
     const diagnostics = [];
     const errors = [];
     const warnings = [];
+    
+    // Fonction helper pour envoyer des messages
+    let replied = false;
+    const send = async (content) => {
+      try {
+        if (!replied) {
+          await interaction.reply({ content, ephemeral: true });
+          replied = true;
+        } else {
+          await interaction.followUp({ content, ephemeral: true });
+        }
+      } catch (e) {
+        console.error('Erreur envoi message:', e.message);
+        // Essayer en MP
+        try {
+          await interaction.user.send(content.slice(0, 2000));
+        } catch (dmErr) {
+          console.error('MP aussi échoué:', dmErr.message);
+        }
+      }
+    };
 
     // 1. Vérification environnement
     diagnostics.push('🔍 **Diagnostic complet du bot**\n');
@@ -199,23 +218,19 @@ module.exports = {
       report += '🎉 **Aucun problème détecté !**';
     }
 
-    // Envoyer le rapport
+    // Envoyer le rapport par morceaux
     const chunks = report.match(/[\s\S]{1,1900}/g) || [report];
     
     for (let i = 0; i < chunks.length; i++) {
       const content = i === 0 ? chunks[i] : '...' + chunks[i];
-      if (i === 0) {
-        await interaction.editReply({ content });
-      } else {
-        await interaction.followUp({ content, ephemeral: true });
-      }
+      await send(content);
     }
 
     // Envoyer aussi en MP si des erreurs critiques
     if (errors.length > 0) {
       try {
         await interaction.user.send({
-          content: `🔴 **Erreurs critiques détectées sur ${interaction.guild.name}:**\n\n${errors.slice(0, 10).join('\n')}\n\nUtilise \/diagnostic pour plus de détails.`
+          content: `🔴 **Erreurs critiques sur ${interaction.guild.name}:**\n\n${errors.slice(0, 10).join('\n')}`
         });
       } catch (e) {
         // Ignore MP error

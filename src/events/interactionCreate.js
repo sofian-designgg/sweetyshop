@@ -323,12 +323,16 @@ module.exports = {
         return;
       }
     } catch (err) {
-      console.error('interactionCreate', err);
+      console.error('interactionCreate ERROR:', err.message);
+      console.error('Stack:', err.stack);
+      if (err.cause) console.error('Cause:', err.cause);
       
       // Envoyer la raison de l'erreur en MP à l'utilisateur
       try {
         const user = await interaction.client.users.fetch(interaction.user.id);
-        const errorReason = err.message || err.toString() || 'Erreur inconnue';
+        let errorReason = err.message || err.toString() || 'Erreur inconnue';
+        // Tronquer si trop long
+        if (errorReason.length > 1800) errorReason = errorReason.slice(0, 1800) + '...';
         await user.send({
           content: `⚠️ **Une erreur est survenue**\n\n**Raison:** \`${errorReason}\`\n\nContacte un administrateur si le problème persiste.`
         });
