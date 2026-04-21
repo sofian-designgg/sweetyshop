@@ -71,8 +71,10 @@ function section(textContent, accessory = null) {
   };
   
   // Vérifier que l'accessory est valide (doit avoir un type)
-  if (accessory && typeof accessory === 'object' && accessory.type) {
-    section.accessory = accessory;
+  // L'accessory doit être un objet avec un type (bouton: 2, thumbnail: 11, etc.)
+  if (accessory && typeof accessory === 'object' && accessory.type !== undefined) {
+    // Créer un nouvel objet accessory proprement
+    section.accessory = { ...accessory };
   }
   
   return section;
@@ -158,9 +160,6 @@ async function sendChannelV2(client, channelId, containerObj, content = null) {
   if (content) {
     body.content = content;
   }
-  
-  // Debug: voir ce qui est envoyé
-  console.log('[CV2] Envoi:', JSON.stringify(body, null, 2));
   
   try {
     const result = await rest.post(Routes.channelMessages(channelId), {
