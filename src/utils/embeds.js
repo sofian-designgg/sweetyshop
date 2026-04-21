@@ -56,8 +56,13 @@ function buildTicketPanel(cfg, guildName) {
       
     if (cat.emoji) {
       const match = cat.emoji.match(/:(\d+)>?$/);
-      if (match) option.setEmoji(match[1]);
-      else option.setEmoji(cat.emoji);
+      if (match) {
+        // Emoji personnalisé (animé ou non)
+        const isAnimated = cat.emoji.startsWith('<a:');
+        option.setEmoji({ id: match[1], animated: isAnimated });
+      } else {
+        option.setEmoji(cat.emoji);
+      }
     }
     
     return option;
