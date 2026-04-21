@@ -112,7 +112,7 @@ function messageFromConfig(raw) {
     const titleSection = new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `## ${raw.title}` })]
     });
-    container.addSection(titleSection);
+    container.addComponents(titleSection);
   }
 
   // Description principale
@@ -120,7 +120,7 @@ function messageFromConfig(raw) {
     const descSection = new SectionBuilder({
       components: [new TextDisplayBuilder({ content: raw.description.slice(0, 4000) })]
     });
-    container.addSection(descSection);
+    container.addComponents(descSection);
   }
 
   // Séparateur après le texte initial
@@ -159,7 +159,7 @@ function messageFromConfig(raw) {
         sectionBuilder.setAccessory(btn);
       }
 
-      container.addSection(sectionBuilder);
+      container.addComponents(sectionBuilder);
     }
   }
 
@@ -174,7 +174,7 @@ function messageFromConfig(raw) {
       });
       sectionBuilder.addComponents(fieldText);
 
-      container.addSection(sectionBuilder);
+      container.addComponents(sectionBuilder);
     }
   }
 
@@ -227,7 +227,7 @@ function messageFromConfig(raw) {
     const footerSection = new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `*${raw.footer.slice(0, 2048)}*` })]
     });
-    container.addSection(footerSection);
+    container.addComponents(footerSection);
   }
 
   return { components: [container] };
@@ -287,7 +287,7 @@ function buildTicketPanelV2(cfg, guildName) {
   const titleSection = new SectionBuilder({
     components: [new TextDisplayBuilder({ content: `## ${title}` })]
   });
-  container.addSection(titleSection);
+  container.addComponents(titleSection);
 
   // Description
   const description = cfg.ticketPanelEmbed?.description || `Bienvenue sur **${guildName}**. Choisis l'option qui correspond à ton besoin.`;
@@ -329,7 +329,7 @@ function buildTicketPanelV2(cfg, guildName) {
     }
 
     section.setAccessory(btn);
-    container.addSection(section);
+    container.addComponents(section);
   }
 
   // Image du panel si présente
@@ -347,7 +347,7 @@ function buildTicketPanelV2(cfg, guildName) {
     const footerSection = new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `*${cfg.ticketPanelEmbed.footer.slice(0, 2048)}*` })]
     });
-    container.addSection(footerSection);
+    container.addComponents(footerSection);
   }
 
   return { components: [container] };
@@ -380,7 +380,7 @@ function buildExchangerPanelV2(cfg) {
   const titleSection = new SectionBuilder({
     components: [new TextDisplayBuilder({ content: `## ${title}` })]
   });
-  container.addSection(titleSection);
+  container.addComponents(titleSection);
 
   // Description
   const description = exchangerCfg.embed?.description || 'Sélectionne une paire pour voir le taux et faire un échange.';
@@ -417,7 +417,7 @@ function buildExchangerPanelV2(cfg) {
       .setStyle(ButtonStyle.Primary);
 
     section.setAccessory(btn);
-    container.addSection(section);
+    container.addComponents(section);
   }
 
   return { components: [container] };
