@@ -58,6 +58,11 @@ module.exports = {
       if (interaction.isModalSubmit()) {
         const { customId } = interaction;
         
+        if (customId === 'ticket_embed_builder') {
+          await handleTicketEmbedBuilderSubmit(interaction);
+          return;
+        }
+        
         if (customId.startsWith('ticket_modal_')) {
           await handleTicketModalSubmit(interaction);
           return;
@@ -289,4 +294,115 @@ async function handleExchangerSelect(interaction, pair) {
     content: `💱 **${pair.toUpperCase()}**\nTaux actuel: \`${rateValue}\`\n\nContacte le staff pour effectuer l'échange.`,
     ephemeral: true
   });
+}
+
+// Handler: Modal pour créer l'embed du panel ticket
+async function handleTicketEmbedBuilderSubmit(interaction) {
+  await interaction.deferReply({ ephemeral: true });
+  
+  try {
+    // Récupérer les valeurs du modal
+    const title = interaction.fields.getTextInputValue('embed_title');
+    const description = interaction.fields.getTextInputValue('embed_description');
+    const colorHex = interaction.fields.getTextInputValue('embed_color');
+    const footer = interaction.fields.getTextInputValue('embed_footer');
+    const image = interaction.fields.getTextInputValue('embed_image');
+    
+    // Récupérer le channel
+    const channelId = interaction.client.tempTicketChannel;
+    if (!channelId) {
+      return interaction.editReply({
+        content: '❌ Erreur: canal non trouvé. Réessaye la commande.',
+      });
+    }
+    
+    const channel = interaction.guild.channels.cache.get(channelId);
+    if (!channel) {
+      return interaction.editReply({
+        content: '❌ Salon introuvable.',
+      });
+    }
+    
+    // Créer l'embed
+    const embed = new EmbedBuilder()
+      .setTitle(title)
+      .setDescription(description)
+      .setTimestamp();
+    
+    // Couleur
+    if (colorHex) {
+      const color = parseInt(colorHex.replace('#', ''), 16);
+      if (!isNaN(color)) embed.setColor(color);
+      else embed.setColor(0x1FFFBF);
+    } else {
+      embed.setColor(0x1FFFBF);
+    }
+    
+    // Footer
+    if (footer) {
+      embed.setFooter({ text: footer });
+    }
+    
+    // Image
+    if (image) {
+      embed.setImage(image);
+    }
+    
+    // Récupérer les catégories de tickets
+    const { getConfig } = require('../utils/permissions');
+    const cfg = await getConfig(interaction.guild.id);
+    const categories = cfg.ticketCategories || [];
+    
+    // Créer le select menu
+    const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require('discord.js');
+    
+    let components = [];
+    
+    if (categories.length > 0) {
+      const options = categories.slice(0, 25).map(cat => {
+        const option = new StringSelectMenuOptionBuilder()
+          .setLabel(cat.label || cat.id)
+          .setValue(cat.id)
+          .setDescription(cat.hint?.substring(0, 100) || 'Clique pour ouvrir');
+        
+        if (cat.emoji) {
+          const match = cat.emoji.match(/:(\d+)>?$/);
+          if (match) {
+            const isAnimated = cat.emoji.startsWith('<a:');
+            option.setEmoji({ id: match[1], animated: isAnimated });
+          } else {
+            option.setEmoji(cat.emoji);
+          }
+        }
+        
+        return option;
+      });
+      
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId('ticket_select_category')
+        .setPlaceholder('Sélectionne une catégorie...')
+        .addOptions(options);
+      
+      const row = new ActionRowBuilder().addComponents(selectMenu);
+      components.push(row);
+    }
+    
+    // Envoyer le panel
+    const msg = await channel.send({ embeds: [embed], components });
+    
+    // Sauvegarder l'ID
+    cfg.ticketPanelMessageId = msg.id;
+    cfg.ticketPanelChannelId = channel.id;
+    await cfg.save();
+    
+    await interaction.editReply({
+      content: `✅ Panel envoyé dans ${channel}`,
+    });
+    
+  } catch (error) {
+    console.error('[TicketEmbedBuilder]', error);
+    await interaction.editReply({
+      content: `❌ Erreur: ${error.message}`,
+    });
+  }
 }
