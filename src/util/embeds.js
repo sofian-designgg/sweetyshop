@@ -120,17 +120,17 @@ function messageFromConfig(raw) {
         }));
       }
 
-      const sectionBuilder = new SectionBuilder({
+      // Préparer les options pour SectionBuilder
+      const sectionOptions = {
         components: sectionComponents
-      });
+      };
 
       // Thumbnail de la section
       if (section.thumbnail || section.image) {
         try {
-          const sectionThumb = new ThumbnailBuilder({
+          sectionOptions.thumbnail = new ThumbnailBuilder({
             media: { url: section.thumbnail || section.image },
           });
-          sectionBuilder.setThumbnail(sectionThumb);
         } catch (e) {
           console.error('Erreur section thumbnail:', e.message);
         }
@@ -138,11 +138,10 @@ function messageFromConfig(raw) {
 
       // Bouton accessory (intégré dans la section)
       if (section.button) {
-        const btn = createButtonFromConfig(section.button, 0);
-        sectionBuilder.setAccessory(btn);
+        sectionOptions.accessory = createButtonFromConfig(section.button, 0);
       }
 
-      containerComponents.push(sectionBuilder);
+      containerComponents.push(new SectionBuilder(sectionOptions));
     }
   }
 
@@ -300,13 +299,7 @@ function buildTicketPanelV2(cfg, guildName) {
     console.log(`[buildTicketPanelV2] c.style: "${c.style}" (${typeof c.style}), ButtonStyle[c.style]:`, ButtonStyle[c.style]);
     
     try {
-      const section = new SectionBuilder({
-        components: [new TextDisplayBuilder({
-          content: `**${String(prompt)}**\n${String(hint)}`.slice(0, 1024),
-        })]
-      });
-
-      // Bouton accessory intégré dans la section
+      // Bouton
       const styleValue = c.style || 'Secondary';
       const style = ButtonStyle[styleValue] || ButtonStyle.Secondary;
       console.log(`[buildTicketPanelV2] Style final:`, style);
@@ -328,7 +321,14 @@ function buildTicketPanelV2(cfg, guildName) {
         else btn.setEmoji(emojiStr);
       }
 
-      section.setAccessory(btn);
+      // Section avec texte et bouton accessory (passé au constructeur)
+      const section = new SectionBuilder({
+        components: [new TextDisplayBuilder({
+          content: `**${String(prompt)}**\n${String(hint)}`.slice(0, 1024),
+        })],
+        accessory: btn
+      });
+
       containerComponents.push(section);
       console.log(`[buildTicketPanelV2] Section ${i} ajoutée avec succès`);
     } catch (sectionErr) {
@@ -405,19 +405,20 @@ function buildExchangerPanelV2(cfg) {
     const percent = Math.round((1 - rateValue) * 100);
     const feeText = percent > 0 ? `(-${percent}% frais)` : percent < 0 ? `(+${Math.abs(percent)}% bonus)` : '';
 
-    const section = new SectionBuilder({
-      components: [new TextDisplayBuilder({
-        content: `${emoji} **${String(pair).toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
-      })]
-    });
-
     // Bouton pour sélectionner cette paire
     const btn = new ButtonBuilder()
       .setCustomId(`exchanger:select:${String(pair)}`)
       .setLabel('Échanger')
       .setStyle(ButtonStyle.Primary);
 
-    section.setAccessory(btn);
+    // Section avec texte et bouton accessory
+    const section = new SectionBuilder({
+      components: [new TextDisplayBuilder({
+        content: `${emoji} **${String(pair).toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
+      })],
+      accessory: btn
+    });
+
     containerComponents.push(section);
   }
 
