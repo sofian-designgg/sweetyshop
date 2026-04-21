@@ -62,7 +62,10 @@ module.exports = {
         const image = interaction.options.getString('image');
         
         if (titre) cfg.ticketPanelEmbed.title = titre;
-        if (description) cfg.ticketPanelEmbed.description = description;
+        if (description) {
+          // Convertir \n en vrais sauts de ligne
+          cfg.ticketPanelEmbed.description = description.replace(/\\n/g, '\n');
+        }
         if (couleur !== null) cfg.ticketPanelEmbed.color = couleur;
         if (image) cfg.ticketPanelEmbed.image = image;
         
