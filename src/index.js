@@ -53,16 +53,30 @@ for (const file of commandFiles) {
 // Enregistrement des slash commands
 client.once('ready', async () => {
   console.log(`[Bot] Connecté en tant que ${client.user.tag}`);
+  console.log(`[Bot] ID: ${client.user.id}`);
+  console.log(`[Commandes] ${slashCommands.length} commandes à enregistrer: ${slashCommands.map(c => c.name).join(', ')}`);
   
   // Connexion MongoDB
   await connectDB();
   
+  // Attendre un peu que tout soit stable
+  await new Promise(r => setTimeout(r, 1000));
+  
   // Enregistrement global des commandes
   try {
-    await client.application.commands.set(slashCommands);
-    console.log(`[Slash] ${slashCommands.length} commandes enregistrées`);
+    console.log('[Slash] Suppression des anciennes commandes...');
+    await client.application.commands.set([]);
+    console.log('[Slash] Anciennes commandes supprimées');
+    
+    await new Promise(r => setTimeout(r, 500));
+    
+    console.log('[Slash] Enregistrement des nouvelles commandes...');
+    const result = await client.application.commands.set(slashCommands);
+    console.log(`[Slash] ✅ ${result.size} commandes enregistrées:`);
+    result.forEach(cmd => console.log(`  - /${cmd.name}`));
   } catch (error) {
-    console.error('[Slash] Erreur enregistrement:', error);
+    console.error('[Slash] ❌ Erreur enregistrement:', error.message);
+    console.error(error.stack);
   }
 });
 
