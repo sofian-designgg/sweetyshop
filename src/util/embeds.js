@@ -250,18 +250,27 @@ function messageFromConfigLegacy(raw) {
  * Les boutons sont intégrés dans des sections avec du texte
  */
 function buildTicketPanelV2(cfg, guildName) {
+  console.log('[buildTicketPanelV2] Démarrage...');
+  console.log('[buildTicketPanelV2] cfg:', JSON.stringify({
+    ticketPanelEmbed: cfg.ticketPanelEmbed,
+    ticketCategoriesCount: cfg.ticketCategories?.length,
+    ticketCategories: cfg.ticketCategories?.map(c => ({ id: c.id, label: c.label, style: c.style, row: c.row }))
+  }, null, 2));
+
   const containerComponents = [];
 
   // Titre
   const title = cfg.ticketPanelEmbed?.title || '🎫 Support';
+  console.log('[buildTicketPanelV2] Title:', title, '- type:', typeof title);
   containerComponents.push(new SectionBuilder({
-    components: [new TextDisplayBuilder({ content: `## ${title}` })]
+    components: [new TextDisplayBuilder({ content: `## ${String(title)}` })]
   }));
 
   // Description
   const description = cfg.ticketPanelEmbed?.description || `Bienvenue sur **${guildName}**. Choisis l'option qui correspond à ton besoin.`;
+  console.log('[buildTicketPanelV2] Description:', description?.slice(0, 50), '- type:', typeof description);
   containerComponents.push(new SectionBuilder({
-    components: [new TextDisplayBuilder({ content: description.slice(0, 4000) })]
+    components: [new TextDisplayBuilder({ content: String(description).slice(0, 4000) })]
   }));
 
   containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
@@ -272,35 +281,62 @@ function buildTicketPanelV2(cfg, guildName) {
     return 0;
   });
 
-  for (const c of cats.slice(0, 10)) {
+  console.log('[buildTicketPanelV2] Nombre de catégories:', cats.length);
+
+  for (let i = 0; i < cats.length && i < 10; i++) {
+    const c = cats[i];
+    console.log(`[buildTicketPanelV2] Catégorie ${i}:`, JSON.stringify(c));
+    
     // Vérifier que l'ID et le label existent
-    if (!c.id || !c.label) continue;
+    if (!c.id || !c.label) {
+      console.log(`[buildTicketPanelV2] Catégorie ${i} ignorée: id ou label manquant`);
+      continue;
+    }
     
     // Texte de la section
     const prompt = c.prompt || c.label;
     const hint = c.hint || 'Clique pour ouvrir un ticket';
     
-    const section = new SectionBuilder({
-      components: [new TextDisplayBuilder({
-        content: `**${String(prompt)}**\n${String(hint)}`.slice(0, 1024),
-      })]
-    });
+    console.log(`[buildTicketPanelV2] Création section - prompt: "${prompt}" (${typeof prompt}), hint: "${hint}" (${typeof hint})`);
+    console.log(`[buildTicketPanelV2] c.style: "${c.style}" (${typeof c.style}), ButtonStyle[c.style]:`, ButtonStyle[c.style]);
+    
+    try {
+      const section = new SectionBuilder({
+        components: [new TextDisplayBuilder({
+          content: `**${String(prompt)}**\n${String(hint)}`.slice(0, 1024),
+        })]
+      });
 
-    // Bouton accessory intégré dans la section
-    const style = ButtonStyle[c.style] || ButtonStyle.Secondary;
-    const btn = new ButtonBuilder()
-      .setCustomId(`ticket:open:${String(c.id)}`)
-      .setLabel(String(c.label).slice(0, 80))
-      .setStyle(style);
+      // Bouton accessory intégré dans la section
+      const styleValue = c.style || 'Secondary';
+      const style = ButtonStyle[styleValue] || ButtonStyle.Secondary;
+      console.log(`[buildTicketPanelV2] Style final:`, style);
+      
+      const customId = `ticket:open:${String(c.id)}`;
+      const btnLabel = String(c.label).slice(0, 80);
+      console.log(`[buildTicketPanelV2] Bouton - customId: "${customId}" (${typeof customId}), label: "${btnLabel}" (${typeof btnLabel})`);
+      
+      const btn = new ButtonBuilder()
+        .setCustomId(customId)
+        .setLabel(btnLabel)
+        .setStyle(style);
 
-    if (c.emoji) {
-      const customEmojiMatch = c.emoji.match(/<?(?:a:)?\w+:(\d+)>?/);
-      if (customEmojiMatch) btn.setEmoji(customEmojiMatch[1]);
-      else btn.setEmoji(c.emoji);
+      if (c.emoji) {
+        const emojiStr = String(c.emoji);
+        console.log(`[buildTicketPanelV2] Emoji: "${emojiStr}"`);
+        const customEmojiMatch = emojiStr.match(/<?(?:a:)?\w+:(\d+)>?/);
+        if (customEmojiMatch) btn.setEmoji(customEmojiMatch[1]);
+        else btn.setEmoji(emojiStr);
+      }
+
+      section.setAccessory(btn);
+      containerComponents.push(section);
+      console.log(`[buildTicketPanelV2] Section ${i} ajoutée avec succès`);
+    } catch (sectionErr) {
+      console.error(`[buildTicketPanelV2] ERREUR section ${i}:`, sectionErr.message);
+      console.error(`[buildTicketPanelV2] Stack:`, sectionErr.stack);
+      throw sectionErr;
     }
-
-    section.setAccessory(btn);
-    containerComponents.push(section);
   }
 
   // Image du panel si présente
