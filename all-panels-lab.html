@@ -1,78 +1,82 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SweetyShop — Laboratoire Components V2</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SweetyShop Lab - Components V2</title>
   <style>
-    :root {
-      --bg: #313338;
-      --side: #2b2d31;
-      --embed: #2f3136;
-      --text: #dbdee1;
-      --muted: #949ba4;
-      --btn-sec: #4e5058;
-      --blurple: #5865f2;
-      --panel-bg: #232136;
-      --row-border: rgba(0, 0, 0, 0.45);
-    }
-    * { box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
       font-family: "gg sans", "Segoe UI", system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: #313338;
+      color: #dbdee1;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
     }
     header {
-      background: var(--side);
+      background: #2b2d31;
       padding: 1rem 2rem;
       border-bottom: 1px solid #1e1f22;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .tabs {
-      display: flex;
-      gap: 1rem;
-    }
+    h1 { font-size: 1.2rem; color: #fff; }
+    .tabs { display: flex; gap: 0.5rem; }
     .tab {
       padding: 0.5rem 1rem;
       border-radius: 4px;
       cursor: pointer;
       background: transparent;
-      color: var(--muted);
+      color: #949ba4;
       border: none;
       font-weight: 600;
       transition: all 0.2s;
     }
-    .tab.active {
-      background: var(--blurple);
-      color: #fff;
-    }
+    .tab:hover { color: #fff; }
+    .tab.active { background: #5865f2; color: #fff; }
+    
     .container {
       flex: 1;
       display: grid;
       grid-template-columns: 350px 1fr;
       overflow: hidden;
     }
+    
     .sidebar {
-      background: var(--side);
+      background: #2b2d31;
       padding: 1.5rem;
       border-right: 1px solid #1e1f22;
       overflow-y: auto;
     }
-    .preview-area {
+    
+    .preview {
       padding: 2rem;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    h1 { font-size: 1.2rem; color: #fff; margin: 0; }
-    h2 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; margin: 1.5rem 0 0.5rem; letter-spacing: 0.05em; }
+    
+    h2 {
+      font-size: 0.8rem;
+      color: #949ba4;
+      text-transform: uppercase;
+      margin: 1.5rem 0 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    h2:first-child { margin-top: 0; }
+    
+    label {
+      display: block;
+      font-size: 0.7rem;
+      color: #949ba4;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-top: 0.8rem;
+      margin-bottom: 0.3rem;
+    }
     
     input, textarea, select {
       width: 100%;
@@ -82,104 +86,64 @@
       color: #b5bac1;
       padding: 0.6rem;
       font-size: 0.85rem;
-      margin-bottom: 0.8rem;
+      font-family: inherit;
     }
-
-    .md-btns {
-      display: flex;
-      gap: 0.3rem;
-      margin-bottom: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .md-btn {
-      background: #4e5058;
-      border: none;
+    textarea { min-height: 80px; resize: vertical; }
+    
+    button {
+      background: #5865f2;
       color: #fff;
-      padding: 0.2rem 0.5rem;
-      border-radius: 3px;
-      font-size: 0.7rem;
-      cursor: pointer;
-    }
-    .md-btn:hover { background: #6d6f78; }
-    
-    .discord-msg { max-width: 520px; width: 100%; display: flex; gap: 1rem; margin-bottom: 2rem; }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; background: #5865f2; flex-shrink: 0; }
-    .bubble { flex: 1; }
-    .author { font-size: 0.95rem; margin-bottom: 0.3rem; color: #fff; font-weight: 500; }
-    .bot-tag { background: var(--blurple); font-size: 0.65rem; padding: 0.1rem 0.3rem; border-radius: 4px; margin-left: 0.4rem; vertical-align: middle; }
-    
-    .embed {
-      background: var(--embed);
-      border-left: 4px solid var(--blurple);
-      border-radius: 4px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    .embed-title { font-weight: 600; color: #fff; margin-bottom: 0.5rem; }
-    .embed-desc { font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; }
-    .embed-image { width: 100%; border-radius: 4px; margin-top: 0.5rem; max-height: 300px; object-fit: cover; }
-    .embed-footer { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-    .embed-footer img { width: 20px; height: 20px; border-radius: 50%; }
-    
-    .panel-box {
-      background: var(--panel-bg);
-      border-radius: 8px;
-      border: 1px solid var(--row-border);
-      overflow: hidden;
-      width: 100%;
-    }
-    .panel-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      border-bottom: 1px solid var(--row-border);
-    }
-    .panel-item:last-child { border-bottom: none; }
-    .panel-txt .head { color: #fff; font-weight: 600; display: block; margin-bottom: 0.2rem; }
-    .panel-txt .sub { color: var(--muted); font-size: 0.8rem; }
-    
-    .d-btn {
+      border: none;
       padding: 0.5rem 1rem;
-      border-radius: 3px;
-      border: none;
-      color: #fff;
-      font-weight: 500;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-    .d-btn.p { background: var(--blurple); }
-    .d-btn.s { background: #4e5058; }
-    .d-btn.g { background: #248046; }
-    .d-btn.r { background: #da373c; }
-
-    .delete-btn {
-      background: #da373c;
-      color: #fff;
-      border: none;
       border-radius: 4px;
-      width: 24px;
-      height: 24px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      margin-left: 0.5rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
     }
-    .delete-btn:hover { background: #f23f43; }
-
-    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
-    .exchange-btn-container { display: flex; align-items: center; position: relative; }
-
-    /* Components V2 Container Styles */
-    .v2-container {
-      background: var(--panel-bg);
-      border-radius: 8px;
-      border: 1px solid var(--row-border);
-      overflow: hidden;
+    button:hover { filter: brightness(1.1); }
+    button.secondary { background: #4e5058; }
+    button.danger { background: #da373c; }
+    button.success { background: #248046; }
+    
+    /* Discord Preview */
+    .discord-msg {
       max-width: 520px;
       width: 100%;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #5865f2, #eb459e);
+      flex-shrink: 0;
+    }
+    .bubble { flex: 1; min-width: 0; }
+    .author {
+      font-size: 0.95rem;
+      margin-bottom: 0.35rem;
+      color: #fff;
+    }
+    .author strong { font-weight: 500; }
+    .bot-tag {
+      background: #5865f2;
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      margin-left: 0.35rem;
+      vertical-align: middle;
+    }
+    
+    /* Components V2 Container */
+    .v2-container {
+      background: #232136;
+      border: 1px solid rgba(0,0,0,0.45);
+      border-radius: 8px;
+      overflow: hidden;
     }
     .v2-header {
       padding: 1rem;
@@ -195,7 +159,7 @@
     }
     .v2-desc {
       font-size: 0.9rem;
-      color: var(--text);
+      color: #dbdee1;
       line-height: 1.4;
       white-space: pre-wrap;
     }
@@ -208,7 +172,7 @@
     }
     .v2-separator {
       height: 1px;
-      background: var(--row-border);
+      background: rgba(0,0,0,0.45);
       margin: 0 1rem;
     }
     .v2-section {
@@ -218,20 +182,15 @@
       align-items: center;
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    .v2-section:last-of-type {
-      border-bottom: none;
-    }
-    .v2-section-text {
-      flex: 1;
-    }
+    .v2-section:last-child { border-bottom: none; }
+    .v2-section-text { flex: 1; }
     .v2-section-title {
       font-weight: 600;
       color: #fff;
       font-size: 0.9rem;
-      margin-bottom: 0.2rem;
     }
     .v2-section-sub {
-      color: var(--muted);
+      color: #949ba4;
       font-size: 0.8rem;
     }
     .v2-btn {
@@ -242,15 +201,16 @@
       font-weight: 500;
       font-size: 0.85rem;
       cursor: pointer;
+      margin-left: 0.5rem;
     }
-    .v2-btn.p { background: var(--blurple); }
-    .v2-btn.s { background: #4e5058; }
-    .v2-btn.g { background: #248046; }
-    .v2-btn.r { background: #da373c; }
+    .v2-btn.primary { background: #5865f2; }
+    .v2-btn.secondary { background: #4e5058; }
+    .v2-btn.success { background: #248046; }
+    .v2-btn.danger { background: #da373c; }
     .v2-footer {
       padding: 0.5rem 1rem;
       font-size: 0.75rem;
-      color: var(--muted);
+      color: #949ba4;
       font-style: italic;
     }
     .v2-image {
@@ -260,7 +220,19 @@
       max-height: 200px;
       object-fit: cover;
     }
-
+    
+    .info-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(88,101,242,0.1);
+      border-radius: 8px;
+      max-width: 520px;
+      width: 100%;
+      font-size: 0.8rem;
+      color: #949ba4;
+    }
+    .info-box strong { color: #5865f2; }
+    
     .cmd-box {
       background: #111214;
       padding: 1rem;
@@ -268,558 +240,279 @@
       margin-top: 1rem;
       position: relative;
     }
-    .cmd-box pre { margin: 0; font-size: 0.8rem; color: #2ecc71; white-space: pre-wrap; word-break: break-all; }
-    .copy-btn { position: absolute; top: 5px; right: 5px; font-size: 0.7rem; background: #333; border: none; color: #ccc; cursor: pointer; border-radius: 3px; }
-
+    .cmd-box pre {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #2ecc71;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 0.7rem;
+      background: #333;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 0.2rem 0.5rem;
+      margin: 0;
+    }
+    
     .hidden { display: none !important; }
+    
+    .delete-btn {
+      background: #da373c;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      margin-left: 0.5rem;
+      padding: 0;
+    }
+    .delete-btn:hover { background: #f23f43; }
+    
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      background: #111214;
+      border-radius: 4px;
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>SweetyShop Lab</h1>
+    <h1>SweetyShop Lab - Components V2</h1>
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('tickets')">🎫 Tickets</button>
-      <button class="tab" onclick="switchTab('exchanger')">🔄 Exchanger</button>
-      <button class="tab" onclick="switchTab('payments')">💳 Paiements</button>
-      <button class="tab" onclick="switchTab('products')">📦 Produits</button>
-      <button class="tab" onclick="switchTab('welcome')">👋 Bienvenue</button>
-      <button class="tab" onclick="switchTab('custom')">🛠️ Components V2</button>
+      <button class="tab active" onclick="showTab('tickets')">🎫 Tickets</button>
+      <button class="tab" onclick="showTab('exchanger')">💱 Exchanger</button>
     </div>
   </header>
 
   <div class="container">
+    <!-- Sidebar -->
     <div class="sidebar">
-      <!-- Section Tickets -->
-      <div id="side-tickets">
-        <h2>Configuration Panel</h2>
+      <!-- Tickets Config -->
+      <div id="sidebar-tickets">
+        <h2>Configuration Panel Tickets</h2>
+        
         <label>Titre</label>
-        <input type="text" id="t-title" value="Support & Commandes" oninput="updateTickets()">
+        <input type="text" id="t-title" value="Support & Commandes">
+        
         <label>Description</label>
-        <div class="md-btns">
-          <button class="md-btn" onclick="insertMD('t-desc', '**', '**')">B</button>
-          <button class="md-btn" onclick="insertMD('t-desc', '*', '*')">I</button>
-          <button class="md-btn" onclick="insertMD('t-desc', '__', '__')">U</button>
-          <button class="md-btn" onclick="insertMD('t-desc', '```', '```')">Code</button>
-          <button class="md-btn" onclick="insertMD('t-desc', '[', '](url)')">Lien</button>
-        </div>
-        <textarea id="t-desc" oninput="updateTickets()">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</textarea>
+        <textarea id="t-desc">Clique sur un bouton pour ouvrir un ticket selon ton besoin.</textarea>
+        
         <label>Couleur (#Hex)</label>
-        <input type="text" id="t-color" value="#5865f2" oninput="updateTickets()">
+        <input type="text" id="t-color" value="#5865f2">
+        
         <label>Image URL</label>
-        <input type="text" id="t-image" placeholder="https://..." oninput="updateTickets()">
+        <input type="text" id="t-image" placeholder="https://...">
+        
         <label>Thumbnail URL</label>
-        <input type="text" id="t-thumb" placeholder="https://..." oninput="updateTickets()">
-        <label>Texte Footer</label>
-        <input type="text" id="t-footer" placeholder="Mon Footer" oninput="updateTickets()">
-        <label>Icon Footer URL</label>
-        <input type="text" id="t-footer-icon" placeholder="https://..." oninput="updateTickets()">
+        <input type="text" id="t-thumb" placeholder="https://...">
+        
+        <label>Footer</label>
+        <input type="text" id="t-footer" placeholder="Mon Footer">
         
         <h2>Ajouter un bouton</h2>
         <input type="text" id="b-id" placeholder="ID (ex: nitro)">
         <input type="text" id="b-label" placeholder="Label (ex: Commander Nitro)">
         <input type="text" id="b-emoji" placeholder="Emoji (ex: 💎)">
         <select id="b-style">
-          <option value="p">Primary (Blurple)</option>
-          <option value="s">Secondary (Gris)</option>
-          <option value="g">Success (Vert)</option>
-          <option value="r">Danger (Rouge)</option>
+          <option value="primary">Primary (Bleu)</option>
+          <option value="secondary">Secondary (Gris)</option>
+          <option value="success">Success (Vert)</option>
+          <option value="danger">Danger (Rouge)</option>
         </select>
-        <button class="d-btn p" style="width: 100%" onclick="addButton()">Ajouter le bouton</button>
+        <button onclick="addTicketButton()" class="success">Ajouter le bouton</button>
+        
+        <h2>Boutons actuels</h2>
+        <div id="ticket-buttons-list"></div>
       </div>
 
-      <!-- Section Exchanger -->
-      <div id="side-exchanger" class="hidden">
-        <h2>Config Exchanger</h2>
+      <!-- Exchanger Config -->
+      <div id="sidebar-exchanger" class="hidden">
+        <h2>Configuration Exchanger</h2>
+        
         <label>Titre</label>
-        <input type="text" id="e-title" value="Exchanger Service" oninput="updateExchanger()">
+        <input type="text" id="e-title" value="Exchanger Service">
+        
         <label>Description</label>
-        <div class="md-btns">
-          <button class="md-btn" onclick="insertMD('e-desc', '**', '**')">B</button>
-          <button class="md-btn" onclick="insertMD('e-desc', '*', '*')">I</button>
-          <button class="md-btn" onclick="insertMD('e-desc', '__', '__')">U</button>
-        </div>
-        <textarea id="e-desc" oninput="updateExchanger()">Sélectionnez la paire d'échange souhaitée.</textarea>
+        <textarea id="e-desc">Sélectionnez la paire d'échange souhaitée.</textarea>
+        
         <label>Couleur (#Hex)</label>
-        <input type="text" id="e-color" value="#2ecc71" oninput="updateExchanger()">
+        <input type="text" id="e-color" value="#2ecc71">
+        
         <label>Image URL</label>
-        <input type="text" id="e-image" placeholder="https://..." oninput="updateExchanger()">
+        <input type="text" id="e-image" placeholder="https://...">
+        
         <label>Thumbnail URL</label>
-        <input type="text" id="e-thumb" placeholder="https://..." oninput="updateExchanger()">
-        <label>Texte Footer</label>
-        <input type="text" id="e-footer" placeholder="Mon Footer" oninput="updateExchanger()">
-        <label>Icon Footer URL</label>
-        <input type="text" id="e-footer-icon" placeholder="https://..." oninput="updateExchanger()">
+        <input type="text" id="e-thumb" placeholder="https://...">
+        
+        <label>Footer</label>
+        <input type="text" id="e-footer" placeholder="Mon Footer">
         
         <h2>Ajouter une paire</h2>
         <input type="text" id="e-pair" placeholder="Paire (ex: paypal-ltc)">
         <input type="number" id="e-rate" placeholder="Taux (ex: 0.95)" step="0.01">
-        <input type="text" id="e-p-emoji" placeholder="Emoji (ex: 💳)">
-        <input type="text" id="e-p-desc" placeholder="Description courte (ex: Frais 7%)">
-        <button class="d-btn p" style="width: 100%" onclick="addPair()">Ajouter la paire</button>
+        <input type="text" id="e-emoji" placeholder="Emoji (ex: 💱)">
+        <input type="text" id="e-desc-pair" placeholder="Description (ex: Frais 5%)">
+        <button onclick="addExchangePair()" class="success">Ajouter la paire</button>
+        
+        <h2>Paires actuelles</h2>
+        <div id="exchange-pairs-list"></div>
       </div>
 
-      <!-- Section Paiements -->
-      <div id="side-payments" class="hidden">
-        <h2>Config Paiement</h2>
-        <label>Type</label>
-        <select id="p-type" onchange="updatePayments()">
-          <option value="paypal">PayPal</option>
-          <option value="litecoin">Litecoin</option>
-          <option value="ethereum">Ethereum</option>
-          <option value="solana">Solana</option>
-        </select>
-        <label>Titre</label>
-        <input type="text" id="p-title" value="Paiement PayPal" oninput="updatePayments()">
-        <label>Description</label>
-        <textarea id="p-desc" oninput="updatePayments()">Envoyez le paiement à l'adresse ci-dessous.</textarea>
-        <label>Couleur (#Hex)</label>
-        <input type="text" id="p-color-hex" value="#0070ba" oninput="updatePayments()">
-        <label>Image URL</label>
-        <input type="text" id="p-image" placeholder="https://..." oninput="updatePayments()">
-        <label>Thumbnail URL</label>
-        <input type="text" id="p-thumb" placeholder="https://..." oninput="updatePayments()">
-        <label>Texte Footer</label>
-        <input type="text" id="p-footer" placeholder="Mon Footer" oninput="updatePayments()">
-        <label>Icon Footer URL</label>
-        <input type="text" id="p-footer-icon" placeholder="https://..." oninput="updatePayments()">
-        <label>Produit (Simulation)</label>
-        <input type="text" id="p-prod" placeholder="Ex: Nitro" oninput="updatePayments()">
-        <label>Prix (Simulation)</label>
-        <input type="number" id="p-price" placeholder="Ex: 5.50" oninput="updatePayments()">
-      </div>
-
-      <!-- Section Produits -->
-      <div id="side-products" class="hidden">
-        <h2>Gestion des Produits</h2>
-        <p>Enregistrez vos produits et leurs prix pour les commandes de paiement.</p>
-        <label>Nom du produit</label>
-        <input type="text" id="pr-name" placeholder="Ex: nitro-boost">
-        <label>Prix (€)</label>
-        <input type="number" id="pr-price" placeholder="Ex: 4.99" step="0.01">
-        <button class="d-btn p" style="width: 100%" onclick="addProduct()">Enregistrer le produit</button>
-
-        <h2 style="margin-top: 2rem;">Liste des Produits</h2>
-        <div id="pr-list" class="cat-list">
-          <!-- Liste des produits ici -->
-        </div>
-      </div>
-
-      <!-- Section Bienvenue -->
-      <div id="side-welcome" class="hidden">
-        <h2>Message de Bienvenue</h2>
-        <p>Variables : {user}, {user_tag}, {user_name}, {guild_name}, {member_count}</p>
-        <label>Texte du message (Hors embed)</label>
-        <input type="text" id="w-content" value="Bienvenue {user} !" oninput="updateWelcome()">
-        <label>Titre</label>
-        <input type="text" id="w-title" value="Welcome to {guild_name}!" oninput="updateWelcome()">
-        <label>Description</label>
-        <div class="md-btns">
-          <button class="md-btn" onclick="insertMD('w-desc', '**', '**')">B</button>
-          <button class="md-btn" onclick="insertMD('w-desc', '*', '*')">I</button>
-          <button class="md-btn" onclick="insertMD('w-desc', '__', '__')">U</button>
-        </div>
-        <textarea id="w-desc" oninput="updateWelcome()">Merci de nous avoir rejoint ! Nous sommes maintenant {member_count} membres.</textarea>
-        <label>Couleur (#Hex)</label>
-        <input type="text" id="w-color-hex" value="#f1c40f" oninput="updateWelcome()">
-        <label>Image URL (Mettre {user_avatar} pour l'avatar)</label>
-        <input type="text" id="w-image" placeholder="https://..." oninput="updateWelcome()">
-        <label>Thumbnail URL (Mettre {user_avatar} pour l'avatar)</label>
-        <input type="text" id="w-thumb" placeholder="https://..." oninput="updateWelcome()">
-        <label>Texte Footer</label>
-        <input type="text" id="w-footer" placeholder="Enjoy your stay" oninput="updateWelcome()">
-        <label>Icon Footer URL</label>
-        <input type="text" id="w-footer-icon" placeholder="https://..." oninput="updateWelcome()">
-      </div>
-
-      <!-- Section Custom / Components V2 -->
-      <div id="side-custom" class="hidden">
-        <h2>Components V2 - Container Builder</h2>
-        <label>Titre</label>
-        <input type="text" id="c-title" value="Ohio Machine Shop" oninput="updateCustom()">
-        <label>Description</label>
-        <div class="md-btns">
-          <button class="md-btn" onclick="insertMD('c-desc', '**', '**')">B</button>
-          <button class="md-btn" onclick="insertMD('c-desc', '*', '*')">I</button>
-          <button class="md-btn" onclick="insertMD('c-desc', '__', '__')">U</button>
-        </div>
-        <textarea id="c-desc" oninput="updateCustom()" rows="3">Bienvenue dans notre shop! Sélectionne une option ci-dessous.</textarea>
-        <label>Couleur d'accentuation (#Hex)</label>
-        <input type="text" id="c-color-hex" value="#5865f2" oninput="updateCustom()">
-        <label>Thumbnail Header URL</label>
-        <input type="text" id="c-thumb" placeholder="https://... (en haut à droite)" oninput="updateCustom()">
-        <label>Image/Gallery URL</label>
-        <input type="text" id="c-image" placeholder="https://... (image principale)" oninput="updateCustom()">
-        <label>Texte Footer</label>
-        <input type="text" id="c-footer" placeholder="Mon Footer" oninput="updateCustom()">
-
-        <h2>Sections avec Boutons (intégrés)</h2>
-        <div id="c-section-list" style="margin-bottom:1rem"></div>
-
-        <div style="background: #1e1f22; padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem;">
-          <label>Nom de la section</label>
-          <input type="text" id="cs-name" placeholder="Ex: Nitro Boost">
-          <label>Description</label>
-          <input type="text" id="cs-desc" placeholder="Ex: Accès premium pendant 1 mois">
-          <label>Emoji</label>
-          <input type="text" id="cs-emoji" placeholder="💎">
-          <label>Texte du bouton</label>
-          <input type="text" id="cs-btn-label" placeholder="Acheter - 4.99€">
-          <label>Style du bouton</label>
-          <select id="cs-btn-style">
-            <option value="Primary">Primary (Bleu)</option>
-            <option value="Secondary">Secondary (Gris)</option>
-            <option value="Success">Success (Vert)</option>
-            <option value="Danger">Danger (Rouge)</option>
-          </select>
-          <label>Custom ID</label>
-          <input type="text" id="cs-btn-id" placeholder="buy:nitro:boost">
-          <button class="d-btn g" style="width: 100%; margin-top: 0.5rem;" onclick="addCustomSection()">Ajouter une Section + Bouton</button>
-        </div>
-
-        <div style="background: #232136; padding: 1rem; border-radius: 4px; font-size: 0.8rem; color: var(--muted);">
-          <strong>💡 Components V2 :</strong><br>
-          Les boutons sont maintenant intégrés dans des sections avec du texte.
-          Chaque section peut avoir un bouton à droite (accessory).
-        </div>
-      </div>
-
-      <div class="cmd-section">
-        <h2>Commande Bot</h2>
-        <div class="cmd-box">
-          <button class="copy-btn" onclick="copyCmd()">Copier</button>
-          <pre id="cmd-output">/ticket panel-envoyer</pre>
-        </div>
-      </div>
-
-      <div class="help-section" style="margin-top: 2rem; background: #111214; padding: 1rem; border-radius: 4px; font-size: 0.8rem;">
-        <h2 style="margin-top: 0; font-size: 0.9rem;">💡 Aide Discord</h2>
-        <ul style="padding-left: 1.2rem; color: var(--muted);">
-          <li><b>Gras</b> : **texte**</li>
-          <li><i>Italique</i> : *texte*</li>
-          <li><u>Souligné</u> : __texte__</li>
-          <li><del>Barré</del> : ~~texte~~</li>
-          <li><code>Code</code> : \`texte\`</li>
-          <li>Lien : [nom](url)</li>
-          <li>Emoji : :emoji:</li>
-          <li>Emoji Custom : &lt;:nom:id&gt;</li>
-        </ul>
+      <!-- Command Output -->
+      <div class="cmd-box" style="margin-top: 2rem;">
+        <button class="copy-btn" onclick="copyCmd()">Copier</button>
+        <pre id="cmd-output">/ticket panel-config</pre>
       </div>
     </div>
 
-    <div class="preview-area">
-      <div class="discord-msg">
-        <div class="avatar"></div>
-        <div class="bubble">
-          <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
-          
-          <!-- Aperçu Tickets - Généré dynamiquement par JS -->
-          <div id="view-tickets"></div>
-
-          <!-- Aperçu Exchanger - Généré dynamiquement par JS -->
-          <div id="view-exchanger" class="hidden"></div>
-
-          <!-- Aperçu Paiements -->
-          <div id="view-payments" class="hidden">
-            <div class="embed" id="p-embed">
-              <div style="display: flex; justify-content: space-between;">
-                <div style="flex: 1;">
-                  <div class="embed-title" id="vp-title">Paiement PayPal</div>
-                  <div class="embed-desc" id="vp-desc">Envoyez le paiement à l'adresse ci-dessous.</div>
-                </div>
-                <img id="vp-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
-              </div>
-              <div id="vp-fields"></div>
-              <img id="vp-image" src="" class="embed-image" style="display: none;">
-              <div id="vp-footer-area" class="embed-footer" style="display: none;">
-                <img id="vp-footer-icon" src="" style="display: none;">
-                <span id="vp-footer-text"></span>
-              </div>
-            </div>
+    <!-- Preview -->
+    <div class="preview">
+      <!-- Tickets Preview -->
+      <div id="preview-tickets">
+        <div class="discord-msg">
+          <div class="avatar"></div>
+          <div class="bubble">
+            <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
+            <div id="tickets-render"></div>
           </div>
+        </div>
+        <div class="info-box">
+          <strong>🎨 Components V2</strong><br>
+          Les boutons sont intégrés dans des sections. Chaque section contient du texte et un bouton (accessory).
+        </div>
+      </div>
 
-          <!-- Aperçu Produits (Vide car c'est une section de gestion) -->
-          <div id="view-products" class="hidden">
-            <div class="embed" style="border-left-color: #57f287;">
-              <div class="embed-title">📦 Gestion des Produits</div>
-              <div class="embed-desc">Configurez vos produits à gauche. Ces produits seront ensuite utilisables avec les commandes de paiement.</div>
-            </div>
+      <!-- Exchanger Preview -->
+      <div id="preview-exchanger" class="hidden">
+        <div class="discord-msg">
+          <div class="avatar"></div>
+          <div class="bubble">
+            <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
+            <div id="exchanger-render"></div>
           </div>
-
-          <!-- Aperçu Bienvenue -->
-          <div id="view-welcome" class="hidden">
-            <div id="vw-content" style="margin-bottom: 0.5rem;">Bienvenue {user} !</div>
-            <div class="embed" id="w-embed">
-              <div style="display: flex; justify-content: space-between;">
-                <div style="flex: 1;">
-                  <div class="embed-title" id="vw-title">Welcome to {guild_name}!</div>
-                  <div class="embed-desc" id="vw-desc">Merci de nous avoir rejoint !</div>
-                </div>
-                <img id="vw-thumb" src="" style="width: 80px; height: 80px; border-radius: 4px; margin-left: 1rem; display: none;">
-              </div>
-              <img id="vw-image" src="" class="embed-image" style="display: none;">
-              <div id="vw-footer-area" class="embed-footer" style="display: none;">
-                <img id="vw-footer-icon" src="" style="display: none;">
-                <span id="vw-footer-text"></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Aperçu Components V2 -->
-          <div id="view-custom" class="hidden">
-            <div style="background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--row-border); overflow: hidden; max-width: 520px; width: 100%;">
-              <!-- Header avec thumbnail -->
-              <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: flex-start;">
-                <div style="flex: 1;">
-                  <div id="vc-title" style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">Ohio Machine Shop</div>
-                  <div id="vc-desc" style="font-size: 0.9rem; color: var(--text); line-height: 1.4; white-space: pre-wrap;">Bienvenue dans notre shop! Sélectionne une option ci-dessous.</div>
-                </div>
-                <img id="vc-thumb" src="" style="width: 60px; height: 60px; border-radius: 4px; margin-left: 1rem; display: none; object-fit: cover;">
-              </div>
-
-              <!-- Séparateur -->
-              <div style="height: 1px; background: var(--row-border); margin: 0 1rem;"></div>
-
-              <!-- Sections avec boutons (Components V2 style) -->
-              <div id="vc-sections" style="padding: 0.5rem 0;">
-                <!-- Sections générées ici -->
-              </div>
-
-              <!-- Image principale -->
-              <img id="vc-image" src="" style="width: calc(100% - 2rem); margin: 0.5rem 1rem; border-radius: 4px; max-height: 200px; object-fit: cover; display: none;">
-
-              <!-- Footer -->
-              <div id="vc-footer-area" style="padding: 0.5rem 1rem; font-size: 0.75rem; color: var(--muted); display: none;">
-                <span id="vc-footer-text"></span>
-              </div>
-            </div>
-
-            <!-- Info Components V2 -->
-            <div style="margin-top: 1rem; padding: 1rem; background: rgba(88, 101, 242, 0.1); border-radius: 8px; max-width: 520px; width: 100%; font-size: 0.8rem; color: var(--muted);">
-              <strong style="color: var(--blurple);">📦 Components V2</strong><br>
-              Ce message utilise le nouveau système Discord avec des sections et des boutons intégrés.
-              Les boutons sont attachés comme "accessory" aux sections.
-            </div>
-          </div>
-
+        </div>
+        <div class="info-box" style="background: rgba(46,204,113,0.1);">
+          <strong style="color: #2ecc71;">💱 Exchanger Components V2</strong><br>
+          Chaque paire d'échange est une section avec un bouton intégré.
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    let currentTab = 'tickets';
+    // Data
+    let ticketButtons = JSON.parse(localStorage.getItem('ticketButtons_v2')) || [
+      { id: 'nitro', label: 'Nitro', emoji: '💎', style: 'primary' },
+      { id: 'support', label: 'Support', emoji: '🛠️', style: 'secondary' }
+    ];
     
-    // Chargement des données depuis le localStorage ou valeurs par défaut
-    let ticketButtons = JSON.parse(localStorage.getItem('ticketButtons')) || [
-      { id: 'nitro', label: 'Nitro', emoji: '💎', style: 'p' },
-      { id: 'support', label: 'Support', emoji: '🛠️', style: 's' }
-    ];
-    let exchangePairs = JSON.parse(localStorage.getItem('exchangePairs')) || [
-      { pair: 'paypal-ltc', rate: 0.95 }
-    ];
-    let products = JSON.parse(localStorage.getItem('products')) || [
-      { name: 'nitro-boost', price: 4.99 },
-      { name: 'nitro-classic', price: 2.99 }
+    let exchangePairs = JSON.parse(localStorage.getItem('exchangePairs_v2')) || [
+      { pair: 'paypal-ltc', rate: 0.95, emoji: '💱', description: 'Taux: 0.95' }
     ];
 
-    // Sauvegarde automatique
-    function saveData() {
-      localStorage.setItem('ticketButtons', JSON.stringify(ticketButtons));
-      localStorage.setItem('exchangePairs', JSON.stringify(exchangePairs));
-      localStorage.setItem('products', JSON.stringify(products));
-      
-      // Sauvegarde des champs texte
-      const configs = {
-        t_title: document.getElementById('t-title').value,
-        t_desc: document.getElementById('t-desc').value,
-        t_color: document.getElementById('t-color').value,
-        t_image: document.getElementById('t-image').value,
-        t_thumb: document.getElementById('t-thumb').value,
-        t_footer: document.getElementById('t-footer').value,
-        t_footer_icon: document.getElementById('t-footer-icon').value,
-        e_title: document.getElementById('e-title').value,
-        e_desc: document.getElementById('e-desc').value,
-        e_color: document.getElementById('e-color').value,
-        e_image: document.getElementById('e-image').value,
-        e_thumb: document.getElementById('e-thumb').value,
-        e_footer: document.getElementById('e-footer').value,
-        e_footer_icon: document.getElementById('e-footer-icon').value,
-        p_title: document.getElementById('p-title').value,
-        p_desc: document.getElementById('p-desc').value,
-        p_color: document.getElementById('p-color-hex').value,
-        p_image: document.getElementById('p-image').value,
-        p_thumb: document.getElementById('p-thumb').value,
-        p_footer: document.getElementById('p-footer').value,
-        p_footer_icon: document.getElementById('p-footer-icon').value,
-        w_content: document.getElementById('w-content').value,
-        w_title: document.getElementById('w-title').value,
-        w_desc: document.getElementById('w-desc').value,
-        w_color: document.getElementById('w-color-hex').value,
-        w_image: document.getElementById('w-image').value,
-        w_thumb: document.getElementById('w-thumb').value,
-        w_footer: document.getElementById('w-footer').value,
-        w_footer_icon: document.getElementById('w-footer-icon').value,
-        c_title: document.getElementById('c-title').value,
-        c_desc: document.getElementById('c-desc').value,
-        c_color: document.getElementById('c-color-hex').value,
-        c_image: document.getElementById('c-image').value,
-        c_thumb: document.getElementById('c-thumb').value,
-        c_footer: document.getElementById('c-footer').value,
-        c_footer_icon: document.getElementById('c-footer-icon').value
-      };
-      localStorage.setItem('panelConfigs', JSON.stringify(configs));
-    }
-
-    // Chargement des textes au démarrage
-    function loadConfigs() {
-      const configs = JSON.parse(localStorage.getItem('panelConfigs'));
-      if (configs) {
-        if(configs.t_title) document.getElementById('t-title').value = configs.t_title;
-        if(configs.t_desc) document.getElementById('t-desc').value = configs.t_desc;
-        if(configs.t_color) document.getElementById('t-color').value = configs.t_color;
-        if(configs.t_image) document.getElementById('t-image').value = configs.t_image;
-        if(configs.t_thumb) document.getElementById('t-thumb').value = configs.t_thumb;
-        if(configs.t_footer) document.getElementById('t-footer').value = configs.t_footer;
-        if(configs.t_footer_icon) document.getElementById('t-footer-icon').value = configs.t_footer_icon;
-        
-        if(configs.e_title) document.getElementById('e-title').value = configs.e_title;
-        if(configs.e_desc) document.getElementById('e-desc').value = configs.e_desc;
-        if(configs.e_color) document.getElementById('e-color').value = configs.e_color;
-        if(configs.e_image) document.getElementById('e-image').value = configs.e_image;
-        if(configs.e_thumb) document.getElementById('e-thumb').value = configs.e_thumb;
-        if(configs.e_footer) document.getElementById('e-footer').value = configs.e_footer;
-        if(configs.e_footer_icon) document.getElementById('e-footer-icon').value = configs.e_footer_icon;
-        
-        if(configs.p_title) document.getElementById('p-title').value = configs.p_title;
-        if(configs.p_desc) document.getElementById('p-desc').value = configs.p_desc;
-        if(configs.p_color) document.getElementById('p-color-hex').value = configs.p_color;
-        if(configs.p_image) document.getElementById('p-image').value = configs.p_image;
-        if(configs.p_thumb) document.getElementById('p-thumb').value = configs.p_thumb;
-        if(configs.p_footer) document.getElementById('p-footer').value = configs.p_footer;
-        if(configs.p_footer_icon) document.getElementById('p-footer-icon').value = configs.p_footer_icon;
-
-        if(configs.w_content) document.getElementById('w-content').value = configs.w_content;
-        if(configs.w_title) document.getElementById('w-title').value = configs.w_title;
-        if(configs.w_desc) document.getElementById('w-desc').value = configs.w_desc;
-        if(configs.w_color) document.getElementById('w-color-hex').value = configs.w_color;
-        if(configs.w_image) document.getElementById('w-image').value = configs.w_image;
-        if(configs.w_thumb) document.getElementById('w-thumb').value = configs.w_thumb;
-        if(configs.w_footer) document.getElementById('w-footer').value = configs.w_footer;
-        if(configs.w_footer_icon) document.getElementById('w-footer-icon').value = configs.w_footer_icon;
-
-        if(configs.c_title) document.getElementById('c-title').value = configs.c_title;
-        if(configs.c_desc) document.getElementById('c-desc').value = configs.c_desc;
-        if(configs.c_color) document.getElementById('c-color-hex').value = configs.c_color;
-        if(configs.c_image) document.getElementById('c-image').value = configs.c_image;
-        if(configs.c_thumb) document.getElementById('c-thumb').value = configs.c_thumb;
-        if(configs.c_footer) document.getElementById('c-footer').value = configs.c_footer;
-        if(configs.c_footer_icon) document.getElementById('c-footer-icon').value = configs.c_footer_icon;
-      }
-    }
-
-    function switchTab(tab) {
-      currentTab = tab;
+    // Tab switching
+    function showTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
       
-      document.getElementById('side-tickets').classList.add('hidden');
-      document.getElementById('side-exchanger').classList.add('hidden');
-      document.getElementById('side-payments').classList.add('hidden');
-      document.getElementById('side-products').classList.add('hidden');
-      document.getElementById('side-welcome').classList.add('hidden');
-      document.getElementById('side-custom').classList.add('hidden');
+      document.getElementById('sidebar-tickets').classList.add('hidden');
+      document.getElementById('sidebar-exchanger').classList.add('hidden');
+      document.getElementById('preview-tickets').classList.add('hidden');
+      document.getElementById('preview-exchanger').classList.add('hidden');
       
-      document.getElementById('view-tickets').classList.add('hidden');
-      document.getElementById('view-exchanger').classList.add('hidden');
-      document.getElementById('view-payments').classList.add('hidden');
-      document.getElementById('view-products').classList.add('hidden');
-      document.getElementById('view-welcome').classList.add('hidden');
-      document.getElementById('view-custom').classList.add('hidden');
-
-      document.getElementById('side-' + tab).classList.remove('hidden');
-      document.getElementById('view-' + tab).classList.remove('hidden');
+      document.getElementById('sidebar-' + tab).classList.remove('hidden');
+      document.getElementById('preview-' + tab).classList.remove('hidden');
       
-      if(tab === 'tickets') updateTickets();
-      if(tab === 'exchanger') updateExchanger();
-      if(tab === 'payments') updatePayments();
-      if(tab === 'products') updateProducts();
-      if(tab === 'welcome') updateWelcome();
-      if(tab === 'custom') updateCustom();
+      if (tab === 'tickets') renderTickets();
+      if (tab === 'exchanger') renderExchanger();
     }
 
-    function updateTickets() {
+    // Render Tickets
+    function renderTickets() {
       const title = document.getElementById('t-title').value;
       const desc = document.getElementById('t-desc').value;
       const color = document.getElementById('t-color').value;
       const image = document.getElementById('t-image').value;
       const thumb = document.getElementById('t-thumb').value;
       const footer = document.getElementById('t-footer').value;
-      const footerIcon = document.getElementById('t-footer-icon').value;
       
-      saveData();
+      // Save
+      localStorage.setItem('ticketButtons_v2', JSON.stringify(ticketButtons));
       
-      // Components V2 Container
-      let html = `<div class="v2-container" style="border: 1px solid ${color}40;">`;
+      // Build V2 Container
+      let html = `<div class="v2-container" style="border-color: ${color}40;">`;
       
       // Header
       html += `<div class="v2-header">`;
       html += `<div style="flex:1;">`;
-      html += `<div class="v2-title">${title}</div>`;
-      html += `<div class="v2-desc">${desc}</div>`;
+      html += `<div class="v2-title">${escapeHtml(title)}</div>`;
+      html += `<div class="v2-desc">${escapeHtml(desc)}</div>`;
       html += `</div>`;
-      if(thumb) {
-        html += `<img src="${thumb}" class="v2-thumb" onerror="this.style.display='none'">`;
+      if (thumb) {
+        html += `<img src="${escapeHtml(thumb)}" class="v2-thumb" onerror="this.style.display='none'">`;
       }
       html += `</div>`;
       
       // Separator
       html += `<div class="v2-separator"></div>`;
       
-      // Sections avec boutons
-      ticketButtons.forEach(b => {
-        html += `
-          <div class="v2-section">
-            <div class="v2-section-text">
-              <div class="v2-section-title">${b.emoji} ${b.label}</div>
-              <div class="v2-section-sub">Ouvrir un ticket ${b.id}</div>
-            </div>
-            <button class="v2-btn ${b.style}">${b.label}</button>
-            <button class="delete-btn" onclick="deleteButton('${b.id}')" title="Supprimer">×</button>
+      // Sections with buttons
+      ticketButtons.forEach(btn => {
+        html += `<div class="v2-section">`;
+        html += `<div class="v2-section-text">`;
+        html += `<div class="v2-section-title">${btn.emoji} ${escapeHtml(btn.label)}</div>`;
+        html += `<div class="v2-section-sub">Ouvrir un ticket ${btn.id}</div>`;
+        html += `</div>`;
+        html += `<button class="v2-btn ${btn.style}">${escapeHtml(btn.label)}</button>`;
+        html += `<button class="delete-btn" onclick="deleteTicketButton('${btn.id}')">×</button>`;
+        html += `</div>`;
+      });
+      
+      // Image
+      if (image) {
+        html += `<img src="${escapeHtml(image)}" class="v2-image" onerror="this.style.display='none'">`;
+      }
+      
+      // Footer
+      if (footer) {
+        html += `<div class="v2-separator"></div>`;
+        html += `<div class="v2-footer">${escapeHtml(footer)}</div>`;
+      }
+      
+      html += `</div>`;
+      
+      document.getElementById('tickets-render').innerHTML = html;
+      
+      // Update buttons list
+      const list = document.getElementById('ticket-buttons-list');
+      list.innerHTML = '';
+      ticketButtons.forEach(btn => {
+        list.innerHTML += `
+          <div class="item-row">
+            <span>${btn.emoji} ${btn.label} (${btn.style})</span>
+            <button class="delete-btn" onclick="deleteTicketButton('${btn.id}')">×</button>
           </div>
         `;
       });
       
-      // Image
-      if(image) {
-        html += `<img src="${image}" class="v2-image" onerror="this.style.display='none'">`;
-      }
-      
-      // Footer
-      if(footer) {
-        html += `<div class="v2-separator"></div>`;
-        html += `<div class="v2-footer">${footer}</div>`;
-      }
-      
-      html += `</div>`;
-      
-      // Info Components V2
-      html += `<div style="margin-top:1rem;padding:1rem;background:rgba(88,101,242,0.1);border-radius:8px;max-width:520px;width:100%;font-size:0.8rem;color:var(--muted);">`;
-      html += `<strong style="color:var(--blurple);">🎨 Components V2</strong><br>`;
-      html += `Les boutons sont intégrés dans des sections avec du texte.<br>`;
-      html += `Le bot utilise: ContainerBuilder → SectionBuilder → ButtonBuilder`;
-      html += `</div>`;
-      
-      document.getElementById('view-tickets').innerHTML = html;
-      
-      // JSON pour Components V2
-      const sections = ticketButtons.map(b => ({
-        text: `${b.emoji} **${b.label}**\nOuvrir un ticket ${b.id}`,
-        button: {
-          label: b.label,
-          style: {p:'Primary',s:'Secondary',g:'Success',r:'Danger'}[b.style] || 'Secondary',
-          customId: `ticket:open:${b.id}`
-        }
-      }));
-      
+      // Update command
       const json = {
         title: title,
         description: desc,
@@ -827,119 +520,95 @@
         thumbnail: thumb || undefined,
         image: image || undefined,
         footer: footer || undefined,
-        sections: sections
+        sections: ticketButtons.map(b => ({
+          text: `${b.emoji} **${b.label}**\nOuvrir un ticket ${b.id}`,
+          button: {
+            label: b.label,
+            style: b.style.charAt(0).toUpperCase() + b.style.slice(1),
+            customId: `ticket:open:${b.id}`
+          }
+        }))
       };
       document.getElementById('cmd-output').innerText = `/ticket panel-config json:${JSON.stringify(json)}`;
     }
 
-    function deleteButton(id) {
-      ticketButtons = ticketButtons.filter(b => b.id !== id);
-      saveData();
-      updateTickets();
-      document.getElementById('cmd-output').innerText = `/ticket bouton-supprimer id:${id}`;
-    }
-
-    function addButton() {
-      const id = document.getElementById('b-id').value;
-      const label = document.getElementById('b-label').value;
-      const emoji = document.getElementById('b-emoji').value;
-      const style = document.getElementById('b-style').value;
-      if(!id || !label) return alert('ID et Label requis');
-      ticketButtons.push({ id, label, emoji, style });
-      saveData();
-      updateTickets();
-      
-      // Update command output to show how to add via bot
-      const styleMap = { p: 'Primary', s: 'Secondary', g: 'Success', r: 'Danger' };
-      document.getElementById('cmd-output').innerText = `/ticket bouton-ajouter id:${id} label:"${label}" emoji:${emoji} style:${styleMap[style]}`;
-    }
-
-    function updateExchanger() {
+    // Render Exchanger
+    function renderExchanger() {
       const title = document.getElementById('e-title').value;
       const desc = document.getElementById('e-desc').value;
       const color = document.getElementById('e-color').value;
       const image = document.getElementById('e-image').value;
       const thumb = document.getElementById('e-thumb').value;
       const footer = document.getElementById('e-footer').value;
-      const footerIcon = document.getElementById('e-footer-icon').value;
       
-      saveData();
+      // Save
+      localStorage.setItem('exchangePairs_v2', JSON.stringify(exchangePairs));
       
-      // Components V2 Container pour Exchanger
-      let html = `<div class="v2-container" style="border: 1px solid ${color}40;">`;
+      // Build V2 Container
+      let html = `<div class="v2-container" style="border-color: ${color}40;">`;
       
       // Header
       html += `<div class="v2-header">`;
       html += `<div style="flex:1;">`;
-      html += `<div class="v2-title">${title}</div>`;
-      html += `<div class="v2-desc">${desc}</div>`;
+      html += `<div class="v2-title">${escapeHtml(title)}</div>`;
+      html += `<div class="v2-desc">${escapeHtml(desc)}</div>`;
       html += `</div>`;
-      if(thumb) {
-        html += `<img src="${thumb}" class="v2-thumb" onerror="this.style.display='none'">`;
+      if (thumb) {
+        html += `<img src="${escapeHtml(thumb)}" class="v2-thumb" onerror="this.style.display='none'">`;
       }
       html += `</div>`;
       
       // Separator
       html += `<div class="v2-separator"></div>`;
       
-      // Select dropdown simulation (header)
-      html += `
-        <div style="padding: 0.75rem 1rem; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--row-border);">
-          <div style="display:flex; justify-content:space-between; align-items:center; color: var(--muted); font-size: 0.9rem;">
-            <span>Sélectionnez une paire d'échange...</span>
-            <span>▼</span>
-          </div>
-        </div>
-      `;
+      // Dropdown header
+      html += `<div style="padding: 0.75rem 1rem; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(0,0,0,0.45);">`;
+      html += `<div style="display:flex; justify-content:space-between; align-items:center; color: #949ba4; font-size: 0.9rem;">`;
+      html += `<span>Sélectionnez une paire...</span><span>▼</span>`;
+      html += `</div></div>`;
       
-      // Sections avec paires d'échange
-      exchangePairs.forEach(p => {
-        const fee = Math.round((1 - p.rate) * 100);
+      // Sections with pairs
+      exchangePairs.forEach(pair => {
+        const fee = Math.round((1 - pair.rate) * 100);
         const feeText = fee > 0 ? `(-${fee}% frais)` : '';
-        html += `
-          <div class="v2-section">
-            <div class="v2-section-text">
-              <div class="v2-section-title">${p.emoji || '🔄'} ${p.pair.toUpperCase()} ${feeText}</div>
-              <div class="v2-section-sub">${p.description || 'Taux: ' + p.rate}</div>
-            </div>
-            <button class="v2-btn p">Échanger</button>
-            <button class="delete-btn" onclick="deletePair('${p.pair}')" title="Supprimer">×</button>
+        html += `<div class="v2-section">`;
+        html += `<div class="v2-section-text">`;
+        html += `<div class="v2-section-title">${pair.emoji} ${pair.pair.toUpperCase()} ${feeText}</div>`;
+        html += `<div class="v2-section-sub">${escapeHtml(pair.description)}</div>`;
+        html += `</div>`;
+        html += `<button class="v2-btn primary">Échanger</button>`;
+        html += `<button class="delete-btn" onclick="deleteExchangePair('${pair.pair}')">×</button>`;
+        html += `</div>`;
+      });
+      
+      // Image
+      if (image) {
+        html += `<img src="${escapeHtml(image)}" class="v2-image" onerror="this.style.display='none'">`;
+      }
+      
+      // Footer
+      if (footer) {
+        html += `<div class="v2-separator"></div>`;
+        html += `<div class="v2-footer">${escapeHtml(footer)}</div>`;
+      }
+      
+      html += `</div>`;
+      
+      document.getElementById('exchanger-render').innerHTML = html;
+      
+      // Update pairs list
+      const list = document.getElementById('exchange-pairs-list');
+      list.innerHTML = '';
+      exchangePairs.forEach(pair => {
+        list.innerHTML += `
+          <div class="item-row">
+            <span>${pair.emoji} ${pair.pair.toUpperCase()} (${pair.rate})</span>
+            <button class="delete-btn" onclick="deleteExchangePair('${pair.pair}')">×</button>
           </div>
         `;
       });
       
-      // Image
-      if(image) {
-        html += `<img src="${image}" class="v2-image" onerror="this.style.display='none'">`;
-      }
-      
-      // Footer
-      if(footer) {
-        html += `<div class="v2-separator"></div>`;
-        html += `<div class="v2-footer">${footer}</div>`;
-      }
-      
-      html += `</div>`;
-      
-      // Info Components V2
-      html += `<div style="margin-top:1rem;padding:1rem;background:rgba(46,204,113,0.1);border-radius:8px;max-width:520px;width:100%;font-size:0.8rem;color:var(--muted);">`;
-      html += `<strong style="color:#2ecc71;">💱 Exchanger Components V2</strong><br>`;
-      html += `Chaque paire d'échange est une section avec un bouton intégré.<br>`;
-      html += `Les taux et descriptions sont affichés dans le texte de la section.`;
-      html += `</div>`;
-      
-      document.getElementById('view-exchanger').innerHTML = html;
-
-      // JSON pour Components V2
-      const sections = exchangePairs.map(p => ({
-        text: `${p.emoji || '🔄'} **${p.pair.toUpperCase()}**\n${p.description || 'Taux: ' + p.rate}`,
-        button: {
-          label: 'Échanger',
-          style: 'Primary',
-          customId: `exchange:select:${p.pair}`
-        }
-      }));
-      
+      // Update command
       const json = {
         title: title,
         description: desc,
@@ -947,280 +616,100 @@
         thumbnail: thumb || undefined,
         image: image || undefined,
         footer: footer || undefined,
-        sections: sections
+        sections: exchangePairs.map(p => ({
+          text: `${p.emoji} **${p.pair.toUpperCase()}**\n${p.description}`,
+          button: {
+            label: 'Échanger',
+            style: 'Primary',
+            customId: `exchange:select:${p.pair}`
+          }
+        }))
       };
       document.getElementById('cmd-output').innerText = `/exchanger config-embed json:${JSON.stringify(json)}`;
     }
 
-    function deletePair(pair) {
-      exchangePairs = exchangePairs.filter(p => p.pair !== pair);
-      saveData();
-      updateExchanger();
-      document.getElementById('cmd-output').innerText = `/exchanger supprimer-taux paire:${pair}`;
+    // Add ticket button
+    function addTicketButton() {
+      const id = document.getElementById('b-id').value.trim();
+      const label = document.getElementById('b-label').value.trim();
+      const emoji = document.getElementById('b-emoji').value.trim();
+      const style = document.getElementById('b-style').value;
+      
+      if (!id || !label) return alert('ID et Label requis');
+      
+      ticketButtons.push({ id, label, emoji: emoji || '🔘', style });
+      
+      document.getElementById('b-id').value = '';
+      document.getElementById('b-label').value = '';
+      document.getElementById('b-emoji').value = '';
+      
+      renderTickets();
     }
 
-    function addPair() {
-      const pair = document.getElementById('e-pair').value;
-      const rate = document.getElementById('e-rate').value;
-      const emoji = document.getElementById('e-p-emoji').value;
-      const desc = document.getElementById('e-p-desc').value;
-      if(!pair || !rate) return alert('Paire et Taux requis');
-      exchangePairs.push({ pair, rate, emoji, description: desc });
-      saveData();
-      updateExchanger();
-      document.getElementById('cmd-output').innerText = `/exchanger taux paire:${pair} taux:${rate}${emoji ? ' emoji:'+emoji : ''}${desc ? ' description:"'+desc+'"' : ''}`;
+    // Delete ticket button
+    function deleteTicketButton(id) {
+      ticketButtons = ticketButtons.filter(b => b.id !== id);
+      renderTickets();
     }
 
-    function updatePayments() {
-      const type = document.getElementById('p-type').value;
-      const title = document.getElementById('p-title').value;
-      const desc = document.getElementById('p-desc').value;
-      const colorHex = document.getElementById('p-color-hex').value;
-      const image = document.getElementById('p-image').value;
-      const thumb = document.getElementById('p-thumb').value;
-      const footer = document.getElementById('p-footer').value;
-      const footerIcon = document.getElementById('p-footer-icon').value;
-      const prod = document.getElementById('p-prod').value;
-      const price = document.getElementById('p-price').value;
-
-      saveData();
-      document.getElementById('vp-title').innerText = title + (prod ? ` - ${prod.toUpperCase()}` : '');
-      document.getElementById('vp-desc').innerText = desc;
-      document.getElementById('p-embed').style.borderLeftColor = colorHex;
-
-      // Thumb
-      const vThumb = document.getElementById('vp-thumb');
-      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
-      else vThumb.style.display = 'none';
-
-      // Image
-      const vImg = document.getElementById('vp-image');
-      if(image) { vImg.src = image; vImg.style.display = 'block'; }
-      else vImg.style.display = 'none';
-
-      // Footer
-      const vFoot = document.getElementById('vp-footer-area');
-      const vFootText = document.getElementById('vp-footer-text');
-      const vFootIcon = document.getElementById('vp-footer-icon');
-      if(footer || footerIcon) {
-        vFoot.style.display = 'flex';
-        vFootText.innerText = footer || '';
-        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
-        else vFootIcon.style.display = 'none';
-      } else vFoot.style.display = 'none';
-
-      const fields = document.getElementById('vp-fields');
-      fields.innerHTML = '';
-      if(prod) {
-        fields.innerHTML += `<div style="margin-top:0.5rem"><strong>Produit:</strong> ${prod.toUpperCase()}</div>`;
-      }
-      if(price) {
-        fields.innerHTML += `<div><strong>Prix:</strong> ${price}€</div>`;
-      }
-
-      const json = {
-        title: title,
-        description: desc,
-        color: parseInt(colorHex.replace('#', ''), 16),
-        image: image || undefined,
-        thumbnail: thumb || undefined,
-        footer: footer || undefined,
-        footerIcon: footerIcon || undefined
-      };
-      document.getElementById('cmd-output').innerText = `/paiement definir type:${type} json:${JSON.stringify(json)}`;
-    }
-
-    function updateProducts() {
-      const list = document.getElementById('pr-list');
-      list.innerHTML = '';
-      products.forEach(p => {
-        list.innerHTML += `
-          <div class="panel-item">
-            <div class="panel-txt">
-              <span class="head">${p.name}</span>
-              <span class="sub">${p.price}€</span>
-            </div>
-            <button class="delete-btn" onclick="deleteProduct('${p.name}')">×</button>
-          </div>
-        `;
+    // Add exchange pair
+    function addExchangePair() {
+      const pair = document.getElementById('e-pair').value.trim();
+      const rate = parseFloat(document.getElementById('e-rate').value);
+      const emoji = document.getElementById('e-emoji').value.trim();
+      const desc = document.getElementById('e-desc-pair').value.trim();
+      
+      if (!pair || isNaN(rate)) return alert('Paire et Taux requis');
+      
+      exchangePairs.push({
+        pair,
+        rate,
+        emoji: emoji || '🔄',
+        description: desc || `Taux: ${rate}`
       });
-      document.getElementById('cmd-output').innerText = `/setproduit nom:nom_du_produit prix:prix`;
-    }
-
-    function addProduct() {
-      const name = document.getElementById('pr-name').value.toLowerCase().trim();
-      const price = parseFloat(document.getElementById('pr-price').value);
-      if(!name || isNaN(price)) return alert('Nom et Prix requis');
       
-      const index = products.findIndex(p => p.name === name);
-      if(index > -1) products[index].price = price;
-      else products.push({ name, price });
+      document.getElementById('e-pair').value = '';
+      document.getElementById('e-rate').value = '';
+      document.getElementById('e-emoji').value = '';
+      document.getElementById('e-desc-pair').value = '';
       
-      saveData();
-      updateProducts();
-      document.getElementById('cmd-output').innerText = `/setproduit nom:${name} prix:${price}`;
+      renderExchanger();
     }
 
-    function deleteProduct(name) {
-      products = products.filter(p => p.name !== name);
-      saveData();
-      updateProducts();
-      // On n'a pas de commande directe pour supprimer un produit dans le bot actuel,
-      // mais on peut le signaler.
-      document.getElementById('cmd-output').innerText = `Produit ${name} retiré du lab.`;
+    // Delete exchange pair
+    function deleteExchangePair(pair) {
+      exchangePairs = exchangePairs.filter(p => p.pair !== pair);
+      renderExchanger();
     }
 
-    function updateWelcome() {
-      const content = document.getElementById('w-content').value;
-      const title = document.getElementById('w-title').value;
-      const desc = document.getElementById('w-desc').value;
-      const colorHex = document.getElementById('w-color-hex').value;
-      const image = document.getElementById('w-image').value;
-      const thumb = document.getElementById('w-thumb').value;
-      const footer = document.getElementById('w-footer').value;
-      const footerIcon = document.getElementById('w-footer-icon').value;
-
-      saveData();
-      
-      const replaceVars = (str) => {
-        return str
-          .replace(/{user}/g, '@Lara')
-          .replace(/{user_tag}/g, 'Lara#0001')
-          .replace(/{user_name}/g, 'Lara')
-          .replace(/{guild_name}/g, 'Ohio Machine Server')
-          .replace(/{member_count}/g, '123');
-      };
-
-      document.getElementById('vw-content').innerText = replaceVars(content);
-      document.getElementById('vw-title').innerText = replaceVars(title);
-      document.getElementById('vw-desc').innerText = replaceVars(desc);
-      document.getElementById('w-embed').style.borderLeftColor = colorHex;
-
-      // Thumb
-      const vThumb = document.getElementById('vw-thumb');
-      if(thumb) { 
-        vThumb.src = thumb === '{user_avatar}' ? 'https://cdn.discordapp.com/embed/avatars/0.png' : thumb; 
-        vThumb.style.display = 'block'; 
-      }
-      else vThumb.style.display = 'none';
-
-      // Image
-      const vImg = document.getElementById('vw-image');
-      if(image) { 
-        vImg.src = image === '{user_avatar}' ? 'https://cdn.discordapp.com/embed/avatars/0.png' : image; 
-        vImg.style.display = 'block'; 
-      }
-      else vImg.style.display = 'none';
-
-      // Footer
-      const vFoot = document.getElementById('vw-footer-area');
-      const vFootText = document.getElementById('vw-footer-text');
-      const vFootIcon = document.getElementById('vw-footer-icon');
-      if(footer || footerIcon) {
-        vFoot.style.display = 'flex';
-        vFootText.innerText = replaceVars(footer || '');
-        if(footerIcon) {
-          vFootIcon.src = footerIcon;
-          vFootIcon.style.display = 'block';
-        } else vFootIcon.style.display = 'none';
-      } else vFoot.style.display = 'none';
-
-      const json = {
-        content: content,
-        title: title,
-        description: desc,
-        color: parseInt(colorHex.replace('#', ''), 16),
-        image: image || undefined,
-        thumbnail: thumb || undefined,
-        footer: footer || undefined,
-        footerIcon: footerIcon || undefined
-      };
-      document.getElementById('cmd-output').innerText = `/welcome set-embed json:${JSON.stringify(json)}`;
-    }
-
-    function updateCustom() {
-      const title = document.getElementById('c-title').value;
-      const desc = document.getElementById('c-desc').value;
-      const colorHex = document.getElementById('c-color-hex').value;
-      const image = document.getElementById('c-image').value;
-      const thumb = document.getElementById('c-thumb').value;
-      const footer = document.getElementById('c-footer').value;
-      const footerIcon = document.getElementById('c-footer-icon').value;
-
-      saveData();
-      document.getElementById('vc-title').innerText = title;
-      document.getElementById('vc-desc').innerText = desc;
-      document.getElementById('c-embed').style.borderLeftColor = colorHex;
-
-      // Thumb
-      const vThumb = document.getElementById('vc-thumb');
-      if(thumb) { vThumb.src = thumb; vThumb.style.display = 'block'; }
-      else vThumb.style.display = 'none';
-
-      // Image
-      const vImg = document.getElementById('vc-image');
-      if(image) { vImg.src = image; vImg.style.display = 'block'; }
-      else vImg.style.display = 'none';
-
-      // Footer
-      const vFoot = document.getElementById('vc-footer-area');
-      const vFootText = document.getElementById('vc-footer-text');
-      const vFootIcon = document.getElementById('vc-footer-icon');
-      if(footer || footerIcon) {
-        vFoot.style.display = 'flex';
-        vFootText.innerText = footer || '';
-        if(footerIcon) { vFootIcon.src = footerIcon; vFootIcon.style.display = 'block'; }
-        else vFootIcon.style.display = 'none';
-      } else vFoot.style.display = 'none';
-
-      const json = {
-        title: title,
-        description: desc,
-        color: parseInt(colorHex.replace('#', ''), 16),
-        image: image || undefined,
-        thumbnail: thumb || undefined,
-        footer: footer || undefined,
-        footerIcon: footerIcon || undefined
-      };
-      document.getElementById('cmd-output').innerText = `/json data:${JSON.stringify(json)}`;
-    }
-
+    // Copy command
     function copyCmd() {
       const text = document.getElementById('cmd-output').innerText;
-      navigator.clipboard.writeText(text);
-      alert('Commande copiée !');
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Commande copiée !');
+      });
     }
 
-    function insertMD(id, prefix, suffix) {
-      const el = document.getElementById(id);
-      const start = el.selectionStart;
-      const end = el.selectionEnd;
-      const text = el.value;
-      const before = text.substring(0, start);
-      const selected = text.substring(start, end);
-      const after = text.substring(end);
-      
-      el.value = before + prefix + selected + suffix + after;
-      el.focus();
-      el.selectionStart = start + prefix.length;
-      el.selectionEnd = start + prefix.length + selected.length;
-      
-      // Déclencher l'update correspondante
-      if(id === 't-desc') updateTickets();
-      if(id === 'e-desc') updateExchanger();
-      if(id === 'w-desc') updateWelcome();
-      if(id === 'c-desc') updateCustom();
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
-    // Init
-    loadConfigs();
-    // Mettre à jour tous les aperçus au chargement
-    updateTickets();
-    updateExchanger();
-    updatePayments();
-    updateProducts();
-    updateWelcome();
-    updateCustom();
+    // Input listeners
+    document.querySelectorAll('input, textarea').forEach(el => {
+      el.addEventListener('input', () => {
+        if (!document.getElementById('sidebar-tickets').classList.contains('hidden')) {
+          renderTickets();
+        } else {
+          renderExchanger();
+        }
+      });
+    });
+
+    // Initial render
+    renderTickets();
   </script>
 </body>
 </html>
