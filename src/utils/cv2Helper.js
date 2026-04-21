@@ -70,7 +70,8 @@ function section(textContent, accessory = null) {
     components: components.filter(c => c),
   };
   
-  if (accessory) {
+  // Vérifier que l'accessory est valide (doit avoir un type)
+  if (accessory && typeof accessory === 'object' && accessory.type) {
     section.accessory = accessory;
   }
   
@@ -157,6 +158,9 @@ async function sendChannelV2(client, channelId, containerObj, content = null) {
   if (content) {
     body.content = content;
   }
+  
+  // Debug: voir ce qui est envoyé
+  console.log('[CV2] Envoi:', JSON.stringify(body, null, 2));
   
   try {
     const result = await rest.post(Routes.channelMessages(channelId), {
