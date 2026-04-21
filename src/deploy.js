@@ -1,69 +1,139 @@
 require('dotenv').config();
-const { REST, Routes } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const { REST, Routes, SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 
-const commands = [];
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const commands = [
+  // Commande Ticket
+  new SlashCommandBuilder()
+    .setName('ticket')
+    .setDescription('Gérer le système de tickets')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand(sub =>
+      sub.setName('configurer')
+        .setDescription('Configurer le système de tickets')
+        .addChannelOption(opt =>
+          opt.setName('categorie')
+            .setDescription('Catégorie où créer les tickets')
+            .setRequired(true)
+            .addChannelTypes(ChannelType.GuildCategory)
+        )
+        .addChannelOption(opt =>
+          opt.setName('salon')
+            .setDescription('Salon pour le panel')
+            .setRequired(true)
+            .addChannelTypes(ChannelType.GuildText)
+        )
+    )
+    .addSubcommand(sub =>
+      sub.setName('ajouter')
+        .setDescription('Ajouter une catégorie de ticket')
+        .addStringOption(opt =>
+          opt.setName('id')
+            .setDescription('ID unique (ex: support)')
+            .setRequired(true)
+        )
+        .addStringOption(opt =>
+          opt.setName('nom')
+            .setDescription('Nom affiché')
+            .setRequired(true)
+        )
+        .addStringOption(opt =>
+          opt.setName('description')
+            .setDescription('Description courte')
+            .setRequired(false)
+        )
+        .addStringOption(opt =>
+          opt.setName('emoji')
+            .setDescription('Emoji')
+            .setRequired(false)
+        )
+    )
+    .addSubcommand(sub =>
+      sub.setName('envoyer')
+        .setDescription('Envoyer le panel de tickets')
+    )
+    .addSubcommand(sub =>
+      sub.setName('liste')
+        .setDescription('Lister les catégories')
+    ),
 
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
-  if ('data' in command && 'execute' in command) {
-    commands.push(command.data.toJSON());
-    console.log(`[Deploy] Commande chargée: ${command.data.name}`);
-  }
-}
+  // Commande Exchanger
+  new SlashCommandBuilder()
+    .setName('exchanger')
+    .setDescription('Gérer le système d\'échange')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand(sub =>
+      sub.setName('configurer')
+        .setDescription('Configurer le salon d\'échange')
+        .addChannelOption(opt =>
+          opt.setName('salon')
+            .setDescription('Salon pour le panel')
+            .setRequired(true)
+            .addChannelTypes(ChannelType.GuildText)
+        )
+    )
+    .addSubcommand(sub =>
+      sub.setName('ajouter')
+        .setDescription('Ajouter une paire')
+        .addStringOption(opt =>
+          opt.setName('nom')
+            .setDescription('Nom de la paire (ex: EUR/USD)')
+            .setRequired(true)
+        )
+        .addNumberOption(opt =>
+          opt.setName('taux')
+            .setDescription('Taux de change')
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(sub =>
+      sub.setName('envoyer')
+        .setDescription('Envoyer le panel d\'échange')
+    ),
+
+  // Commande Embed
+  new SlashCommandBuilder()
+    .setName('embed')
+    .setDescription('Créer un embed personnalisé')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addChannelOption(opt =>
+      opt.setName('salon')
+        .setDescription('Salon cible')
+        .setRequired(true)
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .addStringOption(opt =>
+      opt.setName('titre')
+        .setDescription('Titre')
+        .setRequired(true)
+    )
+    .addStringOption(opt =>
+      opt.setName('description')
+        .setDescription('Description (utilise \\n pour saut de ligne)')
+        .setRequired(true)
+    )
+    .addStringOption(opt =>
+      opt.setName('couleur')
+        .setDescription('Couleur hex (ex: #1FFFBF)')
+        .setRequired(false)
+    )
+    .addStringOption(opt =>
+      opt.setName('image')
+        .setDescription('URL image')
+        .setRequired(false)
+    ),
+].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
-async function deploy() {
+(async () => {
   try {
-    console.log('[Deploy] Début du déploiement...');
-    
-    // Supprimer TOUTES les commandes globales d'abord
-    console.log('[Deploy] Suppression des anciennes commandes...');
-    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID || ''), { body: [] });
-    console.log('[Deploy] Anciennes commandes supprimées');
-    
-    // Enregistrer les nouvelles commandes
-    console.log('[Deploy] Enregistrement des nouvelles commandes...');
-    const data = await rest.put(
-      Routes.applicationCommands(process.env.CLIENT_ID || ''),
+    console.log('📝 Déploiement des commandes...');
+    await rest.put(
+      Routes.applicationCommands(process.env.CLIENT_ID),
       { body: commands }
     );
-    
-    console.log(`[Deploy] ✅ ${data.length} commandes enregistrées avec succès!`);
-    console.log('[Deploy] Commandes:', data.map(c => c.name).join(', '));
+    console.log('✅ Commandes déployées !');
   } catch (error) {
-    console.error('[Deploy] ❌ Erreur:', error);
-    process.exit(1);
+    console.error('❌ Erreur:', error);
   }
-}
-
-// Récupérer le CLIENT_ID si non défini
-if (!process.env.CLIENT_ID) {
-  console.log('[Deploy] CLIENT_ID non défini, récupération...');
-  
-  (async () => {
-    try {
-      const { Client, GatewayIntentBits } = require('discord.js');
-      const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-      
-      client.once('ready', async () => {
-        process.env.CLIENT_ID = client.user.id;
-        console.log(`[Deploy] CLIENT_ID récupéré: ${process.env.CLIENT_ID}`);
-        await deploy();
-        process.exit(0);
-      });
-      
-      await client.login(process.env.DISCORD_TOKEN);
-    } catch (err) {
-      console.error('[Deploy] Impossible de récupérer CLIENT_ID:', err);
-      process.exit(1);
-    }
-  })();
-} else {
-  deploy();
-}
+})();

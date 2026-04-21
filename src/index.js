@@ -1,93 +1,77 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
-const { connectDB } = require('./database');
+const { Client, GatewayIntentBits, Collection, REST, Routes, MessageFlags } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 
-// Client Discord
+// Configuration du client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.MessageContent,
   ],
-  partials: [Partials.Channel],
 });
 
-// Collections
 client.commands = new Collection();
 
-// Chargement des events
-const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-
-for (const file of eventFiles) {
-  const filePath = path.join(eventsPath, file);
-  const event = require(filePath);
-  if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args, client));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args, client));
-  }
-  console.log(`[Event] Chargé: ${event.name}`);
-}
-
-// Chargement des commandes
+// Charger les commandes
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-const slashCommands = [];
 
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
   const command = require(filePath);
-  
   if ('data' in command && 'execute' in command) {
     client.commands.set(command.data.name, command);
-    slashCommands.push(command.data.toJSON());
-    console.log(`[Commande] Chargée: ${command.data.name}`);
   }
 }
 
-// Enregistrement des slash commands
-client.once('ready', async () => {
-  console.log(`[Bot] Connecté en tant que ${client.user.tag}`);
-  console.log(`[Bot] ID: ${client.user.id}`);
-  console.log(`[Commandes] ${slashCommands.length} commandes à enregistrer: ${slashCommands.map(c => c.name).join(', ')}`);
-  
-  // Connexion MongoDB
-  await connectDB();
-  
-  // Attendre un peu que tout soit stable
-  await new Promise(r => setTimeout(r, 1000));
-  
-  // Enregistrement global des commandes
+// Connexion MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ohio-bot')
+  .then(() => console.log('✅ MongoDB connecté'))
+  .catch(err => console.error('❌ Erreur MongoDB:', err));
+
+// Schéma de configuration
+const configSchema = new mongoose.Schema({
+  guildId: String,
+  ticketCategoryId: String,
+  ticketChannelId: String,
+  ticketMessageId: String,
+  ticketCategories: [{
+    id: String,
+    label: String,
+    emoji: String,
+    description: String
+  }],
+  staffRoleIds: [String],
+});
+
+const Config = mongoose.model('Config', configSchema);
+
+// Handler d'événements
+client.once('ready', () => {
+  console.log(`✅ Bot connecté: ${client.user.tag}`);
+});
+
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
+  if (!command) return;
+
   try {
-    console.log('[Slash] Suppression des anciennes commandes...');
-    await client.application.commands.set([]);
-    console.log('[Slash] Anciennes commandes supprimées');
-    
-    await new Promise(r => setTimeout(r, 500));
-    
-    console.log('[Slash] Enregistrement des nouvelles commandes...');
-    const result = await client.application.commands.set(slashCommands);
-    console.log(`[Slash] ✅ ${result.size} commandes enregistrées:`);
-    result.forEach(cmd => console.log(`  - /${cmd.name}`));
+    await command.execute(interaction, Config);
   } catch (error) {
-    console.error('[Slash] ❌ Erreur enregistrement:', error.message);
-    console.error(error.stack);
+    console.error(error);
+    const reply = { content: '❌ Une erreur est survenue.', flags: MessageFlags.Ephemeral };
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(reply);
+    } else {
+      await interaction.reply(reply);
+    }
   }
 });
 
-// Gestion des erreurs
-process.on('unhandledRejection', (error) => {
-  console.error('[Erreur] Unhandled Rejection:', error);
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('[Erreur] Uncaught Exception:', error);
-});
-
-// Connexion
+// Démarrer le bot
 client.login(process.env.DISCORD_TOKEN);
