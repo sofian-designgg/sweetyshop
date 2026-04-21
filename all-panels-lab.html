@@ -808,15 +808,7 @@
       html += `Le bot utilise: ContainerBuilder → SectionBuilder → ButtonBuilder`;
       html += `</div>`;
       
-      document.getElementById('view-tickets').innerHTML = `
-        <div class="discord-msg">
-          <div class="avatar"></div>
-          <div class="bubble" style="flex:1;min-width:0;">
-            <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
-            ${html}
-          </div>
-        </div>
-      `;
+      document.getElementById('view-tickets').innerHTML = html;
       
       // JSON pour Components V2
       const sections = ticketButtons.map(b => ({
@@ -936,15 +928,7 @@
       html += `Les taux et descriptions sont affichés dans le texte de la section.`;
       html += `</div>`;
       
-      document.getElementById('view-exchanger').innerHTML = `
-        <div class="discord-msg">
-          <div class="avatar"></div>
-          <div class="bubble" style="flex:1;min-width:0;">
-            <div class="author"><strong>SweetyShop</strong><span class="bot-tag">BOT</span></div>
-            ${html}
-          </div>
-        </div>
-      `;
+      document.getElementById('view-exchanger').innerHTML = html;
 
       // JSON pour Components V2
       const sections = exchangePairs.map(p => ({
@@ -1230,7 +1214,13 @@
 
     // Init
     loadConfigs();
+    // Mettre à jour tous les aperçus au chargement
     updateTickets();
+    updateExchanger();
+    updatePayments();
+    updateProducts();
+    updateWelcome();
+    updateCustom();
   </script>
 </body>
 </html>
