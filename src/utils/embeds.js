@@ -7,9 +7,6 @@ const {
   StringSelectMenuOptionBuilder,
 } = require('discord.js');
 
-// Import CV2 Helper (comme le bot DMall Python)
-const cv2 = require('./cv2Helper');
-
 // Créer un embed classique
 function createEmbed(options = {}) {
   const embed = new EmbedBuilder()
@@ -25,140 +22,100 @@ function createEmbed(options = {}) {
   return embed;
 }
 
-// Créer un panel de tickets avec Components V2 (comme DMall)
+// Créer un panel de tickets classique (Embed + Select Menu)
 function buildTicketPanel(cfg, guildName) {
-  const components = [];
-  
-  // Titre
-  const title = cfg.ticketPanelEmbed?.title || '🎫 Support';
-  components.push(cv2.section(`## ${title}`));
-  
-  // Description
-  const description = cfg.ticketPanelEmbed?.description || `Bienvenue sur **${guildName}**.\n\nSélectionne une catégorie ci-dessous pour ouvrir un ticket.`;
-  if (description) {
-    components.push(cv2.section(description));
+  const embed = new EmbedBuilder()
+    .setTitle(cfg.ticketPanelEmbed?.title || '🎫 Support')
+    .setDescription(
+      cfg.ticketPanelEmbed?.description || 
+      `Bienvenue sur **${guildName}**.\n\nSélectionne une catégorie ci-dessous pour ouvrir un ticket.`
+    )
+    .setColor(cfg.ticketPanelEmbed?.color || 0x5865f2);
+    
+  if (cfg.ticketPanelEmbed?.image) {
+    embed.setImage(cfg.ticketPanelEmbed.image);
   }
   
-  // Séparateur
-  components.push(cv2.separator(1));
-  
-  // Catégories - chaque catégorie devient une section avec bouton accessory
+  if (cfg.ticketPanelEmbed?.footer) {
+    embed.setFooter({ text: cfg.ticketPanelEmbed.footer });
+  }
+
+  // Créer un select menu pour les catégories (comme l'exemple ClearTrades)
   const categories = cfg.ticketCategories || [];
   
-  for (const cat of categories.slice(0, 10)) {
-    if (!cat.id || !cat.label) continue;
-    
-    const prompt = cat.prompt || cat.label;
-    const hint = (cat.hint || 'Clique pour ouvrir un ticket').trim() || '\u200b';
-    
-    // Style du bouton (1=Primary, 2=Secondary, 3=Success, 4=Danger)
-    const styleMap = { 'Primary': 1, 'Secondary': 2, 'Success': 3, 'Danger': 4 };
-    const style = styleMap[cat.style] || 2;
-    
-    // Créer le bouton
-    const btn = cv2.button(
-      `ticket_open_${cat.id}`,
-      cat.label,
-      style,
-      cat.emoji
-    );
-    
-    // Section avec texte + bouton accessory
-    components.push(cv2.section(`**${prompt}**\n${hint}`, btn));
+  if (categories.length === 0) {
+    return { embeds: [embed], components: [] };
   }
   
-  // Image si présente
-  if (cfg.ticketPanelEmbed?.image) {
-    components.push(cv2.separator(1));
-    components.push(cv2.media_gallery([cfg.ticketPanelEmbed.image]));
-  }
+  // Créer les options du select menu
+  const options = categories.slice(0, 25).map(cat => {
+    const option = new StringSelectMenuOptionBuilder()
+      .setLabel(cat.label || cat.id)
+      .setValue(cat.id)
+      .setDescription(cat.hint || 'Clique pour ouvrir un ticket');
+      
+    if (cat.emoji) {
+      const match = cat.emoji.match(/:(\d+)>?$/);
+      if (match) option.setEmoji(match[1]);
+      else option.setEmoji(cat.emoji);
+    }
+    
+    return option;
+  });
   
-  // Footer si présent
-  if (cfg.ticketPanelEmbed?.footer) {
-    components.push(cv2.separator(1));
-    components.push(cv2.section(`*${cfg.ticketPanelEmbed.footer}*`));
-  }
+  // Créer le select menu
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId('ticket_select_category')
+    .setPlaceholder('Sélectionne une catégorie...')
+    .addOptions(options);
   
-  // Créer le container avec accent color
-  const color = cfg.ticketPanelEmbed?.color;
-  const container = cv2.container(
-    ...components,
-    { accent_color: color }
-  );
+  // Ajouter dans une ActionRow
+  const row = new ActionRowBuilder().addComponents(selectMenu);
   
-  return container;
+  return { embeds: [embed], components: [row] };
 }
 
-// Fonctions pour envoyer/mettre à jour avec CV2
-async function sendTicketPanel(client, channelId, cfg, guildName) {
-  const container = buildTicketPanel(cfg, guildName);
-  return cv2.sendChannelV2(client, channelId, container);
-}
-
-async function editTicketPanel(client, channelId, messageId, cfg, guildName) {
-  const container = buildTicketPanel(cfg, guildName);
-  return cv2.editMessageV2(client, channelId, messageId, container);
-}
-
-// Créer un panel d'exchanger avec Components V2 (comme DMall)
+// Créer un panel d'exchanger classique (Embed + Select Menu)
 function buildExchangerPanel(cfg) {
   const exchanger = cfg.exchangerConfig || {};
   const rates = exchanger.rates || {};
   
-  const components = [];
-  
-  // Titre
-  const title = exchanger.embed?.title || '💱 Exchanger';
-  components.push(cv2.section(`## ${title}`));
-  
-  // Description
-  const description = exchanger.embed?.description || 'Sélectionne une paire pour voir le taux de change.';
-  components.push(cv2.section(description));
-  
+  const embed = new EmbedBuilder()
+    .setTitle(exchanger.embed?.title || '💱 Exchanger')
+    .setDescription(
+      exchanger.embed?.description || 
+      'Sélectionne une paire pour voir le taux de change.'
+    )
+    .setColor(exchanger.embed?.color || 0x5865f2);
+
   // Liste des paires
-  const pairs = Object.entries(rates).slice(0, 10);
+  const pairs = Object.entries(rates).slice(0, 25);
   
   if (pairs.length === 0) {
-    components.push(cv2.section('Aucune paire configurée.'));
-  } else {
-    components.push(cv2.separator(1));
-    
-    // Chaque paire devient une section avec bouton
-    for (const [pair, data] of pairs) {
-      const rate = typeof data === 'number' ? data : data?.rate || 1;
-      const emoji = typeof data === 'object' ? data?.emoji : '💱';
-      const desc = typeof data === 'object' ? data?.description : '';
-      
-      // Bouton
-      const btn = cv2.button(
-        `exchanger_select_${pair}`,
-        'Échanger',
-        1, // Primary
-        null
-      );
-      
-      // Section avec texte + bouton
-      components.push(cv2.section(
-        `${emoji} **${pair.toUpperCase()}**\nTaux: ${rate}${desc ? ` | ${desc}` : ''}`,
-        btn
-      ));
-    }
+    embed.setDescription('Aucune paire configurée.');
+    return { embeds: [embed], components: [] };
   }
-  
-  // Créer le container
-  const color = exchanger.embed?.color;
-  const container = cv2.container(
-    ...components,
-    { accent_color: color }
-  );
-  
-  return container;
-}
 
-// Fonction pour envoyer le panel exchanger
-async function sendExchangerPanel(client, channelId, cfg) {
-  const container = buildExchangerPanel(cfg);
-  return cv2.sendChannelV2(client, channelId, container);
+  // Créer un menu déroulant
+  const select = new StringSelectMenuBuilder()
+    .setCustomId('exchanger_select')
+    .setPlaceholder('Choisir une paire...')
+    .addOptions(
+      pairs.map(([pair, data]) => {
+        const rate = typeof data === 'number' ? data : data?.rate || 1;
+        const emoji = typeof data === 'object' ? data?.emoji : null;
+        
+        return new StringSelectMenuOptionBuilder()
+          .setLabel(pair.toUpperCase())
+          .setDescription(`Taux: ${rate}`)
+          .setValue(pair)
+          .setEmoji(emoji || '💱');
+      })
+    );
+
+  const row = new ActionRowBuilder().addComponents(select);
+
+  return { embeds: [embed], components: [row] };
 }
 
 // Panel de confirmation
@@ -187,7 +144,4 @@ module.exports = {
   buildTicketPanel,
   buildExchangerPanel,
   buildConfirmPanel,
-  sendTicketPanel,
-  editTicketPanel,
-  sendExchangerPanel,
 };

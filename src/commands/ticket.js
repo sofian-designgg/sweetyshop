@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 const { getConfig } = require('../utils/permissions');
-const { buildTicketPanel, sendTicketPanel, editTicketPanel } = require('../utils/embeds');
+const { buildTicketPanel } = require('../utils/embeds');
 const { createTicket } = require('../services/ticketService');
 
 module.exports = {
@@ -88,7 +88,7 @@ module.exports = {
   }
 };
 
-// Handler: Envoyer le panel avec Components V2
+// Handler: Envoyer le panel (classique)
 async function handlePanelSend(interaction, cfg) {
   if (!cfg.ticketPanelChannelId) {
     return interaction.reply({
@@ -112,50 +112,32 @@ async function handlePanelSend(interaction, cfg) {
     });
   }
   
-  // Mettre à jour ou envoyer avec Components V2
-  try {
-    if (cfg.ticketPanelMessageId) {
-      try {
-        await editTicketPanel(
-          interaction.client,
-          channel.id,
-          cfg.ticketPanelMessageId,
-          cfg,
-          interaction.guild.name
-        );
-        
-        await interaction.reply({
-          content: `✅ Panel mis à jour dans ${channel}`,
-          ephemeral: true
-        });
-        return;
-      } catch (editErr) {
-        console.log('[Ticket] Panel introuvable, création nouveau:', editErr.message);
-        // Message introuvable, on envoie un nouveau
-      }
+  const payload = buildTicketPanel(cfg, interaction.guild.name);
+  
+  // Mettre à jour ou envoyer
+  if (cfg.ticketPanelMessageId) {
+    try {
+      const oldMsg = await channel.messages.fetch(cfg.ticketPanelMessageId);
+      await oldMsg.edit(payload);
+      
+      await interaction.reply({
+        content: `✅ Panel mis à jour dans ${channel}`,
+        ephemeral: true
+      });
+      return;
+    } catch {
+      // Message introuvable, on envoie un nouveau
     }
-    
-    const result = await sendTicketPanel(
-      interaction.client,
-      channel.id,
-      cfg,
-      interaction.guild.name
-    );
-    
-    cfg.ticketPanelMessageId = result.id;
-    await cfg.save();
-    
-    await interaction.reply({
-      content: `✅ Panel envoyé dans ${channel}`,
-      ephemeral: true
-    });
-  } catch (error) {
-    console.error('[Ticket] Erreur envoi panel:', error);
-    await interaction.reply({
-      content: `❌ Erreur: ${error.message}`,
-      ephemeral: true
-    });
   }
+  
+  const msg = await channel.send(payload);
+  cfg.ticketPanelMessageId = msg.id;
+  await cfg.save();
+  
+  await interaction.reply({
+    content: `✅ Panel envoyé dans ${channel}`,
+    ephemeral: true
+  });
 }
 
 // Handler: Ajouter un bouton

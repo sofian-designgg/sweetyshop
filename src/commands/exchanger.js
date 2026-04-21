@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { getConfig } = require('../utils/permissions');
-const { sendExchangerPanel } = require('../utils/embeds');
+const { buildExchangerPanel } = require('../utils/embeds');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -98,7 +98,7 @@ module.exports = {
   }
 };
 
-// Handler: Envoyer le panel avec Components V2
+// Handler: Envoyer le panel (classique)
 async function handlePanelSend(interaction, cfg) {
   if (!cfg.exchangerConfig?.enabled) {
     return interaction.reply({
@@ -116,21 +116,14 @@ async function handlePanelSend(interaction, cfg) {
   }
 
   const channel = interaction.channel;
+  const payload = buildExchangerPanel(cfg);
   
-  try {
-    await sendExchangerPanel(interaction.client, channel.id, cfg);
-    
-    await interaction.reply({
-      content: '✅ Panel d\'exchanger envoyé.',
-      ephemeral: true
-    });
-  } catch (error) {
-    console.error('[Exchanger] Erreur envoi panel:', error);
-    await interaction.reply({
-      content: `❌ Erreur: ${error.message}`,
-      ephemeral: true
-    });
-  }
+  await channel.send(payload);
+  
+  await interaction.reply({
+    content: '✅ Panel d\'exchanger envoyé.',
+    ephemeral: true
+  });
 }
 
 // Handler: Ajouter une paire
