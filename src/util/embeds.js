@@ -8,7 +8,6 @@ const {
   TextDisplayBuilder,
   ThumbnailBuilder,
   SeparatorBuilder,
-  SeparatorSpacingSize,
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
   isJSONEncodable,
@@ -106,7 +105,7 @@ function messageFromConfig(raw) {
 
   // Séparateur après le texte initial
   if ((raw.title || raw.description) && (raw.fields?.length > 0 || raw.sections?.length > 0 || raw.components?.length > 0)) {
-    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new SeparatorBuilder().setSpacing(1)); // Small spacing = 1
   }
 
   // Gestion des sections avec boutons intégrés (Components V2 style)
@@ -199,7 +198,7 @@ function messageFromConfig(raw) {
 
   // Footer textuel en bas
   if (raw.footer) {
-    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new SeparatorBuilder().setSpacing(1)); // Small spacing = 1
     containerComponents.push(new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `*${String(raw.footer).slice(0, 2048)}*` })]
     }));
@@ -273,7 +272,7 @@ function buildTicketPanelV2(cfg, guildName) {
     components: [new TextDisplayBuilder({ content: String(description).slice(0, 4000) })]
   }));
 
-  containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
+  containerComponents.push(new SeparatorBuilder().setSpacing(2)); // Medium spacing = 2
 
   // Catégories sous forme de sections avec boutons accessory
   const cats = [...(cfg.ticketCategories || [])].sort((a, b) => {
@@ -341,7 +340,7 @@ function buildTicketPanelV2(cfg, guildName) {
 
   // Image du panel si présente
   if (cfg.ticketPanelEmbed?.image) {
-    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new SeparatorBuilder().setSpacing(1)); // Small spacing = 1
     containerComponents.push(new MediaGalleryBuilder().addItems(
       new MediaGalleryItemBuilder({ media: { url: cfg.ticketPanelEmbed.image } })
     ));
@@ -349,7 +348,7 @@ function buildTicketPanelV2(cfg, guildName) {
 
   // Footer
   if (cfg.ticketPanelEmbed?.footer) {
-    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new SeparatorBuilder().setSpacing(1)); // Small spacing = 1
     containerComponents.push(new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `*${cfg.ticketPanelEmbed.footer.slice(0, 2048)}*` })]
     }));
@@ -389,7 +388,7 @@ function buildExchangerPanelV2(cfg) {
     components: [new TextDisplayBuilder({ content: description.slice(0, 4000) })]
   }));
 
-  containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
+  containerComponents.push(new SeparatorBuilder().setSpacing(2)); // Medium spacing = 2
 
   // Taux de change en sections avec boutons
   const rates = exchangerCfg.rates || {};
