@@ -324,7 +324,21 @@ module.exports = {
       }
     } catch (err) {
       console.error('interactionCreate', err);
-      const msg = { content: 'Une erreur est survenue.', ephemeral: true };
+      
+      // Envoyer la raison de l'erreur en MP à l'utilisateur
+      try {
+        const user = await interaction.client.users.fetch(interaction.user.id);
+        const errorReason = err.message || err.toString() || 'Erreur inconnue';
+        await user.send({
+          content: `⚠️ **Une erreur est survenue**\n\n**Raison:** \`${errorReason}\`\n\nContacte un administrateur si le problème persiste.`
+        });
+      } catch (dmErr) {
+        // Si MP impossible, répondre dans le channel
+        console.error('Impossible d\'envoyer le MP:', dmErr.message);
+      }
+      
+      // Réponse éphémère dans le channel
+      const msg = { content: '❌ Une erreur est survenue. Regarde tes MPs pour la raison.', ephemeral: true };
       if (interaction.deferred || interaction.replied) {
         await interaction.followUp(msg).catch(() => {});
       } else {
