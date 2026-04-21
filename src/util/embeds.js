@@ -83,63 +83,43 @@ function messageFromConfig(raw) {
     return messageFromConfigLegacy(raw);
   }
 
-  // Création du Container V2
-  const container = new ContainerBuilder();
-
-  // Ajout du thumbnail en header si présent
-  if (raw.thumbnail || raw.headerThumbnail) {
-    try {
-      const thumbUrl = raw.thumbnail || raw.headerThumbnail;
-      const thumbnail = new ThumbnailBuilder({
-        media: { url: thumbUrl },
-      });
-      container.addThumbnail(thumbnail);
-    } catch (e) {
-      console.error('Erreur thumbnail:', e.message);
-    }
-  }
-
-  // Couleur d'accentuation
-  if (typeof raw.color === 'number' || raw.accentColor) {
-    const accentColor = typeof raw.color === 'number' ? raw.color : parseHexColor(raw.accentColor);
-    if (accentColor != null) {
-      container.setAccentColor(accentColor);
-    }
-  }
+  // Construction des composants pour le Container V2
+  const containerComponents = [];
 
   // Titre comme premier texte
   if (raw.title) {
-    const titleSection = new SectionBuilder({
+    containerComponents.push(new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `## ${raw.title}` })]
-    });
-    container.addComponents(titleSection);
+    }));
   }
 
   // Description principale
   if (raw.description) {
-    const descSection = new SectionBuilder({
+    containerComponents.push(new SectionBuilder({
       components: [new TextDisplayBuilder({ content: raw.description.slice(0, 4000) })]
-    });
-    container.addComponents(descSection);
+    }));
   }
 
   // Séparateur après le texte initial
   if ((raw.title || raw.description) && (raw.fields?.length > 0 || raw.sections?.length > 0 || raw.components?.length > 0)) {
-    container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
   }
 
   // Gestion des sections avec boutons intégrés (Components V2 style)
   if (Array.isArray(raw.sections)) {
     for (const section of raw.sections.slice(0, 10)) {
-      const sectionBuilder = new SectionBuilder();
+      const sectionComponents = [];
 
       // Texte de la section
       if (section.text || section.description) {
-        const textComponent = new TextDisplayBuilder({
+        sectionComponents.push(new TextDisplayBuilder({
           content: (section.text || section.description).slice(0, 1024),
-        });
-        sectionBuilder.addComponents(textComponent);
+        }));
       }
+
+      const sectionBuilder = new SectionBuilder({
+        components: sectionComponents
+      });
 
       // Thumbnail de la section
       if (section.thumbnail || section.image) {
@@ -159,7 +139,7 @@ function messageFromConfig(raw) {
         sectionBuilder.setAccessory(btn);
       }
 
-      container.addComponents(sectionBuilder);
+      containerComponents.push(sectionBuilder);
     }
   }
 
@@ -167,14 +147,11 @@ function messageFromConfig(raw) {
   if (Array.isArray(raw.fields) && !raw.sections) {
     for (let i = 0; i < Math.min(raw.fields.length, 10); i++) {
       const field = raw.fields[i];
-      const sectionBuilder = new SectionBuilder();
-
-      const fieldText = new TextDisplayBuilder({
-        content: `**${field.name || '\u200b'}**\n${field.value || '\u200b'}`.slice(0, 1024),
-      });
-      sectionBuilder.addComponents(fieldText);
-
-      container.addComponents(sectionBuilder);
+      containerComponents.push(new SectionBuilder({
+        components: [new TextDisplayBuilder({
+          content: `**${field.name || '\u200b'}**\n${field.value || '\u200b'}`.slice(0, 1024),
+        })]
+      }));
     }
   }
 
@@ -182,14 +159,11 @@ function messageFromConfig(raw) {
   if (Array.isArray(raw.components)) {
     const buttons = raw.components
       .filter((c) => c.type === 'button')
-      .slice(0, 5) // Max 5 boutons dans une rangée
+      .slice(0, 5)
       .map((comp, idx) => createButtonFromConfig(comp, idx));
 
     if (buttons.length > 0) {
-      // En Components V2, les boutons peuvent être ajoutés directement au container
-      // ou dans une ActionRow pour le style traditionnel
-      const row = new ActionRowBuilder().addComponents(buttons);
-      container.addActionRow(row);
+      containerComponents.push(new ActionRowBuilder().addComponents(buttons));
     }
   }
 
@@ -215,19 +189,29 @@ function messageFromConfig(raw) {
     }
 
     if (galleryItems.length > 0) {
-      const gallery = new MediaGalleryBuilder();
-      galleryItems.forEach((item) => gallery.addItem(item));
-      container.addMediaGallery(gallery);
+      containerComponents.push(new MediaGalleryBuilder().addItems(...galleryItems));
     }
   }
 
   // Footer textuel en bas
   if (raw.footer) {
-    container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
-    const footerSection = new SectionBuilder({
+    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `*${raw.footer.slice(0, 2048)}*` })]
-    });
-    container.addComponents(footerSection);
+    }));
+  }
+
+  // Création du Container avec tous les composants
+  const container = new ContainerBuilder({
+    components: containerComponents
+  });
+
+  // Couleur d'accentuation
+  if (typeof raw.color === 'number' || raw.accentColor) {
+    const accentColor = typeof raw.color === 'number' ? raw.color : parseHexColor(raw.accentColor);
+    if (accentColor != null) {
+      container.setAccentColor(accentColor);
+    }
   }
 
   return { components: [container] };
@@ -264,39 +248,21 @@ function messageFromConfigLegacy(raw) {
  * Les boutons sont intégrés dans des sections avec du texte
  */
 function buildTicketPanelV2(cfg, guildName) {
-  const container = new ContainerBuilder();
-
-  // Couleur d'accentuation
-  const accentColor = cfg.ticketPanelEmbed?.color || 0x5865f2;
-  container.setAccentColor(accentColor);
-
-  // Header avec thumbnail optionnel
-  if (cfg.ticketPanelEmbed?.thumbnail) {
-    try {
-      const thumbnail = new ThumbnailBuilder({
-        media: { url: cfg.ticketPanelEmbed.thumbnail },
-      });
-      container.addThumbnail(thumbnail);
-    } catch (e) {
-      console.error('Erreur thumbnail panel:', e.message);
-    }
-  }
+  const containerComponents = [];
 
   // Titre
   const title = cfg.ticketPanelEmbed?.title || '🎫 Support';
-  const titleSection = new SectionBuilder({
+  containerComponents.push(new SectionBuilder({
     components: [new TextDisplayBuilder({ content: `## ${title}` })]
-  });
-  container.addComponents(titleSection);
+  }));
 
   // Description
   const description = cfg.ticketPanelEmbed?.description || `Bienvenue sur **${guildName}**. Choisis l'option qui correspond à ton besoin.`;
-  const descSection = new SectionBuilder({
+  containerComponents.push(new SectionBuilder({
     components: [new TextDisplayBuilder({ content: description.slice(0, 4000) })]
-  });
-  container.addSection(descSection);
+  }));
 
-  container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
+  containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
 
   // Catégories sous forme de sections avec boutons accessory
   const cats = [...(cfg.ticketCategories || [])].sort((a, b) => {
@@ -305,15 +271,15 @@ function buildTicketPanelV2(cfg, guildName) {
   });
 
   for (const c of cats.slice(0, 10)) {
-    const section = new SectionBuilder();
-
     // Texte de la section
     const prompt = c.prompt || c.label;
     const hint = c.hint || 'Clique pour ouvrir un ticket';
-    const sectionText = new TextDisplayBuilder({
-      content: `**${prompt}**\n${hint}`.slice(0, 1024),
+    
+    const section = new SectionBuilder({
+      components: [new TextDisplayBuilder({
+        content: `**${prompt}**\n${hint}`.slice(0, 1024),
+      })]
     });
-    section.addComponents(sectionText);
 
     // Bouton accessory intégré dans la section
     const style = ButtonStyle[c.style] || ButtonStyle.Secondary;
@@ -329,26 +295,33 @@ function buildTicketPanelV2(cfg, guildName) {
     }
 
     section.setAccessory(btn);
-    container.addComponents(section);
+    containerComponents.push(section);
   }
 
   // Image du panel si présente
   if (cfg.ticketPanelEmbed?.image) {
-    container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
-    const gallery = new MediaGalleryBuilder().addItem(
+    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new MediaGalleryBuilder().addItems(
       new MediaGalleryItemBuilder({ media: { url: cfg.ticketPanelEmbed.image } })
-    );
-    container.addMediaGallery(gallery);
+    ));
   }
 
   // Footer
   if (cfg.ticketPanelEmbed?.footer) {
-    container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
-    const footerSection = new SectionBuilder({
+    containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+    containerComponents.push(new SectionBuilder({
       components: [new TextDisplayBuilder({ content: `*${cfg.ticketPanelEmbed.footer.slice(0, 2048)}*` })]
-    });
-    container.addComponents(footerSection);
+    }));
   }
+
+  // Création du Container avec tous les composants
+  const container = new ContainerBuilder({
+    components: containerComponents
+  });
+
+  // Couleur d'accentuation
+  const accentColor = cfg.ticketPanelEmbed?.color || 0x5865f2;
+  container.setAccentColor(accentColor);
 
   return { components: [container] };
 }
@@ -357,47 +330,28 @@ function buildTicketPanelV2(cfg, guildName) {
  * Construit un panel d'exchanger avec Components V2
  */
 function buildExchangerPanelV2(cfg) {
-  const container = new ContainerBuilder();
+  const containerComponents = [];
   const exchangerCfg = cfg.exchangerConfig || {};
-
-  // Couleur et header
-  const accentColor = exchangerCfg.embed?.color || 0x5865f2;
-  container.setAccentColor(accentColor);
-
-  if (exchangerCfg.embed?.thumbnail) {
-    try {
-      const thumbnail = new ThumbnailBuilder({
-        media: { url: exchangerCfg.embed.thumbnail },
-      });
-      container.addThumbnail(thumbnail);
-    } catch (e) {
-      console.error('Erreur thumbnail exchanger:', e.message);
-    }
-  }
 
   // Titre
   const title = exchangerCfg.embed?.title || '💱 Exchanger';
-  const titleSection = new SectionBuilder({
+  containerComponents.push(new SectionBuilder({
     components: [new TextDisplayBuilder({ content: `## ${title}` })]
-  });
-  container.addComponents(titleSection);
+  }));
 
   // Description
   const description = exchangerCfg.embed?.description || 'Sélectionne une paire pour voir le taux et faire un échange.';
-  const descSection = new SectionBuilder({
+  containerComponents.push(new SectionBuilder({
     components: [new TextDisplayBuilder({ content: description.slice(0, 4000) })]
-  });
-  container.addSection(descSection);
+  }));
 
-  container.addSeparator(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
+  containerComponents.push(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Medium));
 
   // Taux de change en sections avec boutons
   const rates = exchangerCfg.rates || {};
   const rateEntries = Object.entries(rates).slice(0, 10);
 
   for (const [pair, rateData] of rateEntries) {
-    const section = new SectionBuilder();
-
     const rateValue = typeof rateData === 'number' ? rateData : rateData.rate;
     const emoji = typeof rateData === 'object' ? rateData.emoji : '💱';
     const desc = typeof rateData === 'object' ? rateData.description : '';
@@ -405,10 +359,11 @@ function buildExchangerPanelV2(cfg) {
     const percent = Math.round((1 - rateValue) * 100);
     const feeText = percent > 0 ? `(-${percent}% frais)` : percent < 0 ? `(+${Math.abs(percent)}% bonus)` : '';
 
-    const sectionText = new TextDisplayBuilder({
-      content: `${emoji} **${pair.toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
+    const section = new SectionBuilder({
+      components: [new TextDisplayBuilder({
+        content: `${emoji} **${pair.toUpperCase()}** ${feeText}\n${desc || `Taux: ${rateValue}`}`.slice(0, 1024),
+      })]
     });
-    section.addComponents(sectionText);
 
     // Bouton pour sélectionner cette paire
     const btn = new ButtonBuilder()
@@ -417,8 +372,17 @@ function buildExchangerPanelV2(cfg) {
       .setStyle(ButtonStyle.Primary);
 
     section.setAccessory(btn);
-    container.addComponents(section);
+    containerComponents.push(section);
   }
+
+  // Création du Container avec tous les composants
+  const container = new ContainerBuilder({
+    components: containerComponents
+  });
+
+  // Couleur
+  const accentColor = exchangerCfg.embed?.color || 0x5865f2;
+  container.setAccentColor(accentColor);
 
   return { components: [container] };
 }
