@@ -1,353 +1,292 @@
-const {
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder,
-  EmbedBuilder,
-} = require('discord.js');
-const { getConfig, isConfigAdmin } = require('../util/permissions');
-const {
-  createTicketChannel,
-  countOpenTickets,
-  closeTicket,
-  createExchangeTicket,
-} = require('../services/ticketService');
-const Review = require('../models/Review');
-const { embedFromConfig } = require('../util/embeds');
+const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, PermissionFlagsBits } = require('discord.js');
+const { getConfig, isTicketStaff } = require('../utils/permissions');
+const { createTicket, closeTicket, deleteTicket } = require('../services/ticketService');
+const { createEmbed } = require('../utils/embeds');
 
 module.exports = {
   name: 'interactionCreate',
   async execute(interaction, client) {
     try {
-      if (interaction.isAutocomplete()) {
-        const cmd = client.slashCommands.get(interaction.commandName);
-        if (cmd?.autocomplete) await cmd.autocomplete(interaction);
-        return;
-      }
-
+      // ==================== SLASH COMMANDS ====================
       if (interaction.isChatInputCommand()) {
-        const cmd = client.slashCommands.get(interaction.commandName);
-        if (!cmd?.executeSlash) return;
-        await cmd.executeSlash(interaction, { client });
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return;
+        
+        await command.execute(interaction);
         return;
       }
 
+      // ==================== BUTTONS ====================
       if (interaction.isButton()) {
-        const id = interaction.customId;
-        if (id.startsWith('ticket:open:')) {
-          const key = id.slice('ticket:open:'.length);
-          
-          // On demande le produit via un Modal si c'est un ticket d'achat/buy
-          if (key.toLowerCase().includes('buy') || key.toLowerCase().includes('achat')) {
-            const modal = new ModalBuilder()
-              .setCustomId(`ticket:modal:${key}`)
-              .setTitle('Informations de commande');
-
-            const productInput = new TextInputBuilder()
-              .setCustomId('product')
-              .setLabel('Quel produit souhaitez-vous acheter ?')
-              .setPlaceholder('Ex: Nitro Boost, Spotify Premium...')
-              .setStyle(TextInputStyle.Short)
-              .setRequired(true);
-
-            modal.addComponents(new ActionRowBuilder().addComponents(productInput));
-            await interaction.showModal(modal);
-            return;
-          }
-
-          // Sinon ouverture normale
-          const cfg = await getConfig(interaction.guildId);
-// ... (reste du code)
-          const max = cfg.ticketMaxPerUser ?? 3;
-          const n = await countOpenTickets(interaction.guildId, interaction.user.id);
-          if (n >= max) {
-            await interaction.reply({
-              content: `Tu as déjà **${max}** ticket(s) ouvert(s). Ferme-en un avant d’en rouvrir.`,
-              ephemeral: true,
-            });
-            return;
-          }
-          await interaction.deferReply({ ephemeral: true });
-          try {
-            const ch = await createTicketChannel(
-              interaction.guild,
-              interaction.member,
-              key,
-              cfg
-            );
-            await interaction.editReply({
-              content: `Ticket créé : ${ch}`,
-            });
-          } catch (e) {
-            console.error(e);
-            await interaction.editReply({
-              content:
-                'Impossible de créer le ticket. Vérifie la **catégorie parent**, les **permissions du bot** et les **rôles staff**.',
-            });
-          }
+        const { customId } = interaction;
+        
+        // Ouvrir un ticket (ticket_open_xxx)
+        if (customId.startsWith('ticket_open_')) {
+          await handleTicketOpen(interaction);
           return;
         }
-
-        if (id === 'ticket:close') {
-          const cfg = await getConfig(interaction.guildId);
-          await closeTicket(interaction, cfg);
+        
+        // Fermer un ticket
+        if (customId === 'ticket_close') {
+          await handleTicketClose(interaction);
           return;
         }
-
-        if (id.startsWith('exchange:open:')) {
-          const pair = id.slice('exchange:open:'.length);
-          const modal = new ModalBuilder()
-            .setCustomId(`exchange:submit:${pair}`)
-            .setTitle(`Échange ${pair.toUpperCase()}`);
-
-          const amount = new TextInputBuilder()
-            .setCustomId('amount')
-            .setLabel('Montant que vous envoyez')
-            .setPlaceholder('Ex: 10')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true);
-
-          modal.addComponents(new ActionRowBuilder().addComponents(amount));
-          await interaction.showModal(modal);
+        
+        // Supprimer un ticket
+        if (customId === 'ticket_delete') {
+          await handleTicketDelete(interaction);
           return;
         }
-
-        if (id.startsWith('review:open:')) {
-          const parts = id.split(':');
-          const guildId = parts[2];
-          const targetUserId = parts[3];
-          if (interaction.user.id !== targetUserId) {
-            await interaction.reply({
-              content: 'Ce bouton est réservé au client concerné.',
-              ephemeral: true,
-            });
-            return;
-          }
-          const modal = new ModalBuilder()
-            .setCustomId(`review:submit:${guildId}:${targetUserId}`)
-            .setTitle('Laisser un avis');
-
-          const stars = new TextInputBuilder()
-            .setCustomId('stars')
-            .setLabel('Note de 1 à 5')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true)
-            .setMaxLength(1);
-
-          const comment = new TextInputBuilder()
-            .setCustomId('comment')
-            .setLabel('Commentaire (optionnel)')
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(false);
-
-          const order = new TextInputBuilder()
-            .setCustomId('order')
-            .setLabel('Référence commande (optionnel)')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false);
-
-          modal.addComponents(
-            new ActionRowBuilder().addComponents(stars),
-            new ActionRowBuilder().addComponents(comment),
-            new ActionRowBuilder().addComponents(order)
-          );
-          await interaction.showModal(modal);
-          return;
-        }
+        
+        return;
       }
 
+      // ==================== SELECT MENUS ====================
       if (interaction.isStringSelectMenu()) {
-        const id = interaction.customId;
-        if (id === 'exchange:select') {
-          const pair = interaction.values[0];
-          const modal = new ModalBuilder()
-            .setCustomId(`exchange:submit:${pair}`)
-            .setTitle(`Échange ${pair.toUpperCase()}`);
-
-          const amount = new TextInputBuilder()
-            .setCustomId('amount')
-            .setLabel('Montant que vous envoyez')
-            .setPlaceholder('Ex: 10')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true);
-
-          modal.addComponents(new ActionRowBuilder().addComponents(amount));
-          await interaction.showModal(modal);
-          return;
-        }
-      }
-
-      if (interaction.isModalSubmit() && interaction.customId.startsWith('ticket:modal:')) {
-        const key = interaction.customId.slice('ticket:modal:'.length);
-        const product = interaction.fields.getTextInputValue('product');
+        const { customId, values } = interaction;
         
-        const cfg = await getConfig(interaction.guildId);
-        const max = cfg.ticketMaxPerUser ?? 3;
-        const n = await countOpenTickets(interaction.guildId, interaction.user.id);
+        // Exchanger
+        if (customId === 'exchanger_select') {
+          await handleExchangerSelect(interaction, values[0]);
+          return;
+        }
         
-        if (n >= max) {
-          await interaction.reply({
-            content: `Tu as déjà **${max}** ticket(s) ouvert(s). Ferme-en un avant d’en rouvrir.`,
-            ephemeral: true,
-          });
-          return;
-        }
-
-        await interaction.deferReply({ ephemeral: true });
-        try {
-          const ch = await createTicketChannel(
-            interaction.guild,
-            interaction.member,
-            key,
-            cfg,
-            product // On passe le produit ici
-          );
-          await interaction.editReply({
-            content: `Ticket créé : ${ch}`,
-          });
-        } catch (e) {
-          console.error(e);
-          await interaction.editReply({
-            content: 'Impossible de créer le ticket.',
-          });
-        }
         return;
       }
 
-      if (interaction.isModalSubmit() && interaction.customId.startsWith('review:submit:')) {
-        const parts = interaction.customId.split(':');
-        const guildId = parts[2];
-        const userId = parts[3];
-        if (interaction.user.id !== userId) {
-          await interaction.reply({ content: 'Erreur de session.', ephemeral: true });
+      // ==================== MODALS ====================
+      if (interaction.isModalSubmit()) {
+        const { customId } = interaction;
+        
+        if (customId.startsWith('ticket_modal_')) {
+          await handleTicketModalSubmit(interaction);
           return;
         }
-        const rawStars = interaction.fields.getTextInputValue('stars').trim();
-        const s = parseInt(rawStars, 10);
-        if (Number.isNaN(s) || s < 1 || s > 5) {
-          await interaction.reply({
-            content: 'La note doit être un chiffre entre **1** et **5**.',
-            ephemeral: true,
-          });
-          return;
-        }
-        const comment = interaction.fields.getTextInputValue('comment') || '';
-        const orderRef = interaction.fields.getTextInputValue('order') || '';
-
-        const cfg = await getConfig(guildId);
-        const chId = cfg.reviewChannelId;
-        if (!chId) {
-          await interaction.reply({
-            content: 'Le salon d’avis n’est pas configuré sur ce serveur.',
-            ephemeral: true,
-          });
-          return;
-        }
-
-        await Review.create({
-          guildId,
-          userId,
-          stars: s,
-          comment,
-          orderRef,
-        });
-
-        const guild = interaction.client.guilds.cache.get(guildId);
-        const ch = guild?.channels.cache.get(chId);
-        const starStr = '⭐'.repeat(s) + '☆'.repeat(5 - s);
-        const embed = new EmbedBuilder()
-          .setTitle('Nouvel avis')
-          .setColor(0xfeb900)
-          .setDescription(starStr)
-          .addFields(
-            { name: 'Client', value: `<@${userId}>`, inline: true },
-            { name: 'Note', value: String(s), inline: true },
-            { name: 'Commande', value: orderRef || '—', inline: true },
-            { name: 'Commentaire', value: comment || '—', inline: false }
-          )
-          .setTimestamp();
-
-        const template = cfg.reviewRequestEmbed;
-        if (template?.color) embed.setColor(template.color);
-
-        if (ch?.isTextBased()) {
-          await ch.send({ embeds: [embed] });
-        }
-
-        await interaction.reply({
-          content: 'Merci ! Ton avis a été publié.',
-          ephemeral: true,
-        });
+        
         return;
       }
 
-      if (interaction.isModalSubmit() && interaction.customId.startsWith('exchange:submit:')) {
-        const pair = interaction.customId.slice('exchange:submit:'.length);
-        const amountStr = interaction.fields.getTextInputValue('amount').replace(',', '.');
-        const amount = parseFloat(amountStr);
-
-        if (isNaN(amount) || amount <= 0) {
-          await interaction.reply({ content: 'Montant invalide.', ephemeral: true });
-          return;
-        }
-
-        const cfg = await getConfig(interaction.guildId);
-        const rateData = cfg.exchangerConfig?.rates?.[pair];
-        const rate = typeof rateData === 'object' ? rateData.rate : rateData;
-
-        if (!rate) {
-          await interaction.reply({
-            content: 'Ce taux de change n’est plus disponible.',
-            ephemeral: true,
-          });
-          return;
-        }
-
-        const result = (amount * rate).toFixed(2);
-        await interaction.deferReply({ ephemeral: true });
-
-        try {
-          const ch = await createExchangeTicket(
-            interaction.guild,
-            interaction.member,
-            pair,
-            amount,
-            result,
-            cfg
-          );
-          await interaction.editReply({ content: `Ticket d’échange créé : ${ch}` });
-        } catch (e) {
-          console.error(e);
-          await interaction.editReply({ content: 'Erreur lors de la création du ticket.' });
-        }
-        return;
-      }
-    } catch (err) {
-      console.error('interactionCreate ERROR:', err.message);
-      console.error('Stack:', err.stack);
-      if (err.cause) console.error('Cause:', err.cause);
+    } catch (error) {
+      console.error('[Interaction]', error);
       
-      // Envoyer la raison de l'erreur en MP à l'utilisateur
       try {
-        const user = await interaction.client.users.fetch(interaction.user.id);
-        let errorReason = err.message || err.toString() || 'Erreur inconnue';
-        // Tronquer si trop long
-        if (errorReason.length > 1800) errorReason = errorReason.slice(0, 1800) + '...';
-        await user.send({
-          content: `⚠️ **Une erreur est survenue**\n\n**Raison:** \`${errorReason}\`\n\nContacte un administrateur si le problème persiste.`
-        });
-      } catch (dmErr) {
-        // Si MP impossible, répondre dans le channel
-        console.error('Impossible d\'envoyer le MP:', dmErr.message);
-      }
-      
-      // Réponse éphémère dans le channel
-      const msg = { content: '❌ Une erreur est survenue. Regarde tes MPs pour la raison.', ephemeral: true };
-      if (interaction.deferred || interaction.replied) {
-        await interaction.followUp(msg).catch(() => {});
-      } else {
-        await interaction.reply(msg).catch(() => {});
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp({
+            content: `❌ Une erreur est survenue: ${error.message}`,
+            ephemeral: true
+          });
+        } else {
+          await interaction.reply({
+            content: `❌ Une erreur est survenue: ${error.message}`,
+            ephemeral: true
+          });
+        }
+        
+        // Notifier l'utilisateur en MP
+        try {
+          await interaction.user.send({
+            content: `⚠️ **Erreur**\n\n\`${error.message}\`\n\nSi le problème persiste, contacte un administrateur.`
+          });
+        } catch {
+          // MP impossible
+        }
+      } catch {
+        // Impossible de répondre
       }
     }
-  },
+  }
 };
+
+// Handler: Ouvrir un ticket (bouton)
+async function handleTicketOpen(interaction) {
+  const categoryId = interaction.customId.replace('ticket_open_', '');
+  const cfg = await getConfig(interaction.guild.id);
+  const category = cfg.ticketCategories?.find(c => c.id === categoryId);
+  
+  if (!category) {
+    return interaction.reply({
+      content: '❌ Cette catégorie n\'existe plus.',
+      ephemeral: true
+    });
+  }
+
+  // Vérifier si catégorie parent configurée
+  if (!cfg.ticketCategoryId) {
+    return interaction.reply({
+      content: '❌ La catégorie des tickets n\'est pas configurée. Contacte un admin.',
+      ephemeral: true
+    });
+  }
+
+  // Check si déjà un ticket ouvert
+  const { Ticket } = require('../database');
+  const existing = await Ticket.findOne({
+    guildId: interaction.guild.id,
+    userId: interaction.user.id,
+    status: 'open',
+    category: categoryId
+  });
+
+  if (existing) {
+    const channel = interaction.guild.channels.cache.get(existing.channelId);
+    if (channel) {
+      return interaction.reply({
+        content: `❌ Tu as déjà un ticket ouvert: ${channel}`,
+        ephemeral: true
+      });
+    }
+  }
+
+  // Si pas de prompt spécifique, créer directement
+  if (!category.prompt || category.prompt.trim().length < 3) {
+    await interaction.deferReply({ ephemeral: true });
+    
+    try {
+      const channel = await createTicket(interaction.guild, interaction.user, categoryId, cfg);
+      await interaction.editReply({
+        content: `✅ Ticket créé: ${channel}`
+      });
+    } catch (error) {
+      await interaction.editReply({
+        content: `❌ Erreur: ${error.message}`
+      });
+    }
+    return;
+  }
+
+  // Sinon, ouvrir un modal
+  const modal = new ModalBuilder()
+    .setCustomId(`ticket_modal_${categoryId}`)
+    .setTitle(category.label || 'Nouveau ticket');
+
+  const input = new TextInputBuilder()
+    .setCustomId('ticket_reason')
+    .setLabel(category.prompt.slice(0, 45))
+    .setPlaceholder('Décris ta demande ici...')
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(true)
+    .setMaxLength(1000);
+
+  const row = new ActionRowBuilder().addComponents(input);
+  modal.addComponents(row);
+
+  await interaction.showModal(modal);
+}
+
+// Handler: Modal submit
+async function handleTicketModalSubmit(interaction) {
+  const categoryId = interaction.customId.replace('ticket_modal_', '');
+  const reason = interaction.fields.getTextInputValue('ticket_reason');
+  
+  await interaction.deferReply({ ephemeral: true });
+  
+  const cfg = await getConfig(interaction.guild.id);
+  
+  try {
+    const channel = await createTicket(interaction.guild, interaction.user, categoryId, cfg);
+    
+    // Envoyer le reason dans le ticket
+    await channel.send({
+      embeds: [createEmbed({
+        title: '📝 Description',
+        description: reason,
+        color: 0x5865f2
+      })]
+    });
+    
+    await interaction.editReply({
+      content: `✅ Ticket créé: ${channel}`
+    });
+  } catch (error) {
+    await interaction.editReply({
+      content: `❌ Erreur: ${error.message}`
+    });
+  }
+}
+
+// Handler: Fermer un ticket
+async function handleTicketClose(interaction) {
+  const { Ticket } = require('../database');
+  const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
+  
+  if (!ticket) {
+    return interaction.reply({
+      content: '❌ Ce salon n\'est pas un ticket.',
+      ephemeral: true
+    });
+  }
+
+  // Vérifier permissions
+  const isStaff = await isTicketStaff(interaction.member, interaction.guild.id);
+  const isCreator = ticket.userId === interaction.user.id;
+  const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.ManageGuild);
+  
+  if (!isStaff && !isCreator && !isAdmin) {
+    return interaction.reply({
+      content: '❌ Tu ne peux pas fermer ce ticket.',
+      ephemeral: true
+    });
+  }
+
+  await interaction.deferReply();
+  
+  try {
+    await closeTicket(interaction.channel, interaction.user, '');
+    await interaction.editReply({ content: '🔒 Ticket fermé.' });
+  } catch (error) {
+    await interaction.editReply({ content: `❌ Erreur: ${error.message}` });
+  }
+}
+
+// Handler: Supprimer un ticket
+async function handleTicketDelete(interaction) {
+  const { Ticket } = require('../database');
+  const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
+  
+  if (!ticket) {
+    return interaction.reply({
+      content: '❌ Ce salon n\'est pas un ticket.',
+      ephemeral: true
+    });
+  }
+
+  // Vérifier permissions (seulement staff ou admin)
+  const isStaff = await isTicketStaff(interaction.member, interaction.guild.id);
+  const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.ManageGuild);
+  
+  if (!isStaff && !isAdmin) {
+    return interaction.reply({
+      content: '❌ Seul le staff peut supprimer un ticket.',
+      ephemeral: true
+    });
+  }
+
+  await interaction.deferReply();
+  
+  try {
+    await deleteTicket(interaction.channel);
+    // Le salon est supprimé, pas besoin de répondre
+  } catch (error) {
+    await interaction.editReply({ content: `❌ Erreur: ${error.message}` });
+  }
+}
+
+// Handler: Exchanger select
+async function handleExchangerSelect(interaction, pair) {
+  const cfg = await getConfig(interaction.guild.id);
+  const rate = cfg.exchangerConfig?.rates?.[pair];
+  
+  if (!rate) {
+    return interaction.reply({
+      content: '❌ Cette paire n\'existe plus.',
+      ephemeral: true
+    });
+  }
+
+  const rateValue = typeof rate === 'number' ? rate : rate?.rate || 1;
+  
+  await interaction.reply({
+    content: `💱 **${pair.toUpperCase()}**\nTaux actuel: \`${rateValue}\`\n\nContacte le staff pour effectuer l'échange.`,
+    ephemeral: true
+  });
+}

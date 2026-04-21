@@ -1,72 +1,79 @@
 require('dotenv').config();
+const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
+const { connectDB } = require('./database');
 const fs = require('fs');
 const path = require('path');
-const { Client, GatewayIntentBits, Partials } = require('discord.js');
-const { connectMongo } = require('./util/db');
-const { loadCommands } = require('./loader');
 
-function firstEnv(...keys) {
-  for (const k of keys) {
-    const v = process.env[k];
-    if (v != null && String(v).trim() !== '') return String(v).trim();
-  }
-  return '';
-}
-
-/** Token bot (même nom sur Railway que en local si tu l’ajoutes à la main) */
-const token = firstEnv('DISCORD_TOKEN', 'BOT_TOKEN', 'DISCORD_BOT_TOKEN');
-/** Mongo : Railway plugin Mongo met souvent DATABASE_URL ; toi tu peux forcer MONGO_URL */
-const mongo = firstEnv('MONGO_URL', 'DATABASE_URL', 'MONGODB_URI', 'MONGO_URI');
-
-if (!token || !mongo) {
-  console.error('[Ohio Machine] Variables d’environnement manquantes sur ce service Railway :');
-  if (!token) {
-    console.error('  • Token Discord : définis DISCORD_TOKEN (le secret du bot, portail développeur).');
-  }
-  if (!mongo) {
-    console.error(
-      '  • MongoDB : définis MONGO_URL ou branche le plugin Mongo et utilise sa variable (souvent DATABASE_URL).'
-    );
-    console.error(
-      '    Vérifie que les variables sont sur le MÊME service que celui qui exécute "npm start", pas seulement sur la base.'
-    );
-  }
-  process.exit(1);
-}
-
+// Client Discord
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.DirectMessages,
   ],
   partials: [Partials.Channel],
 });
 
-loadCommands(client);
+// Collections
+client.commands = new Collection();
 
+// Chargement des events
 const eventsPath = path.join(__dirname, 'events');
-for (const file of fs.readdirSync(eventsPath).filter((f) => f.endsWith('.js'))) {
-  const ev = require(path.join(eventsPath, file));
-  if (ev.once) {
-    client.once(ev.name, (...args) => ev.execute(...args, client));
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+  const filePath = path.join(eventsPath, file);
+  const event = require(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args, client));
   } else {
-    client.on(ev.name, (...args) => ev.execute(...args, client));
+    client.on(event.name, (...args) => event.execute(...args, client));
+  }
+  console.log(`[Event] Chargé: ${event.name}`);
+}
+
+// Chargement des commandes
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+const slashCommands = [];
+
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  
+  if ('data' in command && 'execute' in command) {
+    client.commands.set(command.data.name, command);
+    slashCommands.push(command.data.toJSON());
+    console.log(`[Commande] Chargée: ${command.data.name}`);
   }
 }
 
-(async () => {
-  await connectMongo(mongo);
+// Enregistrement des slash commands
+client.once('ready', async () => {
+  console.log(`[Bot] Connecté en tant que ${client.user.tag}`);
+  
+  // Connexion MongoDB
+  await connectDB();
+  
+  // Enregistrement global des commandes
   try {
-    const { registerSlashCommands } = require('./registerSlashCommands');
-    await registerSlashCommands();
-  } catch (e) {
-    console.error('[Ohio Machine] Enregistrement des commandes / :', e.message || e);
+    await client.application.commands.set(slashCommands);
+    console.log(`[Slash] ${slashCommands.length} commandes enregistrées`);
+  } catch (error) {
+    console.error('[Slash] Erreur enregistrement:', error);
   }
-  await client.login(token);
-})().catch((e) => {
-  console.error(e);
-  process.exit(1);
 });
+
+// Gestion des erreurs
+process.on('unhandledRejection', (error) => {
+  console.error('[Erreur] Unhandled Rejection:', error);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('[Erreur] Uncaught Exception:', error);
+});
+
+// Connexion
+client.login(process.env.DISCORD_TOKEN);
