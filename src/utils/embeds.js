@@ -5,6 +5,13 @@ const {
   ButtonStyle,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  ContainerBuilder,
+  SectionBuilder,
+  TextDisplayBuilder,
+  ThumbnailBuilder,
+  SeparatorBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
 } = require('discord.js');
 
 // Créer un embed classique
@@ -22,105 +29,154 @@ function createEmbed(options = {}) {
   return embed;
 }
 
-// Créer un panel de tickets (Classic Embed + Buttons)
+// Créer un panel de tickets avec Components V2
 function buildTicketPanel(cfg, guildName) {
-  const embed = new EmbedBuilder()
-    .setTitle(cfg.ticketPanelEmbed?.title || '🎫 Support')
-    .setDescription(
-      cfg.ticketPanelEmbed?.description || 
-      `Bienvenue sur **${guildName}**.\n\nSélectionne une catégorie ci-dessous pour ouvrir un ticket.`
-    )
-    .setColor(cfg.ticketPanelEmbed?.color || 0x5865f2);
-    
-  if (cfg.ticketPanelEmbed?.image) {
-    embed.setImage(cfg.ticketPanelEmbed.image);
+  const containerComponents = [];
+  
+  // Titre
+  const title = cfg.ticketPanelEmbed?.title || '🎫 Support';
+  containerComponents.push(new SectionBuilder({
+    components: [new TextDisplayBuilder({ content: `## ${String(title).slice(0, 256)}` })]
+  }));
+  
+  // Description
+  const description = cfg.ticketPanelEmbed?.description || `Bienvenue sur **${guildName}**.\n\nSélectionne une catégorie ci-dessous pour ouvrir un ticket.`;
+  if (description) {
+    containerComponents.push(new SectionBuilder({
+      components: [new TextDisplayBuilder({ content: String(description).slice(0, 4000) })]
+    }));
   }
   
-  if (cfg.ticketPanelEmbed?.footer) {
-    embed.setFooter({ text: cfg.ticketPanelEmbed.footer });
-  }
-
-  // Grouper les boutons par rangée
+  // Séparateur
+  containerComponents.push(new SeparatorBuilder().setSpacing(1));
+  
+  // Catégories - chaque catégorie devient une section avec bouton accessory
   const categories = cfg.ticketCategories || [];
-  const rows = [];
   
-  // Grouper par row (max 5 boutons par row)
-  const grouped = categories.reduce((acc, cat) => {
-    const row = cat.row || 0;
-    if (!acc[row]) acc[row] = [];
-    if (acc[row].length < 5) acc[row].push(cat);
-    return acc;
-  }, {});
-  
-  // Créer les ActionRows
-  Object.keys(grouped).sort().forEach(rowNum => {
-    const rowCats = grouped[rowNum];
-    const row = new ActionRowBuilder();
+  for (const cat of categories.slice(0, 10)) {
+    if (!cat.id || !cat.label) continue;
     
-    for (const cat of rowCats) {
-      const style = ButtonStyle[cat.style] || ButtonStyle.Secondary;
-      const btn = new ButtonBuilder()
-        .setCustomId(`ticket_open_${cat.id}`)
-        .setLabel(cat.label || cat.id)
-        .setStyle(style);
-        
-      if (cat.emoji) {
-        // Extraire l'ID si custom emoji
-        const match = cat.emoji.match(/:(\d+)>?$/);
-        if (match) btn.setEmoji(match[1]);
-        else btn.setEmoji(cat.emoji);
-      }
-      
-      row.addComponents(btn);
+    const prompt = cat.prompt || cat.label;
+    const hint = (cat.hint || 'Clique pour ouvrir un ticket').trim() || '\u200b';
+    
+    // Créer le bouton
+    const style = ButtonStyle[cat.style] || ButtonStyle.Secondary;
+    const btn = new ButtonBuilder()
+      .setCustomId(`ticket_open_${cat.id}`)
+      .setLabel(String(cat.label).slice(0, 80))
+      .setStyle(style);
+    
+    if (cat.emoji) {
+      const emojiStr = String(cat.emoji).trim();
+      const match = emojiStr.match(/:(\d+)>?$/);
+      if (match) btn.setEmoji(match[1]);
+      else btn.setEmoji(emojiStr);
     }
     
-    if (row.components.length > 0) rows.push(row);
-  });
-
-  return { embeds: [embed], components: rows };
+    // Section avec texte + bouton accessory
+    const section = new SectionBuilder({
+      components: [new TextDisplayBuilder({
+        content: `**${String(prompt).slice(0, 256)}**\n${String(hint).slice(0, 1024)}`.slice(0, 1024),
+      })],
+      accessory: btn
+    });
+    
+    containerComponents.push(section);
+  }
+  
+  // Image si présente
+  if (cfg.ticketPanelEmbed?.image) {
+    containerComponents.push(new SeparatorBuilder().setSpacing(1));
+    containerComponents.push(new MediaGalleryBuilder().addItems(
+      new MediaGalleryItemBuilder({ media: { url: cfg.ticketPanelEmbed.image } })
+    ));
+  }
+  
+  // Footer si présent
+  if (cfg.ticketPanelEmbed?.footer) {
+    containerComponents.push(new SeparatorBuilder().setSpacing(1));
+    containerComponents.push(new SectionBuilder({
+      components: [new TextDisplayBuilder({
+        content: `*${String(cfg.ticketPanelEmbed.footer).slice(0, 2048)}*`
+      })]
+    }));
+  }
+  
+  // Créer le container
+  const container = new ContainerBuilder({ components: containerComponents });
+  
+  // Couleur
+  const color = cfg.ticketPanelEmbed?.color;
+  if (typeof color === 'number' && !isNaN(color)) {
+    container.setAccentColor(color);
+  }
+  
+  return { components: [container] };
 }
 
-// Créer un panel d'exchanger
+// Créer un panel d'exchanger avec Components V2
 function buildExchangerPanel(cfg) {
   const exchanger = cfg.exchangerConfig || {};
   const rates = exchanger.rates || {};
   
-  const embed = new EmbedBuilder()
-    .setTitle(exchanger.embed?.title || '💱 Exchanger')
-    .setDescription(
-      exchanger.embed?.description || 
-      'Sélectionne une paire pour voir le taux de change.'
-    )
-    .setColor(exchanger.embed?.color || 0x5865f2);
-
+  const containerComponents = [];
+  
+  // Titre
+  const title = exchanger.embed?.title || '💱 Exchanger';
+  containerComponents.push(new SectionBuilder({
+    components: [new TextDisplayBuilder({ content: `## ${String(title).slice(0, 256)}` })]
+  }));
+  
+  // Description
+  const description = exchanger.embed?.description || 'Sélectionne une paire pour voir le taux de change.';
+  containerComponents.push(new SectionBuilder({
+    components: [new TextDisplayBuilder({ content: String(description).slice(0, 4000) })]
+  }));
+  
   // Liste des paires
-  const pairs = Object.entries(rates).slice(0, 25);
+  const pairs = Object.entries(rates).slice(0, 10);
   
   if (pairs.length === 0) {
-    embed.setDescription('Aucune paire configurée.');
-    return { embeds: [embed], components: [] };
+    containerComponents.push(new SectionBuilder({
+      components: [new TextDisplayBuilder({ content: 'Aucune paire configurée.' })]
+    }));
+  } else {
+    containerComponents.push(new SeparatorBuilder().setSpacing(1));
+    
+    // Chaque paire devient une section avec bouton
+    for (const [pair, data] of pairs) {
+      const rate = typeof data === 'number' ? data : data?.rate || 1;
+      const emoji = typeof data === 'object' ? data?.emoji : '💱';
+      const desc = typeof data === 'object' ? data?.description : '';
+      
+      // Bouton
+      const btn = new ButtonBuilder()
+        .setCustomId(`exchanger_select_${pair}`)
+        .setLabel('Échanger')
+        .setStyle(ButtonStyle.Primary);
+      
+      // Section avec texte + bouton
+      const section = new SectionBuilder({
+        components: [new TextDisplayBuilder({
+          content: `${emoji} **${String(pair).toUpperCase()}**\nTaux: ${rate}${desc ? ` | ${desc}` : ''}`.slice(0, 1024),
+        })],
+        accessory: btn
+      });
+      
+      containerComponents.push(section);
+    }
   }
-
-  // Créer un menu déroulant
-  const select = new StringSelectMenuBuilder()
-    .setCustomId('exchanger_select')
-    .setPlaceholder('Choisir une paire...')
-    .addOptions(
-      pairs.map(([pair, data]) => {
-        const rate = typeof data === 'number' ? data : data?.rate || 1;
-        const emoji = typeof data === 'object' ? data?.emoji : null;
-        
-        return new StringSelectMenuOptionBuilder()
-          .setLabel(pair.toUpperCase())
-          .setDescription(`Taux: ${rate}`)
-          .setValue(pair)
-          .setEmoji(emoji || '💱');
-      })
-    );
-
-  const row = new ActionRowBuilder().addComponents(select);
-
-  return { embeds: [embed], components: [row] };
+  
+  // Créer le container
+  const container = new ContainerBuilder({ components: containerComponents });
+  
+  // Couleur
+  const color = exchanger.embed?.color;
+  if (typeof color === 'number' && !isNaN(color)) {
+    container.setAccentColor(color);
+  }
+  
+  return { components: [container] };
 }
 
 // Panel de confirmation
